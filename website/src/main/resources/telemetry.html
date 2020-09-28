@@ -1,0 +1,100 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<script src="js/jquery.min.js" type="text/javascript"></script>
+		<script src="js/jquery-ui.min.js" type="text/javascript"></script>
+		<script src="js/angular.min.js" type="text/javascript"></script>
+		<script src="js/i18n/angular-locale_de-de.js" type="text/javascript"></script>
+		<script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
+		<script src="js/jquery.datetimepicker.full.min.js" type="text/javascript"></script>
+		<script src="js/leaflet-src.js"></script>
+		<script src="js/scrollglue.js" type="text/javascript"></script>
+		<script src="js/sdsd.js" type="text/javascript"></script>
+		<script src="js/telemetry.js" type="text/javascript"></script>
+
+		<link href="css/bootstrap.css" rel="stylesheet" />
+		<link href="css/jquery-ui.css" rel="stylesheet" />
+		<link href="css/fontawesome.min.css" rel="stylesheet" />
+		<link href="css/leaflet.css" rel="stylesheet" />
+		<link href="css/jquery.datetimepicker.min.css" rel="stylesheet" />
+
+		<title>SDSD Telemetry Viewer</title>
+		<meta name="description" content="">
+		<meta name="author" content="Julian Klose, Hochschule Osnabrueck">
+		<link rel="shortcut icon" href="img/favicon.ico">
+		<link rel="apple-touch-icon image_src" href="img/apple-touch-icon.png">
+	</head>
+	<body data-ng-app="sdsd" class="container">
+		<div class="row align-items-center" data-ng-controller="login" data-ng-init="init()">
+			<div class="col-md-5">
+				<a href="/"> <img src="img/sdsd-logo.png" class="img" style="height:143px;width:364px;" /></a>
+			</div>
+			<div class="col-md-4">
+				<div class="alert alert-danger" data-ng-show="sdsd.message" data-ng-click="sdsd.message = null;">{{sdsd.message}}</div>
+			</div>
+		</div>
+		<div data-ng-include="'template/menu.html'"></div>
+
+		<div data-ng-controller="telemetryCtrl" data-ng-init="init()" data-ng-show="sdsd.username">
+			<div class="row">
+				<div class="col-md-12">
+					<form class="form-inline">
+						<div class="btn-group mr-5" role="group" aria-label="Download">
+							<a class="btn btn-primary" data-ng-href="/rest/download/{{fileid}}"><i class="fas fa-cloud-download-alt"></i> Download</a>
+							<div class="btn-group" role="group" aria-label="EFDI download">
+								<button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+									<span class="sr-only">Toggle Dropdown</span>
+								</button>
+								<div class="dropdown-menu">
+									<a class="dropdown-item" data-ng-href="/rest/isoxml/{{fileid}}">ISOXML</a>
+								</div>
+							</div>
+						</div>
+						Show last <input class="form-control mx-1" type="number" data-ng-model="showlast" min="0">
+						<button class="btn btn-info" data-ng-click="loadTelemetry()" data-ng-disabled="updateLoading">load</button>
+					</form>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<table class="table">
+						<thead>
+							<tr>
+								<th data-ng-repeat="c in caption.device" colspan="{{c.span}}">{{c.label}}</th>
+							</tr>
+							<tr>
+								<th data-ng-repeat="c in caption.deviceelement" style="font-size: 11px" colspan="{{c.span}}">{{c.label}}</th>
+							</tr>
+							<tr>
+								<th data-ng-repeat="c in caption.logvalues" style="font-size: 9px">{{c.label}}</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat="t in telemetry | reverse">
+								<td data-ng-repeat="v in t" style="font-size: 9px">{{v.value}} {{v.unit}}</td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr>
+								<th data-ng-repeat="c in caption.logvalues" style="font-size: 9px">{{c.label}}</th>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+			</div>
+			
+			<button class="btn btn-info" style="position: fixed; top: 20px; right: 600px" data-ng-click="updateTelemetry()" data-ng-disabled="!autoupdate && updateLoading">
+				<i class="fas fa-sync-alt"></i> Update <i class="fas fa-spinner fa-spin" data-ng-show="updateLoading"></i>
+			</button>
+			<div id="map" style="border: 1px solid black; width: 500px; height: 200px; position: fixed; top: 0px; right: 0px;"></div>
+			<br/>
+			<br/>
+			<br/>
+		</div>
+
+		<div data-ng-include="'template/footer.html'"></div>
+	</body>
+</html>

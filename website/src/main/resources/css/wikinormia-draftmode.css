@@ -1,0 +1,12 @@
+.dense-tds td {
+  padding-left: 0.3rem;
+  padding-right: 0.3rem;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.ui-front {
+  z-index: 1051 !important;
+}

@@ -1,0 +1,18 @@
+select ?s ?p ?o ?p_label
+{
+    graph <${graph}> {
+        ?s a <${uri}> .
+		optional {
+			?s ?p ?o .
+			filter(isLiteral(?o) && strlen(str(?o)) > 0) .
+
+			optional {
+				# ?p a rdf:Property .
+				  graph <https://app.sdsd-projekt.de/wikinormia/> {
+					?p rdfs:label ?p_label .
+				}
+			}
+		}
+    }    
+}
+order by ?s ?p ?o

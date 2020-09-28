@@ -1,0 +1,25 @@
+
+${datalogvalues?size} entries found
+
+
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Label</th>
+            <th>DDI</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+<#list datalogvalues as dlv>
+    <#assign format = '0.' + ''?left_pad(dlv.getLiteral('decimals').getValue(), '#')>
+
+    <tr>
+        <td>${dlv.getLiteral('label').getValue()}</td>
+        <td>${dlv.getLiteral('ddi').getValue()}</td>
+        <td>${dlv.getLiteral('value').getValue()?string[format]} ${dlv.getLiteral('unit').getValue()}</td>
+    </tr>
+</#list>
+    </tbody>
+</table>

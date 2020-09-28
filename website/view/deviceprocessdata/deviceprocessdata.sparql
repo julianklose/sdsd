@@ -1,0 +1,23 @@
+SELECT DISTINCT ?number ?label ?typeLabel ?ddi ?name ?property ?trigger ?unit
+WHERE { 
+    GRAPH ?graph {
+        ?det dcterms:isPartOf ?dvc;
+             wkn:isoxmlDET\#C ?typeRes;
+             wkn:isoxmlDET\#E ?number.
+        OPTIONAL { ?det wkn:isoxmlDET\#D ?label }
+        ?dor dcterms:isPartOf ?det;
+             wkn:isoxmlDOR\#A ?dpd.
+        ?dpd wkn:isoxmlDPD\#B ?ddi;
+             wkn:isoxmlDPD\#C ?property;
+             wkn:isoxmlDPD\#D ?trigger.
+        OPTIONAL { ?dpd wkn:isoxmlDPD\#E ?name }
+        OPTIONAL { ?dpd wkn:isoxmlDPD\#F/wkn:isoxmlDVP\#E ?unit }
+    }
+    GRAPH <${wikinormia}> { ?typeRes rdfs:label ?typeLabel }
+    VALUES (?graph ?dvc) {
+<#list params.device as d>
+        (<${d.graph}> <${d.uri}>)
+</#list>
+    }
+}
+ORDER BY ?number ?ddi

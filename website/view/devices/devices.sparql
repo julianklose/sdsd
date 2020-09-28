@@ -1,0 +1,24 @@
+SELECT  ?dvclabel ?detlabel ?ddi ?dptlabel ?value ?unit ?offset ?scale ?decimals
+FROM <${graph}>
+WHERE {
+      ?dvc rdf:type wkn:isoxmlDVC;
+         rdfs:label ?dvclabel.
+    ?det rdf:type wkn:isoxmlDET;
+         dcterms:isPartOf ?dvc;
+         rdfs:label ?detlabel.
+      ?dor rdf:type wkn:isoxmlDOR;
+         dcterms:isPartOf ?det;
+         wkn:isoxmlDOR\#A ?dpt.
+      ?dpt rdf:type wkn:isoxmlDPT;
+         rdfs:label ?dptlabel;
+         wkn:isoxmlDPT\#B ?ddi;
+         wkn:isoxmlDPT\#C ?value.
+    optional {
+        ?dpt wkn:isoxmlDPT\#E ?dvp.
+        ?dvp wkn:isoxmlDVP\#B ?offset;
+             wkn:isoxmlDVP\#C ?scale;
+             wkn:isoxmlDVP\#D ?decimals;
+             wkn:isoxmlDVP\#E ?unit.
+    }
+}
+order by ?dvclabel ?detlabel ?ddi

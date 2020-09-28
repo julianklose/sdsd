@@ -1,0 +1,28 @@
+SELECT ?graph ?task ?label ?start ?customer ?taskStatus ?dvc ?dvcDesignator ?clientname ?serialnumber
+WHERE {
+  GRAPH ?graph {
+    ?task wkn:isoxmlTSK\#E ?field;
+          rdfs:label ?label.
+    OPTIONAL {
+      ?tim dcterms:isPartOf ?task;
+           wkn:isoxmlTIM\#A ?start.
+    }
+    OPTIONAL { ?task wkn:isoxmlTSK\#C/rdfs:label ?customer }
+    OPTIONAL { ?task wkn:isoxmlTSK\#G/rdfs:label ?taskStatus }
+    OPTIONAL {
+      ?dans dcterms:isPartOf ?task;
+            wkn:isoxmlDAN\#A ?clientname.
+      OPTIONAL {
+        ?dans wkn:isoxmlDAN\#C ?dvc.
+        ?dvc wkn:isoxmlDVC\#B ?dvcDesignator;
+             wkn:isoxmlDVC\#E ?serialnumber.
+      }
+    }
+  }
+  VALUES (?graph ?field) {
+<#list params.field as d>
+    (<${d.graph}> <${d.uri}>)
+</#list>
+  }
+}
+ORDER BY DESC(?start) ?label

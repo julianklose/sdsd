@@ -1,0 +1,12 @@
+
+${devices?size} entries found
+
+<table class="table table-bordered">
+<#list devices as device>
+    <tr>
+        <td>${device.get('dvclabel')}</td>
+        <td>${device.get('detlabel')}</td>
+        <td>${device.getLiteral('ddi').getValue()}</td>
+    </tr>
+</#list>
+</table>

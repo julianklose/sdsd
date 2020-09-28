@@ -1,0 +1,90 @@
+<html>
+	<head>
+		<title>SDSD Feldgrenzen</title>
+		
+		<meta name="description" content="">
+		<meta name="author" content="Julian Klose, Hochschule Osnabrueck">
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<script src="js/jquery.min.js" type="text/javascript"></script>
+		<script src="js/jquery-ui.min.js" type="text/javascript"></script>
+		<script src="js/angular.min.js" type="text/javascript"></script>
+		<script src="js/i18n/angular-locale_de-de.js" type="text/javascript"></script>
+		<script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
+		<script src="js/scrollglue.js" type="text/javascript"></script>
+		<script src="js/leaflet-src.js"></script>
+		<script src="js/sdsd.js" type="text/javascript"></script>
+		<script src="js/feldgrenzen.js" type="text/javascript"></script>
+
+		<link href="css/bootstrap.css" rel="stylesheet" />
+		<link href="css/map.css" rel="stylesheet" />
+		<link href="css/feldgrenzen.css" rel="stylesheet" />
+		<link href="css/jquery-ui.css" rel="stylesheet" />
+		<link href="css/fontawesome.min.css" rel="stylesheet" />
+		<link href="css/leaflet.css" rel="stylesheet" />
+	
+		<link rel="shortcut icon" href="img/favicon.ico">
+		<link rel="apple-touch-icon image_src" href="img/apple-touch-icon.png">
+	</head>
+	<body data-ng-app="sdsd" class="container">
+		<div data-ng-include="'template/header.html'"></div>
+		<div data-ng-include="'template/menu.html'"></div>
+
+		<div data-ng-controller="feldgrenzen" data-ng-init="init()" data-ng-show="sdsd.username">
+			<div class="row" style="height: 65%">			
+				<div data-ng-switch="step" class="animate-switch-container col-md-4">
+					<div data-ng-switch-default class="animate-switch">
+						<h3><span class="fas fa-map-marked-alt"></span> Feldgrenzen</h3>
+						<span class="fas fa-spinner fa-spin" data-ng-show="loading"></span>		
+						<div>
+							<input type="text" class="form-control" data-ng-model="fieldName" placeholder="Search for field"/>
+						</div>		
+						<button class="list-group-item list-group-item-action " data-ng-repeat="f in fields | orderBy:sortingFn | search:fieldName:fieldLabel" data-ng-click="loadSameAs(f)">							<span class="fas fa-flag" data-ng-show="f.properties.prefLabel != null"></span>
+							{{f.properties.prefLabel ? f.properties.prefLabel : f.properties.label[0]}} ({{f.properties.res.length}})
+						</button>
+					</div>
+					<div data-ng-switch-when="2" class="animate-switch d-flex align-items-start flex-column m-100">
+						<div class="listCustom">
+							<h3><button class="btn btn-sm btn-primary" data-ng-click="setStep(1)"><span class="fa fa-arrow-left"></span> Back</button> Feldgrenzen</h3>				
+							<ul class="mb-auto p-2 list-group">
+								<li class="list-group-item list-group-item-action field-selection" data-ng-repeat="f in sameAs" data-ng-class="{'active':$index === indexSelectedField}">
+									<div class="customRow">
+										<div class="li-custom" data-ng-click="setSelected($index, f.properties)">
+											<span class="fas fa-flag" data-ng-show="f.properties.prefLabel != null"></span>
+											<span class="pref-selection-item">{{fieldLabel(f)}}</span>
+											<span class="badge badge-primary badge-pill"> ({{f.properties.area / 10000 | number: 2}} ha)</span>
+										</div>
+										<div class="btn-custom">
+											<button type="button" class="btn btn-background-white btn-sm" data-ng-class="{'btn-outline-disabled' : !f.visible, 'btn-outline-secondary' : f.visible}" data-ng-click="toggleVisibility(f)">
+												<span data-ng-class="{'fa fa-eye-slash' : !f.visible, 'fa fa-eye' : f.visible}" class="fa fa-eye"></span>
+											</button>
+										</div>
+									</div>
+								</li>
+							</ul>
+						</div>
+						<div class="input-group mb-3 p-2 custom">
+							<input type="text" class="form-control" data-ng-model="preferred.prefLabel" placeholder="Preferred Label" aria-label="Preferred Label" aria-describedby="basic-addon2">
+								<div class="input-group-append">
+								<button data-ng-click="setPref()" class="btn btn-success"data-ng-disabled="preferred == undefined || preferred =='' || preferred.uri == undefined">Save</button>
+							</div>
+							<div class="input-group-append">
+								<button data-ng-click="confirmCreateIsoxml()" class="btn btn-primary" data-ng-disabled="preferred == undefined || preferred =='' || preferred.uri == undefined">ISOXML</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-8" id="map" style="width: 100%; height: 100%; border: 1px solid gray;">
+				</div>
+			</div>
+			<br/>
+			<br/>
+			<br/>
+		</div>
+
+		<div data-ng-include="'template/footer.html'"></div>
+	</body>
+</html>

@@ -1,0 +1,139 @@
+.checkbox label:after, 
+.radio label:after {
+	content: '';
+	display: table;
+	clear: both;
+}
+.row{
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+.checkbox .cr,
+.radio .cr {
+	position: relative;
+	display: inline-block;
+	border: 1px solid #a9a9a9;
+	border-radius: .25em;
+	width: 1.3em;
+	height: 1.3em;
+	float: left;
+	margin-right: .5em;
+}
+
+.radio .cr {
+	border-radius: 50%;
+}
+
+.checkbox .cr .cr-icon,
+.radio .cr .cr-icon {
+	position: absolute;
+	font-size: .8em;
+	line-height: 0;
+	top: 50%;
+	left: 20%;
+}
+
+.radio .cr .cr-icon {
+	margin-left: 0.04em;
+}
+
+.checkbox label input[type="checkbox"],
+.radio label input[type="radio"] {
+	display: none;
+}
+
+.checkbox label input[type="checkbox"] + .cr > .cr-icon,
+.radio label input[type="radio"] + .cr > .cr-icon {
+	transform: scale(3) rotateZ(-20deg);
+	opacity: 0;
+	transition: all .3s ease-in;
+}
+
+.checkbox label input[type="checkbox"]:checked + .cr > .cr-icon,
+.radio label input[type="radio"]:checked + .cr > .cr-icon {
+	transform: scale(1) rotateZ(0deg);
+	opacity: 1;
+}
+ /* Style buttons */
+.icon-btn {
+  margin: 5px;
+  cursor: pointer; /* Mouse pointer on hover */
+}
+
+.progress{
+	height: 5px;
+	background: #d6d6d6;
+	border-radius: 0;
+	box-shadow: none;
+	overflow: visible;
+	margin-top: 2rem;
+	margin-bottom: 2rem;
+	position: relative;
+}
+.progress .progress-bar{
+	position: relative;
+	-webkit-animation: animate-positive 2s;
+	animation: animate-positive 2s;
+}
+.progress .progress-bar:after{
+	content: "\f3c5";
+	font-family: "Font Awesome 5 Free";
+	font-weight: 900;
+	position: absolute;
+	top: -20px;
+	right: -7px;
+	font-size: 25px;
+	font-weight: 700;
+	color: #414141;
+}
+.progress .progress-title{
+	display: block;
+	font-size: 16px;
+	font-weight: 600;
+	letter-spacing: 0.7px;
+	color: #414141;
+	text-transform: uppercase;
+	position: absolute;
+	top: -2rem;
+	left: 0;
+}
+.progress .progress-value{
+	display: block;
+	font-size: 12px;
+	color: #414141;
+	position: absolute;
+	top: -1.8rem;
+	right: 0;
+}
+.progress .progress-start{
+	display: block;
+	font-size: 12px;
+	color: #414141;
+	position: absolute;
+	bottom: -1.1rem;
+	left: 0;
+}
+.progress .progress-end{
+	display: block;
+	font-size: 12px;
+	color: #414141;
+	position: absolute;
+	bottom: -1.1rem;
+	right: 0;
+}
+.progress .progress-current{
+	font-size: 12px;
+	color: #0097EE;
+	position: relative;
+	width: 0;
+	white-space: nowrap;
+	overflow: visible;
+	bottom: -1.1rem;
+	left: -4ex;
+}
+@-webkit-keyframes animate-positive{
+	0% { width: 0%; }
+}
+@keyframes animate-positive{
+	0% { width: 0%; }
+}

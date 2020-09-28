@@ -1,0 +1,28 @@
+SELECT DISTINCT ?tlgname ?number ?label ?typeLabel ?ddi ?designator ?value ?offset ?scale ?numberOfDecimals ?unit ?from ?until ?duration ?status
+WHERE {
+    GRAPH <${params.graph}> {
+        ?tim dcterms:isPartOf <${params.uri}>;
+             wkn:isoxmlTIM\#A ?from;
+             wkn:isoxmlTIM\#D ?statusRes.
+        OPTIONAL { ?tim wkn:isoxmlTIM\#B ?until }
+        OPTIONAL { ?tim wkn:isoxmlTIM\#C ?duration }
+        ?dlv dcterms:isPartOf ?tim;
+             wkn:isoxmlDLV\#A ?ddi;
+             wkn:isoxmlDLV\#B ?value;
+             wkn:isoxmlDLV\#C ?det.
+        OPTIONAL { ?dlv dcterms:isPartOf/wkn:timelog\#name ?tlgname }
+        OPTIONAL { ?dlv wkn:valueinfo\#designator ?designator }
+        OPTIONAL { ?dlv wkn:valueinfo\#offset ?offset }
+        OPTIONAL { ?dlv wkn:valueinfo\#scale ?scale }
+        OPTIONAL { ?dlv wkn:valueinfo\#numberOfDecimals ?numberOfDecimals }
+        OPTIONAL { ?dlv wkn:valueinfo\#unit ?unit }
+        ?det wkn:isoxmlDET\#C ?typeRes;
+             wkn:isoxmlDET\#E ?number.
+        OPTIONAL { ?det wkn:isoxmlDET\#D ?label }
+    }
+    GRAPH <${wikinormia}> { 
+        ?typeRes rdfs:label ?typeLabel.
+        ?statusRes rdfs:label ?status.
+    }
+}
+ORDER BY ?tlgname ?number ?ddi

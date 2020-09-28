@@ -1,0 +1,133 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<script src="js/jquery.min.js" type="text/javascript"></script>
+		<script src="js/jquery-ui.min.js" type="text/javascript"></script>
+		<script src="js/angular.min.js" type="text/javascript"></script>
+		<script src="js/i18n/angular-locale_de-de.js" type="text/javascript"></script>
+		<script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
+		<script src="js/jquery.datetimepicker.full.min.js" type="text/javascript"></script>
+		<script src="js/scrollglue.js" type="text/javascript"></script>
+		<script src="js/sdsd.js" type="text/javascript"></script>
+		<script src="js/services.js" type="text/javascript"></script>
+
+		<link href="css/bootstrap.css" rel="stylesheet" />
+		<link href="css/jquery-ui.css" rel="stylesheet" />
+		<link href="css/fontawesome.min.css" rel="stylesheet" />
+		<link href="css/jquery.datetimepicker.min.css" rel="stylesheet" />
+
+		<title>SDSD Services</title>
+		<meta name="description" content="">
+		<meta name="author" content="Julian Klose, Hochschule Osnabrueck">
+		<link rel="shortcut icon" href="img/favicon.ico">
+		<link rel="apple-touch-icon image_src" href="img/apple-touch-icon.png">
+	</head>
+	<body data-ng-app="sdsd" class="container">
+		<div data-ng-include="'template/header.html'"></div>
+		<div data-ng-include="'template/menu.html'"></div>
+
+		<div data-ng-controller="services" data-ng-init="init()" data-ng-show="sdsd.username">
+			<div class="row">
+				<div class="col-md-12 table-responsive">
+					<h3>
+						<i class="fa fa-handshake"></i> Services 
+					</h3>
+					<a class="float-right" href="/servicecreator.html"><i class="fas fa-plus"></i> Own Services</a>
+
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Author</th>
+								<th>Added</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat="s in servicelist" style="white-space: nowrap;">
+								<td>{{s.name}}</td>
+								<td>{{s.author}}</td>
+								<td>{{s.added | date:'mediumDate'}}</td>
+								<td>
+									<button data-ng-click="activate(s)" class="btn btn-success btn-sm"><i class="fas fa-level-up-alt"></i> Activate</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+			</div>
+
+			<br/>
+
+			<div class="row">
+				<div class="col-md-12 table-responsive">
+					<h3>
+						<i class="fas fa-handshake"></i> Active
+					</h3>
+
+					<table class="table">
+						<thead>
+							<tr>
+								<th></th>
+								<th>Name</th>
+								<th>Activated</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat="s in activeServices" style="white-space: nowrap;">
+								<td title="{{s.error}}"><i data-ng-show="s.error" class="fas fa-exclamation text-danger"></i></td>
+								<td><a data-ng-href="/serviceinstance.html#{{s.id}}">{{s.name}}</a></td>
+								<td>{{s.activated | date:'medium'}}</td>
+								<td>
+									<button data-ng-click="delete(s)" class="btn btn-danger btn-sm"><i class="fas fa-ban"></i> Cancel</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+			</div>
+			
+			<br/>
+
+			<div class="row">
+				<div class="col-md-12 table-responsive">
+					<h3>
+						<i class="fa fa-handshake"></i> Completed
+					</h3>
+
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Activated</th>
+								<th>Completed</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat="s in completedServices" style="white-space: nowrap;">
+								<td><a data-ng-href="/serviceinstance.html#{{s.id}}">{{s.name}}</a></td>
+								<td>{{s.activated | date:'medium'}}</td>
+								<td>{{s.completed | date:'medium'}}</td>
+								<td>
+									<button data-ng-click="delete(s)" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i> Delete</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+			</div>
+			<br/>
+			<br/>
+			<br/>
+		</div>
+
+		<div data-ng-include="'template/footer.html'"></div>
+	</body>
+</html>

@@ -1,0 +1,17 @@
+bin
+target/
+tomcat.*
+.classpath
+.project
+.settings/
+nbactions.xml
+*.schema.json
+stardog-pw.txt
+settings.json
+settings-pr.json
+nb-configuration.xml
+tags
+.metadata
+koala-config.json
+*.log
+.eslintrc.json

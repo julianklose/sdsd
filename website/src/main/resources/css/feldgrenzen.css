@@ -1,0 +1,86 @@
+.animate-switch-container {
+	position:relative;
+	background:white;
+	height:100%;
+	overflow: auto;
+}
+
+.animate-switch.ng-animate {
+	transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+
+	position:absolute;
+	top:0;
+	left:0;
+	right:0;
+	bottom:0;
+}
+
+.listCustom{
+	max-width:100%;
+	overflow: auto;
+}
+
+.btn-outline-disabled{
+	color: #6c757d;
+	border-color: #6c757d;
+}
+
+.input-group .custom {
+	height: max-content;
+}
+
+.animate-switch.ng-leave.ng-leave-active,
+.animate-switch.ng-enter {
+  top:-50px;
+}
+.animate-switch.ng-leave,
+.animate-switch.ng-enter.ng-enter-active {
+  top:0;
+}
+
+.customRow {
+	display: flex;
+}
+
+.btnCustom {
+	position: relative;
+	flex: 15%;
+	max-width: 15%;
+	margin: 0.2 rem;
+}
+
+.li-custom {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex: 85%;
+	max-width: 85%;
+}
+
+.pref-selection-item{
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+ul li field-selection{
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-top-right-radius: 4px;
+	border-top-left-radius: 4px;
+	display: block;
+	padding: 0px 0px;
+	margin-bottom: -1px;
+	
+	/* Disable text selection if item is not draggable */
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.btn-background-white{
+	background-color: #fff;
+}

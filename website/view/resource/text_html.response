@@ -1,0 +1,41 @@
+<#import "../macros.html" as m />
+
+<div class="row">
+    <div class="col-4">
+        <@m.linktable name="Incoming" qs=incoming></@m.linktable>
+    </div>
+
+    <div class="col-4">
+        <#if about?size == 0>
+            <h4 style="color: gray;">${uri}</h4>
+        <#else>
+            <h4>${about[0].get('label')}</h4>
+            is a
+            <a href="${about[0].get('type')}">
+                ${about[0].contains('type_label')?then(about[0].get('type_label'), about[0].get('type'))}
+                <small><i class="fa fa-external-link-alt"></i></small>
+            </a>
+
+            <#if about[0].contains('comment')>
+                <small>
+                    ${about[0].get('comment')}
+                </small>
+            </#if>
+        </#if>
+
+        <table class="table table-bordered">
+            <#list literals as literal>
+            <tr>
+                <td>
+                    <small>${literal.get('p_label')}</small><br/>
+                    ${literal.getLiteral('o').getValue()}
+                </td>
+            </tr>
+            </#list>
+        </table>
+    </div>
+
+    <div class="col-4">
+        <@m.linktable name="Outgoing" qs=outgoing></@m.linktable>
+    </div>
+</div>

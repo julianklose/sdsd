@@ -1,0 +1,19 @@
+SELECT ?label ?ddi (IF(bound(?dvp), (?val + ?offset) * ?scale, ?val) AS ?value) ?unit ?decimals
+FROM <${graph}>
+WHERE {
+  ?dlv wkn:isoxmlDLV\#A ?ddi;
+       wkn:isoxmlDLV\#B ?val;
+       wkn:isoxmlDLV\#C ?det.
+  FILTER (?val != 0)
+  ?dor dcterms:isPartOf ?det;
+       wkn:isoxmlDOR\#A ?dpd.
+  ?dpd wkn:isoxmlDPD\#B ?ddi;
+       wkn:isoxmlDPD\#E ?label.
+  OPTIONAL {
+    ?dpd wkn:isoxmlDPD\#F ?dvp.
+    ?dvp wkn:isoxmlDVP\#B ?offset;
+         wkn:isoxmlDVP\#C ?scale; 
+         wkn:isoxmlDVP\#D ?decimals;
+         wkn:isoxmlDVP\#E ?unit.
+  }
+}

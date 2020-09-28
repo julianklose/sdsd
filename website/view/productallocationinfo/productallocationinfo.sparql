@@ -1,0 +1,18 @@
+SELECT DISTINCT ?name ?ddi ?group ((?panValue + ?offset) * ?scale AS ?value) ?unit ?nod
+FROM <${params.graph}>
+WHERE {
+    ?pan dcterms:isPartOf <${params.uri}>;
+         wkn:isoxmlPAN\#A ?pdt.
+    OPTIONAL { ?pan wkn:isoxmlPAN\#B ?ddi }
+    OPTIONAL { ?pan wkn:isoxmlPAN\#C ?panValue }
+    OPTIONAL { 
+        ?pan wkn:isoxmlPAN\#F ?vpn. 
+        ?vpn wkn:isoxmlVPN\#B ?offset;
+             wkn:isoxmlVPN\#C ?scale;
+             wkn:isoxmlVPN\#D ?nod;
+             wkn:isoxmlVPN\#E ?unit;
+    }
+    OPTIONAL { ?pdt wkn:isoxmlPDT\#B ?name }
+    OPTIONAL { ?pdt wkn:isoxmlPDT\#C ?groupuri. ?groupuri rdfs:label ?group. }
+}
+ORDER BY ?name

@@ -1,0 +1,205 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<script src="js/jquery.min.js" type="text/javascript"></script>
+		<script src="js/jquery-ui.min.js" type="text/javascript"></script>
+		<script src="js/angular.min.js" type="text/javascript"></script>
+		<script src="js/i18n/angular-locale_de-de.js" type="text/javascript"></script>
+		<script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
+		<script src="js/jquery.datetimepicker.full.min.js" type="text/javascript"></script>
+		<script src="js/scrollglue.js" type="text/javascript"></script>
+		<script src="js/sdsd.js" type="text/javascript"></script>
+		<script src="js/serviceinstance.js" type="text/javascript"></script>
+
+		<link href="css/bootstrap.css" rel="stylesheet" />
+		<link href="css/jquery-ui.css" rel="stylesheet" />
+		<link href="css/fontawesome.min.css" rel="stylesheet" />
+		<link href="css/jquery.datetimepicker.min.css" rel="stylesheet" />
+
+		<title>SDSD Service Info</title>
+		<meta name="description" content="">
+		<meta name="author" content="Julian Klose, Hochschule Osnabrueck">
+		<link rel="shortcut icon" href="img/favicon.ico">
+		<link rel="apple-touch-icon image_src" href="img/apple-touch-icon.png">
+	</head>
+	<body data-ng-app="sdsd" class="container">
+		<div data-ng-include="'template/header.html'"></div>
+		<div data-ng-include="'template/menu.html'"></div>
+
+		<div data-ng-controller="service_instance" data-ng-init="init()" data-ng-show="instance.name">
+			<div class="row">
+				<div class="col-md-12">
+					<h2>{{instance.name}}</h2>
+					<p data-ng-show="instance.error"><i class="fas fa-exclamation text-danger"></i> {{instance.error}}</p>
+					
+					<p data-ng-show="instance.activated">
+						<b>Activated:</b> {{instance.activated | date:'mediumDate'}}
+					</p>
+					<p data-ng-show="instance.completed">
+						<b>Completed:</b> {{instance.completed | date:'mediumDate'}}
+					</p>
+					<p data-ng-show="instance.result">
+						<b>Result:</b> <a data-ng-href="{{instance.result.value}}" target="_blank">{{instance.result.label}}</a>
+					</p>
+				</div>
+			</div>
+			
+			<div data-ng-if="instance.parameter" class="row">
+				<div class="col-md-12 table-responsive">
+					<h3>
+						<i class="fas fa-sliders-h"></i> Parameter 
+					</h3>
+
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Value</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat="(name, value) in instance.parameter" style="white-space: nowrap;">
+								<td>{{name}}</td>
+								<td>{{value | arrayJoin}}</td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+			</div>
+
+			<div data-ng-if="instance.neededParmeters" class="row">
+				<div class="col-md-12 table-responsive">
+					<h3>
+						<i class="fas fa-sliders-h"></i> Parameter 
+					</h3>
+
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Value</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat="p in instance.neededParmeters" style="white-space: nowrap;">
+								<td>{{p.label}}<br/><small>{{p.description}}</small></td>
+								<td>
+									<a data-ng-if="p.uri" data-ng-href="{{p.uri}}" target="_blank">{{p.uri | wikiPageName}}</a>
+									<span data-ng-if="!p.uri">{{p.type}}</span>
+									<span data-ng-if="p.min || p.max || p.min === 0 || p.max === 0">[ {{p.min}}, {{p.max}}]</span>
+									<span data-ng-if="p.step"> (&plusmn;{{p.step}})</span>
+									<span data-ng-if="p.from || p.until">[ {{p.from | date:'medium'}}, {{p.until | date:'medium'}}]</span>
+								</td>
+								<td>
+									<select data-ng-if="p.options && !(p.max > 1 || p.min > 1)" class="form-control" data-ng-model="p.value">
+										<option data-ng-if="!(p.min > 0)" data-ng-value="undefined">None</option>
+										<optgroup data-ng-repeat="group in p.options" label="{{group.label}}">
+											<option data-ng-repeat="option in group.list" value="{{option.value}}">{{option.label}}</option>
+										</optgroup>
+									</select>
+									<select data-ng-if="p.options && (p.max > 1 || p.min > 1)" class="form-control" data-ng-model="p.value" multiple>
+										<optgroup data-ng-repeat="group in p.options" label="{{group.label}}">
+											<option data-ng-repeat="option in group.list" value="{{option.value}}">{{option.label}}</option>
+										</optgroup>
+									</select>
+									<input data-ng-if="p.type == 'string'" type="text" class="form-control" data-ng-model="p.value" />
+									<input data-ng-if="p.type == 'number'" type="number" class="form-control" data-ng-model="p.value" 
+											data-ng-attr-min="{{p.min}}" data-ng-attr-max="{{p.max}}" data-ng-attr-step="{{p.step}}" />
+									<input data-ng-if="p.type == 'datetime'" type="text" class="form-control datetimepicker" data-ng-model="p.value"
+											min="{{p.from}}" max="{{p.until}}" />
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<button data-ng-click="setInstanceParameter()" class="btn btn-success"><i class="fas fa-share-square"></i> Store Parameter Values</button>
+
+				</div>
+			</div>
+			
+			<div data-ng-if="instance.permissions" class="row">
+				<div class="col-md-12 table-responsive">
+					<br/>
+					<h3>
+						<i class="fas fa-shield-alt"></i> Permission 
+					</h3>
+
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Access</th>
+								<th>Permit</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat="p in instance.permissions" style="white-space: nowrap;" 
+									data-toggle="tooltip" data-placement="top" title="{{p.description}}">
+								<td><a data-ng-href="{{p.type}}">{{p.name}}</a></td>
+								<td>
+									<div class="input-group" role="group">
+										<div class="input-group-prepend">
+											<div class="input-group-text">
+												<input type="checkbox" data-ng-model="p.allow">
+											</div>
+										</div>
+										<button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#permitModal" 
+												data-ng-click="loadPermissionOptions(p)" data-ng-disabled="!p.allow">
+											{{p.allow ? (p.objs.length == 0 ? "all" : p.objs.length) : "none"}}
+										</button>
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<form class="form-inline">
+						<h5 class="mr-3">Timespan restriction:</h5>
+						<label>From
+							<input type="text" class="form-control datetimepicker mb-2 ml-sm-1 mr-sm-2" data-ng-model="instance.timePermission.from"
+								max="{{instance.timePermission.until}}" />
+						</label>
+						<label>Until
+							<input type="text" class="form-control datetimepicker mb-2 ml-sm-1 mr-sm-2" data-ng-model="instance.timePermission.until"
+								min="{{instance.timePermission.from}}" />
+						</label>
+					</form>
+					<div class="alert alert-success" data-ng-show="permissionSuccess" data-ng-click="permissionSuccess = undefined">Permissions saved</div>
+					<div class="alert alert-danger" data-ng-show="sdsd.message" data-ng-click="sdsd.message = null;">{{sdsd.message}}</div>
+					<button type="button" class="btn btn-success" data-ng-click="savePermissions()"><i class="fas fa-share-square"></i> Save permissions</button>
+				</div>
+			</div>
+			
+			<div class="modal fade" id="permitModal" tabindex="-1" role="dialog" aria-labelledby="permitModalLabel" aria-hidden="true">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="permitModalLabel">Permit access to {{permitModal.permission.name}}</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							Select one ore more entries to specify access or select no entry to grant access to all.
+							<select class="custom-select" size="10" multiple data-ng-model="permitModal.p.objs" data-ng-disabled="!permitModal.permission.allow">
+								<optgroup data-ng-repeat="group in permitModal.options" label="{{group.label}}">
+									<option data-ng-repeat="option in group.list" value="{{option.value}}">{{option.label}}</option>
+								</optgroup>
+							</select>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<br/>
+			<br/>
+			<br/>
+		</div>
+
+		<div data-ng-include="'template/footer.html'"></div>
+	</body>
+</html>

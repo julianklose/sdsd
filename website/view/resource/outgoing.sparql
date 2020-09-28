@@ -1,0 +1,30 @@
+select *
+{
+    graph <${graph}> {
+        <${uri}> ?p ?o .
+        filter(!isLiteral(?o))
+
+        optional {
+            ?o rdfs:label ?o_label .
+        }
+        optional {
+            ?o a ?o_type .
+
+			GRAPH <https://app.sdsd-projekt.de/wikinormia/>
+			{ 
+			  ?o_type a rdfs:Class .
+			  OPTIONAL
+			  { ?o_type  rdfs:label  ?o_type_label }
+			}
+        }
+
+		OPTIONAL {
+			GRAPH <https://app.sdsd-projekt.de/wikinormia/>
+				  { 
+					?p a rdf:Property .
+					OPTIONAL
+					{ ?p  rdfs:label  ?p_label }
+				  }
+		  }
+    }
+}

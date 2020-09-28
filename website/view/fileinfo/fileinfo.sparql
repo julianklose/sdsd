@@ -1,0 +1,8 @@
+SELECT ?graph ?filename ?type
+FROM <${userGraphUri}>
+WHERE {
+    ?graph wkn:file\#filename ?filename;
+           wkn:file\#type ?type.
+    VALUES ?graph { <#list params.graphs as g><${g}> </#list>}
+}
+ORDER BY ?type ?filename

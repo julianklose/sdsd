@@ -1,0 +1,17 @@
+SELECT ?number (GROUP_CONCAT(DISTINCT(?label); SEPARATOR=", ") as ?name) (GROUP_CONCAT(DISTINCT(?type); SEPARATOR=", ") as ?typeLabel)
+WHERE {
+    GRAPH ?graph {
+        ?det dcterms:isPartOf ?dvc;
+             wkn:isoxmlDET\#C ?typeRes;
+             wkn:isoxmlDET\#E ?number.
+        OPTIONAL { ?det wkn:isoxmlDET\#D ?label }
+    }
+    GRAPH <${wikinormia}> { ?typeRes rdfs:label ?type }
+    VALUES (?graph ?dvc) {
+<#list params.device as d>
+        (<${d.graph}> <${d.uri}>)
+</#list>
+    }
+}
+GROUP BY ?number
+ORDER BY ?number

@@ -1,0 +1,10 @@
+
+.contentWindow {
+	/*height: 500px;*/
+	border-style: groove;
+	border-color: lightgray;
+	height: calc(100vh - 350px);
+	resize: vertical;
+	overflow-y: auto;
+}
+

@@ -1,0 +1,110 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<script src="js/jquery.min.js" type="text/javascript"></script>
+		<script src="js/jquery-ui.min.js" type="text/javascript"></script>
+		<script src="js/angular.min.js" type="text/javascript"></script>
+		<script src="js/i18n/angular-locale_de-de.js" type="text/javascript"></script>
+		<script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
+		<script src="js/jquery.datetimepicker.full.min.js" type="text/javascript"></script>
+		<script src="js/scrollglue.js" type="text/javascript"></script>
+		<script src="js/sdsd.js" type="text/javascript"></script>
+		<script src="js/content.js" type="text/javascript"></script>
+
+		<link href="css/bootstrap.css" rel="stylesheet" />
+		<link href="css/jquery-ui.css" rel="stylesheet" />
+		<link href="css/fontawesome.min.css" rel="stylesheet" />
+		<link href="css/jquery.datetimepicker.min.css" rel="stylesheet" />
+		<link href="css/content.css" rel="stylesheet" />
+
+		<title>Smart Data Browser | SDSD</title>
+		<meta name="description" content="">
+		<meta name="author" content="Markus Schröder, DFKI GmbH">
+		<link rel="shortcut icon" href="img/favicon.ico">
+		<link rel="apple-touch-icon image_src" href="img/apple-touch-icon.png">
+	</head>
+	<body data-ng-app="sdsd" class="container">
+		<div data-ng-include="'template/header.html'"></div>
+		<div data-ng-include="'template/menu.html'"></div>
+
+		<div data-ng-controller="contentCtrl" data-ng-init="init()" data-ng-show="sdsd.username">
+			<div class="row">
+				<div class="col">
+					<h2><img style="height: 1em;" src="/img/rdf.png"/> Smart Data Browser</h2>
+				</div>
+			</div>
+	
+			<div class="row">
+				<!-- div class="col-md-2" style="overflow-x: auto;">
+					ISOXML ({{filelist.length}} file{{filelist.length == 1 ? '' : 's'}})
+					<ul style="list-style: none; padding-left: 0;">
+						<li data-ng-repeat="file in filelist">
+							<a href="" data-ng-click="selectFile(file)">{{file.filename}}</a>
+						</li>
+					</ul>
+				</div -->
+				<div class="col-md">
+	
+					<div class="input-group">
+						
+						<div class="input-group-prepend">
+							<button class="btn btn-outline-secondary" data-ng-click="historyPrev()" data-ng-disabled="historyIndex <= 1"><i class="fa fa-arrow-left"></i></button>
+						</div>
+						<div class="input-group-prepend">
+							<button class="btn btn-outline-secondary" data-ng-click="historyNext()" data-ng-disabled="historyIndex === history.length"><i class="fa fa-arrow-right"></i></button>
+						</div>
+						<div class="input-group-append">
+							<button class="btn btn-outline-secondary" data-ng-click="browse(true)"><i class="fa fa-sync-alt" data-ng-class="{ 'fa-spin': wait }"></i></button>
+						</div>
+						<div class="input-group-prepend">
+							<button class="btn btn-outline-secondary" data-ng-click="home()"><i class="fa fa-home"></i></button>
+						</div>
+						<input type="text" class="form-control" placeholder="Address" data-ng-model="addressBar" data-ng-enter="browse()"/>
+						<div class="input-group-append">
+							<select data-ng-model="accept" class="form-control" data-ng-change="browse()">
+								<option value="text/html">text/html</option>
+								<option value="application/json">application/json</option>
+							</select>
+						</div>
+						<!--div class="input-group-append">
+							<button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown">{{addressBarType}}</button>
+							<div class="dropdown-menu">
+								<a data-ng-repeat="type in types" class="dropdown-item" href="#" data-ng-click="switchType(type)">{{type}}</a>
+							</div>
+						</div-->
+						
+						<!--div class="input-group-append">
+							<a data-ng-href="{{addressBar}}" class="btn btn-outline-secondary" target="_blank"><i class="fa fa-external-link-square-alt"></i></a>
+						</div-->
+					</div>
+	
+					<div class="contentWindow" ng-bind-html="renderHtml(content_html)">
+						
+					</div>
+	
+					<!--div class="row">
+						<div class="col-1">
+							<button class="btn btn-sm" data-ng-click="prevPage()"><i class="fa fa-arrow-circle-left"></i></button>
+						</div>
+						<div class="col text-center">
+							Page {{1 + (offset / limit)}}
+						</div>
+						<div class="col-1">
+							<button class="btn btn-sm float-right" data-ng-click="nextPage()"><i class="fa fa-arrow-circle-right"></i></button>
+						</div>
+					</div-->
+	
+				</div>
+	
+			</div>
+			<br/>
+			<br/>
+			<br/>
+		</div>
+
+		<div data-ng-include="'template/footer.html'"></div>
+	</body>
+</html>

@@ -1,0 +1,23 @@
+SELECT ?attributeUri ?attribute (GROUP_CONCAT(DISTINCT coalesce(?label, ?value) ; separator=', ') AS ?values)
+<#list params.field as f>
+FROM <${f.graph}>
+</#list>
+FROM <${wikinormia}>
+FROM <${userGraphUri}>
+WHERE {
+    {
+        ?field ?attributeUri ?value.
+        VALUES ?field { <#list params.field as f><${f.uri}> </#list>}
+        OPTIONAL { ?value rdfs:label ?label }
+        ?attributeUri rdfs:domain wkn:isoxmlPFD;
+                    rdfs:label ?attribute.
+    } UNION {
+        ?graph ?attributeUri ?value.
+        ?attributeUri rdfs:label ?attribute.
+        VALUES ?attributeUri { wkn:file\#filename }
+        VALUES ?graph { <#list params.field as f><${f.graph}> </#list>}
+    }
+}
+GROUP BY ?attributeUri ?attribute
+ORDER BY ?attribute
+

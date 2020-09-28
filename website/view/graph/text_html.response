@@ -1,0 +1,25 @@
+
+<p>
+    ${graph?size} distinct types found in graph.
+</p>
+
+<table class="table table-bordered">
+    <#list graph as triple>
+        <#if !triple.contains('uri')>
+            <#break>
+        </#if>
+
+        <tr>
+            <td>
+                <a href="${util.link('view', 'type', 'uri', triple.get('uri').toString())}">
+                ${triple.getLiteral('count').getValue()}
+                ${triple.get('label')!''}${(triple.getLiteral('count').getInt() == 1)?then('', 's')}</a>
+                <a href="${triple.get('uri')}" target="_blank" class="float-right"><small>Wikinormia <i class="fa fa-external-link-alt"></i></small></a>
+                <br/>
+                <small>${triple.get('comment')!''}</small>
+            </td>
+        </tr>
+    </#list>
+</table>
+
+<#include "../paging.html">

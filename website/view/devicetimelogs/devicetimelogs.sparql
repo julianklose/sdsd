@@ -1,0 +1,26 @@
+SELECT DISTINCT ?graph ?tlgname ?dlv ?number ?label ?typeLabel ?ddi ?designator ?unit ?from ?until ?count
+WHERE {
+    GRAPH ?graph {
+        ?det dcterms:isPartOf ?dvc;
+             wkn:isoxmlDET\#C ?typeRes;
+             wkn:isoxmlDET\#E ?number.
+        OPTIONAL { ?det wkn:isoxmlDET\#D ?label }
+        ?dlv wkn:isoxmlDLV\#C ?det;
+             dcterms:isPartOf ?tlg;
+             wkn:isoxmlDLV\#A ?ddi.
+        MINUS { ?dlv dcterms:isPartOf/rdf:type wkn:isoxmlTIM }
+        OPTIONAL { ?dlv wkn:valueinfo\#designator ?designator }
+        OPTIONAL { ?dlv wkn:valueinfo\#unit ?unit }
+        ?tlg wkn:timelog\#name ?tlgname.
+        OPTIONAL { ?tlg wkn:timelog\#from ?from }
+        OPTIONAL { ?tlg wkn:timelog\#until ?until }
+        OPTIONAL { ?tlg wkn:timelog\#count ?count }
+    }
+    GRAPH <${wikinormia}> { ?typeRes rdfs:label ?typeLabel }
+    VALUES (?graph ?dvc) {
+<#list params.device as d>
+        (<${d.graph}> <${d.uri}>)
+</#list>
+    }
+}
+ORDER BY ?graph ?tlgname ?number ?ddi

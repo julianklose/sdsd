@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<title>SDSD Dashboard</title>
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="" />
+	<meta name="author" content="Andreas Schliebitz & Noah Große Starmann, Hochschule Osnabrück" />
+
+	<script src="js/jquery.min.js" type="text/javascript"></script>
+	<script src="js/jquery-ui.min.js" type="text/javascript"></script>
+	<script src="js/angular.min.js" type="text/javascript"></script>
+	<script src="js/i18n/angular-locale_de-de.js" type="text/javascript"></script>
+	<script src="js/turf.min.js" type="text/javascript"></script>
+	<script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
+	<script src="js/jquery.datetimepicker.full.min.js" type="text/javascript"></script>
+	<script src="js/scrollglue.js" type="text/javascript"></script>
+	<script src="js/sdsd.js" type="text/javascript"></script>
+	<script src="js/leaflet-src.js" type="text/javascript"></script>
+	<script src="js/maplink.js" type="text/javascript"></script>
+
+	<script src="js/dashboard/dashboard-ui.js" type="text/javascript"></script>
+	<script src="js/dashboard/dashboard-util.js" type="text/javascript"></script>
+	<script src="js/dashboard/dashboard-data.js" type="text/javascript"></script>
+	<script src="js/dashboard/dashboard.js" type="text/javascript"></script>
+
+	<link href="css/bootstrap.css" rel="stylesheet" />
+	<link href="css/jquery-ui.css" rel="stylesheet" />
+	<link href="css/fontawesome.min.css" rel="stylesheet" />
+	<link href="css/jquery.datetimepicker.min.css" rel="stylesheet" />
+	<link href="css/leaflet.css" rel="stylesheet" />
+	<link href="css/dashboard.css" rel="stylesheet" />
+
+	<link rel="shortcut icon" href="img/favicon.ico" />
+	<link rel="apple-touch-icon image_src" href="img/apple-touch-icon.png" />
+</head>
+
+<body data-ng-app="sdsd" class="container">
+	<div data-ng-include="'template/header.html'"></div>
+	<div data-ng-include="'template/menu.html'"></div>
+
+	<!-- Dashboard -->
+	<div id="dashboard" data-ng-controller="dashboard" data-ng-init="init()" data-ng-show="sdsd.username">
+
+		<!-- Tab navigation -->
+		<ul class="nav nav-tabs" id="dash-nav-tabs">
+			<li class="nav-item">
+				<a class="nav-link nav-tab active" data-tab="fields" href="javascript:;">Fields</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link nav-tab" data-tab="machines" href="javascript:;">Machines</a>
+			</li>
+		</ul>
+
+		<!-- Back navigation -->
+		<button type="button" id="dash-nav-back" data-target="home" class="mb-2 btn btn-secondary btn-sm">
+			<i class="fa fa-arrow-left" aria-hidden="true"></i> Back
+		</button>
+
+		<!-- Tab Fields -->
+		<div class="dash-tab" id="dash-tab-fields">
+			<!-- Map with field list -->
+			<div class="row ml-0">
+				<div class="col-9 pl-0 pr-0" id="dash-map-large">
+					<div class="dash-map" id="dash-map"></div>
+				</div>
+				<div class="col-3 overflow-auto" id="dash-map-fieldlist"></div>
+			</div>
+
+			<!-- Field info, tasks and related timelogs -->
+			<div id="dash-field-task-info">
+				<div class="mb-2" id="dash-tasks-table"></div>
+				<div class="mb-2" id="dash-related-timelogs-table"></div>
+				<div class="row">
+					<div id="dash-field-info" class="col-6"></div>
+					<div id="dash-map-small" class="col-6"></div>
+				</div>
+			</div>
+
+			<!-- Task Details -->
+			<!-- Worker, customer, farm, machine details and product allocation -->
+			<div id="dash-details">
+				<div id="dash-details-tasklabel"></div>
+				<div class="row mb-2">
+					<div id="dash-details-workerinfo" class="col-6"></div>
+					<div id="dash-details-customerinfo" class="col-6"></div>
+				</div>
+				<div class="row mb-2">
+					<div id="dash-details-farminfo" class="col-6"></div>
+					<div id="dash-details-productallocationinfo" class="col-6"></div>
+				</div>
+				<div class="row">
+					<div id="dash-details-times" class="col-6"></div>
+					<div id="dash-details-tasktimes" class="col-6"></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Tab Machines -->
+		<div class="dash-tab" id="dash-tab-machines">
+			<!-- Machines Table -->
+			<div id="dash-machines-table"></div>
+
+			<!-- Machine Details -->
+			<!-- Device element, device properties, device process data, time logs -->
+			<div id="dash-machine-details">
+				<div id="dash-machine-details-machinelabel"></div>
+				<div class="row mb-2">
+					<div id="dash-machine-details-deviceelementinfo" class="col-6"></div>
+					<div id="dash-machine-details-devicepropertiesinfo" class="col-6"></div>
+				</div>
+				<div class="row">
+					<div id="dash-machine-details-deviceprocessdatainfo" class="col-6"></div>
+					<div id="dash-machine-details-timeloginfo" class="col-6"></div>
+				</div>
+			</div>
+		</div>
+
+		<br />
+	</div>
+	<div data-ng-include="'template/footer.html'"></div>
+</body>
+
+</html>

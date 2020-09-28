@@ -1,0 +1,47 @@
+<#macro linktable name qs>
+
+<h4><i class="fa fa-arrow-right"></i> ${name}</h4>
+
+<table class="table table-bordered">
+<#list qs as e>
+    <tr>
+        <td>
+            <a href="${util.link('uri', e.get('o').toString(), 'prevuri', uri)}"
+                <#if prevuri?? && (e.get('o').toString() == prevuri)>
+                style="color: darkblue;"
+                </#if>
+            >
+                <#if e.contains('o_label')>
+                    ${e.get('o_label')}
+                <#else>
+                    ${e.get('o')}
+                </#if>
+            </a>
+            <br/>
+            via
+            <a href="${e.get('p')}">
+                <#if e.contains('p_label')>
+                    ${e.get('p_label')}
+                <#else>
+                    ${e.get('p')}
+                </#if>
+                <small><i class="fa fa-external-link-alt"></i></small>
+            </a>
+            <br/>
+            <#if e.contains('o_type')>
+                is a
+                <a href="${e.get('o_type')}">
+                    <#if e.contains('o_type_label')>
+                        ${e.get('o_type_label')}
+                    <#else>
+                        ${e.getResource('o_type').getLocalName()}
+                    </#if>
+                    <small><i class="fa fa-external-link-alt"></i></small>
+                </a>
+            </#if>
+        </td>
+    </tr>
+</#list>
+</table>
+
+</#macro>

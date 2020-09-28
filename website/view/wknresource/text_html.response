@@ -1,0 +1,199 @@
+<div class="card ng-scope" >
+	<div class="card-body">
+
+		<!--
+		<div class="row">
+			<div class="col">
+				<h3 class="card-title ng-binding">Task</h3>
+				<h6 class="card-subtitle mb-2 text-muted ng-binding">TSK</h6>
+			</div>
+		</div>
+		<br>
+		<div class="row">
+			<div class="col card-columns">
+				<div class="card ng-hide" >
+					<div class="card-header font-weight-bold">Instance of</div>
+					<ul class="list-group list-group-flush">
+						<li class="list-group-item">
+							<a > ()</a>
+						</li>
+					</ul>
+				</div>
+				<div class="card">
+					<div class="card-header font-weight-bold">Identifier</div>
+					<ul class="list-group list-group-flush">
+						<li class="list-group-item ng-binding">TSK</li>
+					</ul>
+				</div>
+				<div class="card" >
+					<div class="card-header font-weight-bold">Part of</div>
+					<ul class="list-group list-group-flush">
+						<li class="list-group-item ng-scope" >
+							<a >ISO11783_Task Data (ISO11783_TaskData)</a>
+						</li><li class="list-group-item ng-scope" >
+							<a >External File Contents (XFC)</a>
+						</li>
+					</ul>
+				</div>
+				<div class="card" >
+					<div class="card-header font-weight-bold">Parts</div>
+					<ul class="list-group list-group-flush">
+						<li class="list-group-item ng-scope" >
+							<a >Comment Allocation (CAN)</a>
+						</li><li class="list-group-item ng-scope" >
+							<a >Control Assignment (CAT)</a>
+						</li><li class="list-group-item ng-scope" >
+							<a >Connection (CNN)</a>
+						</li><li class="list-group-item ng-scope" >
+							<a >Device Allocation (DAN)</a>
+						</li><li class="list-group-item ng-scope" >
+							<a >Data Log Trigger (DLT)</a>
+						</li><li class="list-group-item ng-scope" >
+							<a >Guidance Allocation (GAN)</a>
+						</li><li class="list-group-item ng-scope" >
+							<a >Grid (GRD)</a>
+						</li><li class="list-group-item ng-scope" >
+							<a >Oper Tech Practice (OTP)</a>
+						</li><li class="list-group-item ng-scope" >
+							<a >Product Allocation (PAN)</a>
+						</li><li class="list-group-item ng-scope" >
+							<a >Time (TIM)</a>
+						</li><li class="list-group-item ng-scope" >
+							<a >Time Log (TLG)</a>
+						</li><li class="list-group-item ng-scope" >
+							<a >Treatment Zone (TZN)</a>
+						</li><li class="list-group-item ng-scope" >
+							<a >Worker Allocation (WAN)</a>
+						</li>
+					</ul>
+				</div>
+				<div class="card" >
+					<div class="card-header font-weight-bold">Subclass of</div>
+					<ul class="list-group list-group-flush">
+						<li class="list-group-item ng-scope" >
+							<a >ISOXML (isoxml)</a>
+						</li>
+					</ul>
+				</div>
+				<div class="card" >
+					<div class="card-header font-weight-bold">SubTypes</div>
+					<ul class="list-group list-group-flush">
+						<li class="list-group-item ng-scope" >
+							<a >taskStatus (G)</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<br>
+		-->
+
+		<div class="row">
+			<div class="col">
+				<h3 class="card-title ng-binding">${about[0].get('label')!uri}</h3>
+				<h6 class="card-subtitle mb-2 text-muted ng-binding">is a
+					<a href="${about[0].get('type')!''}">
+						${about[0].get('type_label')!about[0].get('type')!'(no type found)'}
+					</a>
+				</h6>
+			</div>
+		</div>
+
+		<div class="row" >
+			<div class="col table-responsive">
+				<table class="table w-50">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Value</th>
+						</tr>
+					</thead>
+					<tbody>
+						<#list wknresource as triple>
+						<tr>
+							<td>
+								<a href="${triple.get('p')}" style="white-space: nowrap;">
+									${triple.contains('p_label')?then(triple.get('p_label'),triple.get('p'))}
+									(${triple.getResource('p').getLocalName()})
+								</a>
+							</td>
+							<td>
+								<#if triple.get('o').isResource()>
+								<a href="${util.build().put('uri', triple.get('o').toString()).link()}">
+									${triple.get('o_label')!triple.get('o')}
+								</a>
+								<#else>
+								<#if triple.getLiteral('o').getLexicalForm()?has_content >
+								${triple.getLiteral('o').getLexicalForm()}
+								<#else>
+								<span style="color: lightgray">Empty Value</span>
+								</#if>
+
+								</#if>
+							</td>
+						</tr>
+						</#list>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<div class="row" >
+			<div class="col">
+				<h4>Part of</h4>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Parent</th>
+							<th>Type</th>
+						</tr>
+					</thead>
+					<tbody>
+						<#list partof as parent>
+						<tr>
+							<td>
+								<a href="${util.build().put('uri', parent.get('uri').toString()).link()}">
+									${parent.get('label')!parent.get('uri')}
+								</a>
+							</td>
+							<td>
+								<a href="${parent.get('type')!''}">
+									${parent.get('typeLabel')!parent.get('type')!''}
+								</a>
+							</td>
+						</tr>
+						</#list>
+					</tbody>
+				</table>
+			</div>
+			<div class="col">
+				<h4>Parts</h4>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>Child</th>
+							<th>Type</th>
+						</tr>
+					</thead>
+					<tbody>
+						<#list hasparts as child>
+						<tr>
+							<td>
+								<a href="${util.build().put('uri', child.get('uri').toString()).link()}">
+									${child.get('label')!child.get('uri')}
+								</a>
+							</td>
+							<td>
+								<a href="${child.get('type')!''}">
+									${child.get('typeLabel')!child.get('type')!''}
+								</a>
+							</td>
+						</tr>
+						</#list>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+	</div>
+</div>

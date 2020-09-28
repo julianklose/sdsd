@@ -1,0 +1,16 @@
+select *
+{
+    graph <${graph}> {
+	    <${uri}> dcterms:isPartOf ?uri .
+        optional {
+            ?uri rdfs:label ?label .
+        }
+        optional {
+            ?uri a ?type .
+            graph ?g {
+                ?type rdfs:label ?typeLabel
+            }
+        }
+    }
+}
+order by ?type

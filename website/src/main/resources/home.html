@@ -1,0 +1,538 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<script src="js/jquery.min.js" type="text/javascript"></script>
+		<script src="js/jquery-ui.min.js" type="text/javascript"></script>
+		<script src="js/angular.min.js" type="text/javascript"></script>
+		<script src="js/i18n/angular-locale_de-de.js" type="text/javascript"></script>
+		<script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
+		<script src="js/jquery.datetimepicker.full.min.js" type="text/javascript"></script>
+		<script src="js/scrollglue.js" type="text/javascript"></script>
+		<script src="js/sdsd.js" type="text/javascript"></script>
+		<script src="js/home.js" type="text/javascript"></script>
+
+		<link href="css/bootstrap.css" rel="stylesheet" />
+		<link href="css/jquery-ui.css" rel="stylesheet" />
+		<link href="css/fontawesome.min.css" rel="stylesheet" />
+		<link href="css/jquery.datetimepicker.min.css" rel="stylesheet" />
+
+		<title>SDSD Platform</title>
+		<meta name="description" content="">
+		<meta name="author" content="Julian Klose, Hochschule Osnabrueck">
+		<link rel="shortcut icon" href="img/favicon.ico">
+		<link rel="apple-touch-icon image_src" href="img/apple-touch-icon.png">
+	</head>
+	<body data-ng-app="sdsd" class="container">
+		<div data-ng-include="'template/header.html'"></div>
+		<div data-ng-include="'template/menu.html'"></div>
+
+		<div data-ng-controller="homeCtrl" data-ng-init="init()" data-ng-show="sdsd.username">
+
+			<h2>SDSD File Storage</h2>
+
+			<div class="row">
+				<div class="col-md-12">
+					<h3>
+						<i class="fas fa-file-upload"></i> Upload File
+					</h3>
+
+					<form method="post" action="/rest/upload" enctype="multipart/form-data">
+						<div class="custom-file">
+							<input type="file" class="custom-file-input" id="file" name="files" aria-describedby="uploadInfo" onchange="form.submit()" multiple>
+							<label class="custom-file-label" for="file"><i class="fas fa-file-upload"></i> Choose file</label>
+						</div>
+						<p class="small float-right">Ctrl + Click to choose multiple files</p>
+					</form>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h3><i class="fas fa-database"></i> File Storage</h3>
+				</div>
+				<div class="col-md-4">
+					<input type="text" class="form-control" data-ng-model="searchFile" />
+				</div>
+				<div class="col-md-4">
+					<span class="float-right">
+						<button class="btn btn-info btn-sm" data-ng-click="loadFileList()"><i class="fas fa-sync-alt"></i> Reload</button>
+						<button class="btn btn-danger btn-sm" data-ng-click="deleteSelectedFiles()" data-ng-disabled="multideleteLoading">
+							<i class="fas fa-trash"></i> Delete Selected <i class="fas fa-spinner fa-spin" data-ng-show="multideleteLoading"></i>
+						</button>
+					</span>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12 table-responsive">
+					<div class="pre-scrollable">
+						<table class="table">
+							<thead>
+								<tr>
+									<th><input type="checkbox" value="" data-ng-model="allFilesSelected" /></th>
+									<th>Name</th>
+									<th>Size</th>
+									<th>Type</th>
+									<th>Action</th>
+								</tr>
+							</thead>
+							<tbody class="block pre-scrollable">
+								<tr data-ng-repeat="f in filelist | search:searchFile:'filename'" style="white-space: nowrap;" title="
+Id: {{f.id}}
+Source: {{f.source}}
+Created: {{f.created | date:'medium'}}
+Last Modified: {{f.lastmodified | date:'medium'}}
+Leveraged: {{f.leveraged | date:'medium'}}
+Expires: {{f.expires | date:'mediumDate'}}
+">
+									<td><input type="checkbox" value="" data-ng-model="f.selected" /></td>
+									<td>
+										<span data-ng-show="!f.editName">
+											<a data-ng-show="!f.type.endsWith('=efdiTimelog') && !f.type.endsWith('=gps')" data-ng-href="/rest/download/{{f.id}}" data-html="true">{{f.filename}}</a>
+											<a data-ng-show="f.type.endsWith('=efdiTimelog') || f.type.endsWith('=gps')" data-ng-href="/telemetry.html#{{f.id}}" data-html="true">{{f.filename}}</a>
+											<i class="fas fa-pen" data-ng-click="f.editName = true" style="font-size:0.8em;cursor:pointer;"></i>
+										</span>
+										<input type="text" class="form-control"
+											data-ng-show="f.editName"
+											data-ng-model="f.filename" placeholder="filename"
+											data-ng-enter="renameFile(f)" /> 
+									</td>
+									<td>{{f.size}}</td>
+									<td>
+										<span data-ng-show="!f.editType">
+											<a data-ng-href="{{f.type | relative}}">{{f.typename}}</a> 
+											<i class="fas fa-pen" data-ng-click="f.editType = true" style="font-size:0.8em;cursor:pointer;"></i>
+										</span>
+										<select data-ng-show="f.editType" class="form-control" data-ng-model="f.type" data-ng-change="saveFileType(f)"
+												data-ng-options="type.value as type.label for type in types">
+										</select>
+									</td>
+									<td>
+										<div class="btn-group" role="group" aria-label="File actions">
+											<a data-ng-href="/rest/download/{{f.id}}" class="btn btn-success btn-sm"><i class="fas fa-download"></i></a>
+											<div data-ng-if="f.type.endsWith('efdiTimelog')" class="btn-group" role="group" aria-label="EFDI download">
+												<button type="button" class="btn btn-success btn-sm dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+													<span class="sr-only">Toggle Dropdown</span>
+												</button>
+												<div class="dropdown-menu">
+													<a class="dropdown-item" data-ng-href="/rest/isoxml/{{f.id}}">ISOXML</a>
+												</div>
+											</div>
+											<button data-ng-click="toggleCoreData(f)" 
+													data-ng-class="['btn', f.coredata ? 'btn-primary' : 'btn-light', 'btn-sm']">
+												<i class="fas fa-thumbtack"></i>
+											</button>
+											<button data-ng-click="deleteFiles([f.id])" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Delete</button>
+											<!-- button data-ng-click="leverageFiles([f.id])" class="btn btn-success btn-sm"><i class="fas fa-level-up-alt"></i> Leverage</button-->
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+				</div>
+			</div>
+
+			<div class="row mt-2">
+				<div class="col-md-12 table-responsive">
+					<h3>
+						<i class="fas fa-save"></i> Storage Tasks
+						
+						<span class="float-right">
+							<button class="btn btn-info btn-sm" data-ng-click="loadStorageTasks()"><i class="fas fa-sync-alt"></i> Reload</button>
+						</span>
+					</h3>
+					
+					<!--
+					"label": "Name des Speicherauftrags",
+					"type": { "value": "Name des Typs", "equals": true/false } or undefined,
+					"source": { "value": "Endpunkt-ID", "equals": true/false } or undefined,
+					"from": "2018-07-06T12:31:53.52Z" or undefined,
+					"until": "2018-08-06T12:31:53.52Z" or undefined,
+					"storeUntil": "2018-09-06T12:31:53.52Z" or undefined,
+					"storeFor": 30(Anzahl Tage) or undefined
+					-->
+					
+					<datalist id="type">
+						<option data-ng-repeat="type in types" value="{{type.value}}">{{type.label}}</option>
+					</datalist>
+					
+					<datalist id="endpoint">
+						<option data-ng-repeat="ep in endpoints.sender" value="{{ep.id}}">{{ep.name}}</option>
+					</datalist>
+					
+					<div class="pre-scrollable">
+						<table class="table table-bordered">
+							<thead>
+	
+								<tr>
+									<th>Label</th>
+									
+									<th>Type</th>
+									<th>Source</th>
+									
+									<th>From</th>
+									<th>Until</th>
+									
+									<th>Effect</th>
+									<th>Action</th>
+								</tr>
+	
+								<tr>
+									<td><input type="text" class="form-control" data-ng-model="storageConf.label" placeholder="Give a Name" /></td>
+									
+									<td>
+										<input type="checkbox" data-ng-model="storageConf.type.equals" /> {{ storageConf.type.equals ? '=' : '≠'}}
+										<input type="text" class="form-control" list="type" data-ng-model="storageConf.type.value" placeholder="Message's Datatype"/>
+									</td>
+									<td>
+										<input type="checkbox" data-ng-model="storageConf.source.equals" /> {{ storageConf.source.equals ? '=' : '≠'}}
+										<input type="text" class="form-control" list="endpoint" data-ng-model="storageConf.source.value" placeholder="Datasource"/>
+									</td>
+									
+									<td>
+										<input type="text" class="form-control datepicker" data-date-format="yyyy-mm-dd" 
+												data-ng-model="storageConf.created.from" placeholder="Created From" />
+									</td>
+									<td>
+										<input type="text" class="form-control datepicker" data-date-format="yyyy-mm-dd" 
+												data-ng-model="storageConf.created.until" placeholder="Created Until" />
+									</td>
+									
+									<td>
+										<input type="radio" name="storeconf" value="for" data-ng-model="storageConf.storeType" /> 
+												Store For <input type="number" class="form-control" data-ng-model="storageConf.storeFor" /> Days
+										<br/>
+										<input type="radio" name="storeconf" value="until" data-ng-model="storageConf.storeType" /> 
+												Store Until<input type="text" class="form-control datepicker" data-date-format="yyyy-mm-dd" data-ng-model="storageConf.storeUntil" />
+									</td>
+									
+									<td>
+										<button data-ng-click="addStorageTask()" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Add</button>
+									</td>
+								</tr>
+	
+							</thead>
+							<tbody>
+	
+								<tr data-ng-repeat="storageTask in storageTasks">
+									<td>{{storageTask.label}}</td>
+									
+									<td>
+										<span data-ng-show="storageTask.type">{{storageTask.type.equals ? '=' : '≠'}} {{storageTask.type.value}}</span>
+										<span data-ng-hide="storageTask.type"><i class="fa fa-asterisk"></i></span>
+									</td>
+									<td>
+										<span data-ng-show="storageTask.source">{{storageTask.source.equals ? '=' : '≠'}} {{storageTask.source.value}}</span>
+										<span data-ng-hide="storageTask.source"><i class="fa fa-asterisk"></i></span>
+									</td>
+									
+									<td>
+										<span data-ng-show="storageTask.created.from">{{storageTask.created.from  | date:'mediumDate'}}</span>
+										<span data-ng-hide="storageTask.created.from"><i class="fa fa-asterisk"></i></span>
+									</td>
+									<td>
+										<span data-ng-show="storageTask.created.until">{{storageTask.created.until | date:'mediumDate'}}</span>
+										<span data-ng-hide="storageTask.created.until"><i class="fa fa-asterisk"></i></span>
+									</td>
+									
+									<td>
+										<span data-ng-show="storageTask.storeUntil">Store Until {{storageTask.storeUntil | date:'mediumDate'}}</span>
+										<span data-ng-show="storageTask.storeFor">Store For {{storageTask.storeFor}} Days</span>
+									</td>
+									
+									<td><button data-ng-click="deleteStorageTask(storageTask)" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Delete</button></td>
+								</tr>
+	
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="col-md-12">
+					<h3>
+						<i class="far fa-comment-alt"></i> Log
+						
+						<span class="float-right">
+							<button class="btn btn-danger btn-sm" data-ng-click="clearLogList()"><i class="fas fa-trash"></i> Clear</button>
+							<button class="btn btn-info btn-sm" data-ng-click="loadLogList()"><i class="fas fa-sync-alt"></i> Reload</button>
+						</span>
+					</h3>
+
+					<div scroll-glue style="height: 30ex; overflow-y: scroll; border: 1px solid gray;">
+						<span data-ng-repeat="log in loglist"><br/>{{log.time | date:'medium'}} {{log.type}}: {{log.text}}</span>
+					</div>
+				</div>
+			</div>
+
+			<hr/>
+
+			<h2>agrirouter Linkage</h2>
+
+			<div class="row">
+				<div class="col-md-4">
+					<h3>
+						<i class="fas fa-wifi"></i> Connect to the agrirouter
+					</h3>
+					<div class="form-group" data-ng-show="!onboarded">
+						Before using the send feature you have to connect SDSD to your <img
+							src="img/agrirouter.png" /> account. <br /> <br />
+						<table>
+							<tr>
+								<td>
+									<button class="btn btn-primary" data-ng-click="startSecureOnboarding(false, true)" data-ng-disabled="onboardLoading">
+										Onboard MQTT Production <i class="fas fa-spinner fa-spin" data-ng-show="onboardLoading"></i>
+									</button>
+								</td>
+								<td>
+									<button class="btn btn-primary" data-ng-click="startSecureOnboarding(true, true)" data-ng-disabled="onboardLoading">
+										Onboard MQTT QA <i class="fas fa-spinner fa-spin" data-ng-show="onboardLoading"></i>
+									</button>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<button class="btn btn-primary" data-ng-click="startSecureOnboarding(false, false)" data-ng-disabled="onboardLoading">
+										Onboard REST Production <i class="fas fa-spinner fa-spin" data-ng-show="onboardLoading"></i>
+									</button>
+								</td>
+								<td>
+									<button class="btn btn-primary" data-ng-click="startSecureOnboarding(true, false)" data-ng-disabled="onboardLoading">
+										Onboard REST QA<i class="fas fa-spinner fa-spin" data-ng-show="onboardLoading"></i>
+									</button>
+								</td>
+							</tr>
+						</table>
+					</div>
+					<div class="form-group" data-ng-show="onboarded">
+						The connection expires in {{expireDays}} days. <br /> <br />
+						<p class="mb-2" data-ng-show="mqtt">
+							<button class="btn btn-success" data-ng-click="reconnect()" data-ng-disabled="reconnecting || onboardLoading || offboardLoading">
+								Reconnect MQTT <i class="fas fa-spinner fa-spin" data-ng-show="reconnecting"></i>
+							</button>
+						</p>
+						<button class="btn btn-primary" data-ng-click="reonboard()" data-ng-disabled="reconnecting || onboardLoading || offboardLoading">
+							Reonboard <span data-ng-show="mqtt">MQTT </span><span data-ng-show="qa">QA </span><i class="fas fa-spinner fa-spin" data-ng-show="onboardLoading"></i>
+						</button>
+						<button class="btn btn-danger" data-ng-click="offboard()" data-ng-disabled="reconnecting || onboardLoading || offboardLoading">
+							Disconnect <span data-ng-show="mqtt">MQTT </span><span data-ng-show="qa">QA </span><i class="fas fa-spinner fa-spin"
+										  data-ng-show="offboardLoading"></i>
+						</button>
+					</div>
+				</div>
+				<div class="col-md-8 table-responsive" data-ng-show="onboarded">
+					<h3>
+						<i class="fas fa-project-diagram"></i> Registered Application Endpoints<span class="float-right">
+							<button class="btn btn-info btn-sm"
+									data-ng-click="loadEndpointList(true)" data-ng-disabled="!onboarded || endpointLoading">
+								<i class="fas fa-sync-alt"></i> Reload <i class="fas fa-spinner fa-spin" data-ng-show="endpointLoading"></i>
+							</button>
+						</span>
+					</h3>
+
+					<div class="pre-scrollable">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Type</th>
+									<th>Active</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr data-ng-repeat="e in endpoints.all">
+									<td>{{e.name}}</td>
+									<td>{{e.type}}</td>
+									<td>{{e.active}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+				</div>
+			</div>
+
+			<h3 data-ng-show="onboarded">
+				<i class="fas fa-exchange-alt"></i> Send/Receive Files 
+			</h3>
+			<div class="row" data-ng-show="onboarded">
+				<div class="col-md-3"></div>
+				<div class="col-md-2 align-self-center text-center">
+					<button class="btn btn-primary w-100 my-1" data-ng-click="receiveFiles()" 
+							data-ng-disabled="!onboarded || receiveLoading || receiveRecentLoading" data-ng-show="!receiveLoading || cancelReceiving">
+						Receive all <i class="fas fa-spinner fa-spin" data-ng-show="receiveLoading || receiveRecentLoading"></i>
+					</button>
+					<button class="btn btn-primary w-100 my-1" data-ng-click="cancelReceiveFiles()" data-ng-show="receiveLoading && !cancelReceiving">
+						Cancel
+					</button>
+				</div>
+				<div class="col-md-2 align-self-center text-center">
+					<button class="btn btn-primary w-100" data-ng-click="receiveRecentFiles()" 
+							data-ng-disabled="!onboarded || receiveLoading || receiveRecentLoading" data-ng-show="!receiveRecentLoading || cancelReceivingRecent">
+						Receive from today <i class="fas fa-spinner fa-spin" data-ng-show="receiveLoading || receiveRecentLoading"></i>
+					</button>
+					<button class="btn btn-primary w-100" data-ng-click="cancelReceiveRecentFiles()" data-ng-show="receiveRecentLoading && !cancelReceivingRecent">
+						Cancel
+					</button>
+				</div>
+				<div class="col-md-2 align-self-center text-center">
+					<button class="btn btn-primary w-100 my-1" data-ng-click="clearFeed()" data-ng-disabled="!onboarded || clearfeedLoading">
+						Clear feed <i class="fas fa-spinner fa-spin" data-ng-show="clearfeedLoading"></i>
+					</button>
+				</div>
+			</div>
+			<div class="row" data-ng-show="onboarded">
+				<div class="col-md-6 table-responsive">
+					<div class="d-flex">
+						<h3 class="mr-3">Files</h3>
+						<input type="text" class="flex-grow-1 form-control" data-ng-model="searchSend" />
+					</div>
+
+					<div class="pre-scrollable">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Send</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr data-ng-repeat="f in filelist | search:searchSend:'filename'" style="white-space: nowrap;">
+									<td>{{f.filename}}</td>
+									<td><input type="checkbox" data-ng-model="f.selectedSend" data-ng-disabled="f.cantSend" data-ng-change="checkCapabilities(false)" /></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="col-md-2 align-self-center text-center">
+					<button class="btn btn-primary w-100 my-1" data-ng-click="sendFiles()" data-ng-disabled="!onboarded || sendLoading">
+						Send <i class="fas fa-spinner fa-spin" data-ng-show="sendLoading"></i>
+					</button>
+					<button class="btn btn-primary w-100 my-1" data-ng-click="publishFiles()" data-ng-disabled="!onboarded || publishLoading">
+						Publish <i class="fas fa-spinner fa-spin" data-ng-show="publishLoading"></i>
+					</button>
+				</div>
+				<div class="col-md-4 table-responsive">
+					<h3>Endpoints</h3>
+
+					<div class="pre-scrollable">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Send</th>
+									<th>Name</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr data-ng-repeat="e in endpoints.receiver">
+									<td><input type="checkbox" data-ng-model="e.selectedSend" data-ng-disabled="e.cantSend || !e.active" data-ng-change="checkCapabilities(true)" class="form-check" /></td>
+									<td>{{e.name}}</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+
+			<div class="row mt-3" data-ng-show="onboarded">
+				<div class="col-md-6 table-responsive">
+					<h3>
+						<i class="fas fa-file-contract"></i> Capabilities 
+						<span
+							class="float-right">
+							<button class="btn btn-info btn-sm" 
+									data-ng-click="loadCapabilities()" 
+									data-ng-disabled="!onboarded">
+								<i class="fas fa-sync-alt"></i> Reload
+							</button>
+						</span>
+					</h3>
+					
+					<datalist id="direction">
+						<option value="0">SEND</option>
+						<option value="1">RECEIVE</option>
+						<option value="2">SEND_RECEIVE</option>
+					</datalist>
+					
+					<table class="table table-sm">
+						<thead>
+							<tr>
+								<th>Type</th>
+								<th>Direction</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat="c in caps.capabilities">
+								<td>{{c.name}}</td>
+								<td>
+									<select class="form-control" data-ng-model="c.direction">
+										<option data-ng-value="undefined">NONE</option>
+										<option data-ng-value="0">SEND</option>
+										<option data-ng-value="1">RECEIVE</option>
+										<option data-ng-value="2">SEND_RECEIVE</option>
+									</select>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					
+					<h4>Push Notifications</h4>
+					<select class="form-control" data-ng-model="caps.pushNotifications">
+						<option data-ng-value="0">DISABLED</option>
+						<option data-ng-value="1">ENABLED</option>
+						<option data-ng-value="2">ENABLED_HIGH_FREQUENCY</option>
+					</select>
+					
+					<button class="btn btn-primary mt-2" data-ng-click="sendCapabilities()" data-ng-disabled="!onboarded || sendCapLoading">
+						Send <i class="fas fa-spinner fa-spin" data-ng-show="sendCapLoading"></i>
+					</button>
+
+				</div>
+				<div class="col-md-2"></div>
+				<div class="col-md-4 table-responsive">
+					<h3>
+						<i class="fas fa-check-double"></i> Subscriptions 
+						<span
+							class="float-right">
+							<button class="btn btn-info btn-sm" 
+									data-ng-click="loadSubList()" 
+									data-ng-disabled="!onboarded">
+								<i class="fas fa-sync-alt"></i> Reload
+							</button>
+						</span>
+					</h3>
+					
+					<table>
+						<thead>
+							<tr>
+								<th class="align-middle p-1"><input class="form-check" type="checkbox" id="suball" data-ng-model="suball" /></th>
+								<th class="align-middle p-1"><label class="m-0" for="suball">Select all</label></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat="s in sublist">
+								<td class="align-middle px-2"><input class="form-check" type="checkbox" id="sub{{$index}}" data-ng-model="s.active" /></td>
+								<td class="align-middle"><label class="m-0" for="sub{{$index}}">{{s.name}}</label></td>
+							</tr>
+						</tbody>
+					</table>
+					
+					<button class="btn btn-primary mt-2" data-ng-click="sendSubs()" data-ng-disabled="!onboarded || sendsubLoading">
+						Send <i class="fas fa-spinner fa-spin" data-ng-show="sendsubLoading"></i>
+					</button>
+
+				</div>
+			</div>
+			<br/>
+			<br/>
+			<br/>
+		</div>
+
+		<div data-ng-include="'template/footer.html'"></div>
+	</body>
+</html>

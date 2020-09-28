@@ -1,0 +1,260 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<script src="js/jquery.min.js" type="text/javascript"></script>
+		<script src="js/jquery-ui.min.js" type="text/javascript"></script>
+		<script src="js/angular.min.js" type="text/javascript"></script>
+		<script src="js/i18n/angular-locale_de-de.js" type="text/javascript"></script>
+		<script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
+		<script src="js/jquery.datetimepicker.full.min.js" type="text/javascript"></script>
+		<script src="js/scrollglue.js" type="text/javascript"></script>
+		<script src="js/sdsd.js" type="text/javascript"></script>
+		<script src="js/servicecreator.js" type="text/javascript"></script>
+
+		<link href="css/bootstrap.css" rel="stylesheet" />
+		<link href="css/jquery-ui.css" rel="stylesheet" />
+		<link href="css/fontawesome.min.css" rel="stylesheet" />
+		<link href="css/jquery.datetimepicker.min.css" rel="stylesheet" />
+		<style type="text/css">
+			.ui-autocomplete { z-index:2147483647; }
+		</style>
+
+		<title>SDSD Service Developer</title>
+		<meta name="description" content="">
+		<meta name="author" content="Julian Klose, Hochschule Osnabrueck">
+		<link rel="shortcut icon" href="img/favicon.ico">
+		<link rel="apple-touch-icon image_src" href="img/apple-touch-icon.png">
+	</head>
+	<body data-ng-app="sdsd" class="container">
+		<div data-ng-include="'template/header.html'"></div>
+		<div data-ng-include="'template/menu.html'"></div>
+
+		<div data-ng-controller="service_creator" data-ng-init="init()" data-ng-show="sdsd.username">
+			<div class="row">
+				<div class="col-md-12 table-responsive">
+					<h3>
+						<i class="fas fa-plus"></i> Service Provider 
+					</h3>
+
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Token</th>
+								<th>Name</th>
+								<th>Added</th>
+								<th>Visible</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat="s in myservicelist" style="white-space: nowrap;">
+								<td><span style="cursor:pointer;" data-ng-click="copyToClipboard(s.token)"><i class="fas fa-clipboard"></i> Copy Token</span></td>
+								<td>{{s.name}}</td>
+								<td>{{s.added | date:'mediumDate'}}</td>
+								<td>{{s.visible}}</td>
+								<td>
+									<button data-ng-click="showInstances(s)" class="btn btn-sm"><i class="fas fa-search"></i> Instances</button>
+									<button data-ng-show="!s.visible" data-ng-click="setVisible(s, true)" class="btn btn-success btn-sm"><i class="fas fa-eye"></i> Show</button>
+									<button data-ng-show="s.visible" data-ng-click="setVisible(s, false)" class="btn btn-warning btn-sm"><i class="fas fa-eye-slash"></i> Hide</button>
+									<button data-ng-click="delete(s)" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i> Delete</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+			</div>
+			
+			<div class="row" data-ng-show="showInstance">
+				<div class="col-md-12 table-responsive">
+					<h4>{{showInstance.name}} Instances</h4>
+					<button class="btn btn-sm float-right" data-ng-click="showInstances()"><i class="fas fa-minus"></i> Hide</button>
+
+					<table class="table">
+						<thead>
+							<tr>
+								<th></th>
+								<th>Token</th>
+								<th>User</th>
+								<th>Activated</th>
+								<th>Completed</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr data-ng-repeat="s in showInstance.list" style="white-space: nowrap;">
+								<td><i data-ng-show="s.error" class="fas fa-exclamation text-danger" title="{{s.error}}"></i></td>
+								<td><span style="cursor:pointer;" data-ng-click="copyToClipboard(s.token)"><i class="fas fa-clipboard"></i> Copy Token</span></td>
+								<td>{{s.user}}</td>
+								<td>{{s.activated | date:'medium'}}</td>
+								<td>{{s.completed | date:'medium'}}</td>
+								<td>
+									<button data-ng-show="!s.completed" data-ng-click="setError(s)" class="btn btn-danger btn-sm"><i class="fas fa-exclamation"></i> Error</button>
+									<button data-ng-show="!s.completed" data-ng-click="complete(s)" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Complete</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+			</div>
+
+			<br/>
+			
+			<div class="row">
+				<div class="col-md-12">
+					<h3>
+						<i class="fas fa-plus"></i> Create Service
+					</h3>
+
+					<div class="form-group">
+						<h4>Service Name: </h4>
+						<input type="text" class="form-control" data-ng-model="input.name" placeholder="Service Name"/>
+					</div>
+						
+					<div class="form-group">
+						<h4 class="mb-2">
+							<button type="button" class="btn btn-outline-success" data-ng-click="addItem(input.parameter, {type:'string'})">
+								<i class="fas fa-plus"></i>
+							</button>
+							Parameter
+						</h4>
+						<div class="input-group" data-ng-repeat="p in input.parameter">
+							<div class="input-group-prepend">
+								<button type="button" class="btn btn-outline-danger" data-ng-click="deleteItem(input.parameter, p)">
+									<i class="fas fa-times"></i>
+								</button>
+							</div>
+							<input type="text" class="form-control" data-ng-model="p.name" placeholder="Parameter name">
+							<div class="input-group-append">
+								<button type="button" class="btn btn-outline-secondary" data-toggle="modal" 
+										data-target="#parameterModal" data-ng-click="editParameter(p)">
+									{{p.type}} <i class="fas fa-cog"></i>
+								</button>
+							</div>
+						</div>
+						<small class="form-text text-muted">Set parameters the server need to know from the user.</small>
+					</div>
+					
+					<div class="form-group">
+						<h4 class="mb-2">
+							<button type="button" class="btn btn-outline-success" data-ng-click="addItem(input.access)">
+								<i class="fas fa-plus"></i>
+							</button>
+							Access
+						</h4>
+						<div class="input-group" data-ng-repeat="a in input.access">
+							<div class="input-group-prepend">
+								<button type="button" class="btn btn-outline-danger" data-ng-click="deleteItem(input.access, a)">
+									<i class="fas fa-times"></i>
+								</button>
+							</div>
+							<input type="text" class="form-control" data-ng-model="a.uri" placeholder="Data type" data-ng-autocomplete="autocomplete.types">
+						</div>
+						<small class="form-text text-muted">Set the Wikinormia data types the service needs to access.</small>
+					</div>
+					
+					<div class="form-group">
+						<button class="btn btn-primary" data-ng-click="create()"><i class="fas fa-plus"></i> Create</button>
+						
+						<div class="alert alert-success" data-ng-show="createSuccess">
+							Service successful created.
+						</div>
+					</div>
+
+				</div>
+			</div>
+			
+			<div class="modal fade" id="parameterModal" tabindex="-1" role="dialog" aria-labelledby="parameterModalTitle" aria-hidden="true">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="parameterModalTitle">Specify parameter {{parameterModal.parameter.name}}</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<form>
+								<div class="form-group">
+									<label>Label <input type="text" class="form-control" data-ng-model="parameterModal.parameter.label" placeholder="Label" /></label>
+									<small class="form-text text-muted">Label of the parameter for the user.</small>
+								</div>
+								<div class="form-group">
+									<label style="width:100%">Description <input type="text" class="form-control" data-ng-model="parameterModal.parameter.description" placeholder="Description" /></label>
+									<small class="form-text text-muted">What is the parameter used for?</small>
+								</div>
+								<div class="form-group">
+									<div class="form-check form-check-inline">
+										<label class="form-check-label">
+											<input type="radio" class="form-check-input" data-ng-model="parameterModal.parameter.type" value="string" 
+													autocomplete="off"> String
+										</label>
+									</div>
+									<div class="form-check form-check-inline">
+										<label class="form-check-label">
+											<input type="radio" class="form-check-input" data-ng-model="parameterModal.parameter.type" value="number" 
+													autocomplete="off"> Number
+										</label>
+									</div>
+									<div class="form-check form-check-inline">
+										<label class="form-check-label">
+											<input type="radio" class="form-check-input" data-ng-model="parameterModal.parameter.type" value="datetime" 
+													autocomplete="off"> Date/Time
+										</label>
+									</div>
+									<div class="form-check form-check-inline">
+										<label class="form-check-label">
+											<input type="radio" class="form-check-input" data-ng-model="parameterModal.parameter.type" value="element" 
+													autocomplete="off"> Element
+										</label>
+									</div>
+									<div class="form-check form-check-inline">
+										<label class="form-check-label">
+											<input type="radio" class="form-check-input" data-ng-model="parameterModal.parameter.type" value="file" 
+													autocomplete="off"> File
+										</label>
+									</div>
+								</div>
+								<div class="form-group" data-ng-show="parameterModal.parameter.type == 'number'">
+									<label>Min <input type="number" class="form-control" data-ng-model="parameterModal.parameter.min"></label>
+									<label>Max <input type="number" class="form-control" data-ng-model="parameterModal.parameter.max"></label>
+									<label>Step <input type="number" class="form-control" data-ng-model="parameterModal.parameter.step"></label>
+									<small class="form-text text-muted">Set the minimum, maximum and step size of the number.</small>
+								</div>
+								<div class="form-group" data-ng-show="parameterModal.parameter.type == 'datetime'">
+									<label>From <input type="text" class="form-control datetimepicker" data-ng-model="parameterModal.parameter.from"></label>
+									<label>Until <input type="text" class="form-control datetimepicker" data-ng-model="parameterModal.parameter.until"></label>
+									<small class="form-text text-muted">Set the minimum and maximum datetime.</small>
+								</div>
+								<div class="form-group" data-ng-show="parameterModal.parameter.type == 'element'">
+									<label style="width:100%">URI <input type="text" class="form-control" data-ng-model="parameterModal.parameter.uri" placeholder="Element type" data-ng-autocomplete="autocomplete.types"></label>
+									<small class="form-text text-muted">Set the wikinormia URI of the element type.</small>
+									<label>Min <input type="number" class="form-control" min="0" step="1" data-ng-model="parameterModal.parameter.min"></label>
+									<label>Max <input type="number" class="form-control" min="0" step="1" data-ng-model="parameterModal.parameter.max"></label>
+									<small class="form-text text-muted">Set the minimum and maximum number of elements.</small>
+								</div>
+								<div class="form-group" data-ng-show="parameterModal.parameter.type == 'file'">
+									<label>Min <input type="number" class="form-control" min="0" step="1" data-ng-model="parameterModal.parameter.min"></label>
+									<label>Max <input type="number" class="form-control" min="0" step="1" data-ng-model="parameterModal.parameter.max"></label>
+									<small class="form-text text-muted">Set the minimum and maximum number of files.</small>
+								</div>
+							</form>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<br/>
+			<br/>
+			<br/>
+		</div>
+
+		<div data-ng-include="'template/footer.html'"></div>
+	</body>
+</html>

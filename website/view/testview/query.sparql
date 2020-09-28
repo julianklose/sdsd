@@ -1,0 +1,3 @@
+select * from <sdsd:5c9259239db21212867ef95b>
+where { ?subject ?predicate ?object }
+limit 10

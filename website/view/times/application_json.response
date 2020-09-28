@@ -1,0 +1,5 @@
+<#import "../macros.ftl" as m />
+
+{
+    resultset: <@m.resultset2json resultset=times></@m.resultset2json>
+}

@@ -1,0 +1,178 @@
+
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<script src="js/jquery.min.js" type="text/javascript"></script>
+		<script src="js/jquery-ui.min.js" type="text/javascript"></script>
+		<script src="js/angular.min.js" type="text/javascript"></script>
+		<script src="js/i18n/angular-locale_de-de.js" type="text/javascript"></script>
+		<script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
+		<script src="js/jquery.datetimepicker.full.min.js" type="text/javascript"></script>
+		<script src="js/scrollglue.js" type="text/javascript"></script>
+		<script src="js/sdsd.js" type="text/javascript"></script>
+		<script src="js/simulator.js" type="text/javascript"></script>
+
+		<link href="css/bootstrap.css" rel="stylesheet" />
+		<link href="css/jquery-ui.css" rel="stylesheet" />
+		<link href="css/fontawesome.min.css" rel="stylesheet" />
+		<link href="css/jquery.datetimepicker.min.css" rel="stylesheet" />
+		<link href="css/simulator.css" rel="stylesheet" />		
+
+		<title>SDSD Telemetry Simulator</title>
+		<meta name="description" content="">
+		<meta name="author" content="Julian Klose, Hochschule Osnabrueck">
+		<link rel="shortcut icon" href="img/favicon.ico">
+		<link rel="apple-touch-icon image_src" href="img/apple-touch-icon.png">
+	</head>
+	<body data-ng-app="sdsd" class="container">
+		<div data-ng-include="'template/header.html'"></div>
+		<div data-ng-include="'template/menu.html'"></div>
+
+		<div data-ng-controller="simulator" data-ng-init="init()" data-ng-show="sdsd.username">
+			<h3>
+				<i class="fas fa-magic"></i> Telemetry Simulator 
+			</h3>
+	
+			<div class="row" data-ng-show="!progress">
+				<div class="col-md-1"></div>
+				<div class="col-md-10">
+					<div class="card" style="border: 1px solid gray;">
+						<div class="card-header"><h4>Simulation Setup<i class="fas fa-spinner fa-spin" data-ng-show="simulatorLoading"></i></h4></div>
+						<div class="card-body">
+							<div class="row">	
+								<div class="form-group col-5">
+									<label class="control-label">Sourcefile: </label>
+									<div>
+										<select class="form-control input-sm" data-ng-model="file" data-ng-options="f as f.filename for f in filelist">
+											<option style="display:none" value="" selected>Please choose a file</option>
+										</select>
+									</div>
+								</div>
+								
+								<div class="form-group col-7" data-ng-show="file">	
+									<label class="control-label">Timelog: </label>
+									<div>
+										<select class="form-control input-sm" data-ng-model="options.name">
+											<option value="" selected>All timelogs</option>						
+											<option data-ng-repeat="tl in file.timelogs | toArray | orderBy:'key'" value="{{tl.key}}">
+												{{tl.key}} {{tl.device}} ({{tl.count}}) [{{tl.from | date:'medium'}} - {{tl.until | date:'medium'}}]
+											</option>
+										</select>
+									</div>
+								</div>
+							</div>	
+							<div class="row">
+								<div class="form-group col-2" data-toggle="tooltip" data-placement="bottom" 
+										title="Skip the first X timelogs.">
+									<label>Skip initial: </label><input type="number" class="form-control" data-ng-model="options.skip" min="0" step="1" placeholder="Skip"/>
+								</div>
+								<div class="form-group col-2" data-toggle="tooltip" data-placement="bottom" 
+										title="Message send interval in seconds.">
+									<label>Interval (sec): </label><input type="number" class="form-control" data-ng-model="options.interval" step="1" placeholder="Interval"/>
+								</div>
+								<div class="form-group col-2" data-toggle="tooltip" data-placement="bottom" 
+										title="Replay the timelog in x-times speed.">
+									<label>Scale (x-times): </label><input type="number" class="form-control" data-ng-model="options.scale" min="0.1" step="0.1" max="100" placeholder="Scale"/>
+								</div>
+								<div class="form-group col-2" data-toggle="tooltip" data-placement="bottom" 
+										title="Loops the whole simulation endlessly.">
+									<div class="checkbox">
+										<label class="form-check-label mb-2">						
+										<input type="checkbox" class="form-control" data-ng-model="options.endless"/>
+										<span class="cr"><i class="cr-icon fas fa-check"></i></span>
+										Endless Loop
+										</label>
+									</div>
+								</div>
+								<div class="form-group col-4" data-toggle="tooltip" data-placement="bottom" 
+										title="Replace the timestamps relative to the given time.">
+									<div class="checkbox">
+										<label class="form-check-label mb-2">						
+										<input type="checkbox" class="form-control" data-ng-model="options.replaceTime"/>
+										<span class="cr"><i class="cr-icon fas fa-check"></i></span>
+										Replace Time 
+										</label>
+									</div>
+								
+									<div data-ng-show="options.replaceTime">
+										<div class="input-group">
+											<div class="input-group-prepend">
+												<span class="input-group-text">Start:</span>
+											</div>
+											<input type="text" class="form-control form-datepicker" data-ng-model="options.replaceTimestamp" />
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div data-ng-show="file" class="card-footer text-center">
+							<button class="btn btn-lg btn-primary" data-ng-click="simulate()" 
+									data-ng-disabled="simulatorLoading || noTimelogs">Start Simulation</button>
+<!-- 							<button class="btn btn-lg btn-primary" data-ng-click="sendEntire()" 
+									data-ng-disabled="simulatorLoading || noTimelogs">Send at once</button> -->
+							<a data-ng-href="/rest/efdi/{{file.id}}?timelog={{options.name}}&skip={{options.skip}}&replaceTime={{options.replaceTimestamp}}">
+								<button class="btn btn-lg btn-primary" data-ng-disabled="simulatorLoading || noTimelogs">Export</button>
+							</a>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-1"></div>
+			</div>
+			<div class="row" data-ng-show="progress">
+				<div class="col-md-1"></div>
+				<div class="col-md-10">
+					<div class="card" style="width: 100%; height: 100%; border: 1px solid gray;">
+						<div class="card-header">
+							<h4>Simulation Progress</h4>
+						</div>
+						<div class="card-body">
+							<div class="row my-0">
+								<div class="col-md-2" data-toggle="tooltip" data-placement="bottom" title="Message send interval in seconds.">
+									<i class="fas fa-history" style="transform: scale(-1, 1)"></i> {{progress.interval}}s
+								</div>
+								<div class="col-md-2" data-toggle="tooltip" data-placement="bottom" title="Replay the timelog in x-times speed.">
+									<i class="fas fa-forward"></i> {{progress.scale}}x
+								</div>
+								<div class="col-md-4" data-toggle="tooltip" data-placement="bottom" title="Replace the timestamps relative to the given time.">
+									<span data-ng-show="progress.replaceTime"><i class="fas fa-user-clock"></i> {{progress.replaceTime | date:'medium'}}</span>
+								</div>
+								<div class="col-md-4 text-right" data-toggle="tooltip" data-placement="bottom" title="Estimated time of completion.">
+									<i class="fas fa-stopwatch"></i>ETA {{progress.simulation.end | date:'mediumTime'}}
+								</div>
+							</div>
+							<div class="row my-0">
+								<div class="col-md-12">
+									<div class="progress">
+										<span class="progress-title">{{progress.name}}</span>
+										<div id="progress-bar-timelogs" class="progress-bar" style="width:1%; background:#0FA3DD;"></div>
+										<span class="progress-value"><i class="fas fa-box"></i>[{{progress.position.current}}/{{progress.position.size}}]</span>
+										<span class="progress-start">{{progress.timeLog.start | date:'medium'}}</span>
+										<span class="progress-end">{{progress.timeLog.end | date:'medium'}}</span>
+										<span class="progress-current">{{progress.timeLog.current | date:'mediumTime'}}</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="card-footer">
+							<form class="form-inline m-0">
+								<button data-ng-show="progress.state == 'running'" class="btn btn-warning mr-2" type="button" data-ng-click="pause()"><i class="fas fa-pause"></i> Pause</button>
+								<button data-ng-show="progress.state == 'paused'" class="btn btn-success mr-2" type="button" data-ng-click="resume()"><i class="fas fa-play"></i> Resume</button>
+								<button data-ng-show="progress.following" class="btn btn-warning mr-2" type="button" data-ng-click="forward()"><i class="fas fa-step-forward"></i> {{progress.following}}</button>
+								<button class="btn btn-danger mr-2" type="button" data-ng-click="stop()"><i class="fas fa-stop"></i> Stop</button>
+							</form>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-1"></div>		
+			</div>
+			<br/>
+			<br/>
+			<br/>
+		</div>
+
+		<div data-ng-include="'template/footer.html'"></div>
+	</body>
+</html>

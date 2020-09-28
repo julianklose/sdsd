@@ -1,0 +1,10 @@
+SELECT DISTINCT ?clientname ?label ?serialNumber
+FROM <${params.graph}>
+WHERE { 
+    ?dan dcterms:isPartOf <${params.uri}>;
+         wkn:isoxmlDAN\#C ?dvc.
+    ?dvc rdfs:label ?label;
+         wkn:isoxmlDVC\#D ?clientname.
+    OPTIONAL { ?dvc wkn:isoxmlDVC\#E ?serialNumber }
+}
+ORDER BY ?label

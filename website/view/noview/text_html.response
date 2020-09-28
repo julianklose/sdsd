@@ -1,0 +1,14 @@
+<p>
+    In SDSD each uploaded and stored file is leveraged to an RDF graph.
+    Click on the file to browse into the graph.
+</p>
+
+<ul style="list-style-type:none;">
+<#list userFiles as file>
+    <li>
+        <a href="${util.link('view', 'graph', 'graph', file.getURI())}">
+            <i class="fa fa-cloud"></i> ${file.getFilename()}
+        </a>
+    </li>
+</#list>
+</ul>

@@ -1,0 +1,41 @@
+body {
+	padding-bottom: 0;
+}
+
+.dash-map {
+	height: calc(100vh - 306px);
+}
+
+.dash-tab {
+	display: none;
+}
+
+.min-height-100 {
+	min-height: 100%;
+}
+
+.pointer {
+	cursor: pointer;
+}
+
+#dash-nav-back {
+	display: none;
+}
+
+#dash-field-info .card {
+	min-height: 400px;
+}
+
+.dash-no-data {
+	font-weight: bold;
+}
+
+#dash-map-fieldlist {
+	height: calc(100vh - 306px);
+	font-size: 12pt;
+}
+
+#dash-map-fieldlist .list-group-item {
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+}

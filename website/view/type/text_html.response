@@ -1,0 +1,38 @@
+
+<#assign instances = util.pivotTable(triples)>
+
+${triples?size} triples<br/>
+${instances?size - 1} instances
+
+<table class="table table-bordered">
+    <#list instances[0..0] as inst>
+        <tr>
+            <#list inst as col>
+                <td>
+                    ${col!''}
+                </td>
+            </#list>
+        </tr>
+    </#list>
+
+    <#list instances[1..] as inst>
+        <tr>
+            <#list inst as col>
+                <td>
+
+                <#if col?index == 0>
+                    <a href="${util.link('view', 'wknresource', 'uri', col.toString())}">
+                        ${col}
+                    </a>
+                <#else>
+                    <#if col??>
+                        <#-- can also be byte[] if hexBinary type -->
+                        ${col.asLiteral().getLexicalForm()}
+                    </#if>
+                </#if>
+
+                </td>
+            </#list>
+        </tr>
+    </#list>
+</table>

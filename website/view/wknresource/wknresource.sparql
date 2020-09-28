@@ -1,0 +1,52 @@
+select *
+{
+    graph <${graph}> {
+        <${uri}> ?p ?o .
+        
+        
+
+        optional {
+            {
+                    ?o rdfs:label ?o_label .
+            } UNION {
+                    GRAPH <https://app.sdsd-projekt.de/wikinormia/>
+                    {
+                            ?o rdfs:label ?o_label .
+                    }
+            }
+        }
+
+        # object has type and type has a label
+        optional {
+            ?o a ?o_type .
+
+            GRAPH <https://app.sdsd-projekt.de/wikinormia/> { 
+               ?o_type a rdfs:Class . # should be here to avoid 500er error
+              OPTIONAL
+              { ?o_type  rdfs:label  ?o_type_label }
+            }
+        }
+
+        # object is available in wikinormia with label
+        optional {
+                GRAPH <https://app.sdsd-projekt.de/wikinormia/>
+                { 
+                        ?o a ?o_type .
+                        OPTIONAL
+                        { ?o_type  rdfs:label  ?o_type_label }
+                }
+        }
+
+        # property in wikinormia
+        GRAPH <https://app.sdsd-projekt.de/wikinormia/> { 
+              ?p a rdf:Property .
+              OPTIONAL
+              { ?p  rdfs:label  ?p_label }
+        }
+	
+        # datatype of object
+        BIND(datatype(?o) AS ?dt) .
+
+    } # graph
+}
+order by ?p

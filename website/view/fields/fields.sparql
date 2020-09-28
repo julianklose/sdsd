@@ -1,0 +1,10 @@
+${util.reasoning()}
+
+SELECT *
+<#list userGraphs as graph>
+FROM <${graph}>
+</#list>
+WHERE {
+    ?uri a wkn:isoxmlPFD .
+    ?uri rdfs:label ?label .
+}

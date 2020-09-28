@@ -1,0 +1,212 @@
+#accordion{
+	margin-top: 0.5rem;
+}
+.checkbox label:after, 
+.radio label:after {
+	content: '';
+	display: table;
+	clear: both;
+}
+.map-col{
+	overflow-y: scroll;
+	max-height: 100%;
+}
+.checkbox .cr,
+.radio .cr {
+	position: relative;
+	display: inline-block;
+	border: 1px solid #a9a9a9;
+	border-radius: .25em;
+	width: 1.5em;
+	height: 1.5em;
+	float: left;
+	margin-right: .2em;
+}
+
+.custom-form {
+	margin-top: 1em;
+	height:1.3em;
+}
+.blue {
+	color: #0097EE;
+}
+
+.radio .cr {
+	border-radius: 50%;
+}
+
+.checkbox .cr .cr-icon,
+.radio .cr .cr-icon {
+	position: absolute;
+	font-size: .8em;
+	line-height: 0;
+	top: 50%;
+	left: 20%;
+}
+
+.radio .cr .cr-icon {
+	margin-left: 0.04em;
+}
+
+.checkbox label input[type="checkbox"],
+.radio label input[type="radio"] {
+	display: none;
+}
+
+.checkbox label input[type="checkbox"] + .cr > .cr-icon,
+.radio label input[type="radio"] + .cr > .cr-icon {
+	transform: scale(3) rotateZ(-20deg);
+	opacity: 0;
+	transition: all .3s ease-in;
+}
+
+.checkbox label input[type="checkbox"]:checked + .cr > .cr-icon,
+.radio label input[type="radio"]:checked + .cr > .cr-icon {
+	transform: scale(1) rotateZ(0deg);
+	opacity: 1;
+}
+
+/*Setup*/
+html,
+body {
+	padding: 0;
+	margin: 0;
+}
+html,
+body,
+#mapid {
+	height: 100%;
+	width: 100%;
+}
+
+/*Legend specific*/
+.legend {
+	padding: 6px 8px;
+	font: 14px Arial, Helvetica, sans-serif;
+	background: white;
+	background: rgba(255, 255, 255, 0.8);
+	box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+	border-radius: 5px;
+	line-height: 24px;
+	color: #555;
+}
+.legend h4 {
+	text-align: center;
+	font-size: 16px;
+	margin: 2px 12px 8px;
+	color: #777;
+}
+
+.legend span {
+	position: relative;
+	bottom: 3px;
+}
+
+.legend i {
+	width: 18px;
+	height: 18px;
+	border-radius:50%;
+	float: left;
+	margin: 0 8px 0 0;
+	opacity: 0.7;
+}
+
+.legend i.icon {
+	background-size: 18px;
+	background-color: rgba(255, 255, 255, 1);
+}
+
+#btn-add-data {
+	margin: 5px;
+}
+.custom-row {
+	display:flex;
+}
+
+.custom .card-header {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	padding: 0.25rem 1rem
+}
+
+.custom .card-body {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	padding: 0.25rem 1rem
+}
+
+.handle {
+	cursor: move;
+	position: relative;
+}
+
+.btn-custom {
+	position: relative;
+	flex:15%;
+	max-width:15%;
+	margin:0.2rem;
+	
+}
+/**
+ * The dnd-list should always have a min-height,
+ * otherwise you can't drop to it once it's empty
+ */
+ul[data-dnd-list] {
+	min-height: 42px;
+	padding-left: 0px;
+}
+
+/**
+ * The dndDraggingSource class will be applied to
+ * the source element of a drag operation. It makes
+ * sense to hide it to give the user the feeling
+ * that he's actually moving it.
+ */
+ul[data-dnd-list] .dndDraggingSource {
+	display: none;
+}
+
+/**
+ * An element with .dndPlaceholder class will be
+ * added to the dnd-list while the user is dragging
+ * over it.
+ */
+ul[data-dnd-list] .dndPlaceholder {
+	display: block;
+	background-color: #ddd;
+	padding: 10px 15px;
+	min-height: 42px;;
+}
+
+ul[data-dnd-list] li {
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-top-right-radius: 4px;
+	border-top-left-radius: 4px;
+	display: block;
+	padding: 0px 0px;
+	margin-bottom: -1px;
+	
+	/* Disable text selection if item is not draggable */
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+ul[data-dnd-list] li dnd-nodrag {
+	display: block;
+	padding: 0.1rem 0.2rem;
+}
+
+/**
+ * Show selected elements in green
+ */
+ul[data-dnd-list] li.selected {
+	background-color: #dff0d8;
+	color: #3c763d;
+}

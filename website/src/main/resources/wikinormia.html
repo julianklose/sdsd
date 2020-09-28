@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+	<title>SDSD Wikinormia</title>
+
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="" />
+	<meta name="author" content="Andreas Schliebitz & Noah Große Starmann, Hochschule Osnabrück" />
+
+	<script src="js/jquery.min.js"></script>
+	<script src="js/jquery-ui.min.js"></script>
+	<script src="js/angular.min.js"></script>
+	<script src="js/i18n/angular-locale_de-de.js"></script>
+	<script src="js/bootstrap.bundle.min.js"></script>
+	<script src="js/jquery.datetimepicker.full.min.js"></script>
+	<script src="js/scrollglue.js"></script>
+	<script src="js/sdsd.js"></script>
+	<script src="js/wikinormia.js"></script>
+
+	<link href="css/bootstrap.css" rel="stylesheet" />
+	<link href="css/jquery-ui.css" rel="stylesheet" />
+	<link href="css/fontawesome.min.css" rel="stylesheet" />
+	<link href="css/jquery.datetimepicker.min.css" rel="stylesheet" />
+	<link href="css/wikinormia.css" rel="stylesheet" />
+
+	<link rel="shortcut icon" href="img/favicon.ico" />
+	<link rel="apple-touch-icon image_src" href="img/apple-touch-icon.png" />
+</head>
+
+<body data-ng-app="sdsd" class="container pb-0">
+	<div data-ng-include="'template/header.html'"></div>
+	<div data-ng-include="'template/menu.html'"></div>
+
+	<div data-ng-controller="wikinormia" data-ng-show="sdsd.username">
+		<!-- Search box for classes -->
+
+		<div class="row mb-2">
+			<div class="col-12">
+				<div class="input-group">
+					<input type="text" class="form-control" placeholder="Search for class" aria-label="Search" aria-describedby="searchButton" data-ng-autocomplete="autocomplete.types" data-ng-model="search.input" data-ng-enter="search()" />
+					<div class="input-group-append">
+						<button type="button" class="btn btn-outline-secondary" id="searchButton" data-ng-click="search()">Search</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row" data-ng-if="!page">
+
+			<!-- Unpublished Formats -->
+
+			<div class="col-6 pr-1">
+				<div class="card">
+					<div class="card-body">
+						<h3 class="card-title">Unpublished Formats</h3>
+						<a class="btn btn-primary btn-block" data-ng-link="wikinormia-draftmode.html?formatId=new&formatEdit">
+							<i class="fa fa-plus"></i> Add Format
+						</a>
+						<div class="list-group list-group-flush overflow-auto format-view">
+							<ul class="list-group list-group-flush">
+								<a class="list-group-item list-group-item-action" href="wikinormia-draftmode.html?formatId={{unpublishedFormat.value}}" data-ng-repeat="unpublishedFormat in unpublishedFormats">{{unpublishedFormat.label}}</a>
+							</ul>
+						</div>
+
+					</div>
+				</div>
+			</div>
+
+			<!-- Published Formats -->
+
+			<div class="col-6 pl-1">
+				<div class="card">
+					<div class="card-body">
+						<h3 class="card-title">Published Formats</h3>
+						<input class="search-input" type="text" data-ng-model="publishedFormatSearchText" placeholder="Search a published format." />
+						<div class="list-group list-group-flush overflow-auto format-view">
+							<ul class="list-group list-group-flush">
+								<a class="list-group-item list-group-item-action" data-ng-repeat="publishedFormat in publishedFormats | filter:publishedFormatSearchText" data-ng-link="{{publishedFormat.value | relative}}">{{publishedFormat.label}}</a>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+		<!-- Format view -->
+
+		<div data-ng-if="page">
+
+			<!-- class info -->
+
+			<div class="card">
+				<div class="card-body">
+					<div class="row">
+						<div class="col">
+							<h3 class="card-title">{{input.class.label}}</h3>
+							<h6 class="card-subtitle mb-2 text-muted">{{input.description}}</h6>
+						</div>
+					</div>
+					<br />
+					<div class="row">
+						<div class="col card-columns">
+							<div class="card" data-ng-show="input.isInstance">
+								<div class="card-header font-weight-bold">Instance of</div>
+								<ul class="list-group list-group-flush">
+									<li class="list-group-item">
+										<a data-ng-link="{{input.instanceOf.value | relative}}">{{input.instanceOf.label}} ({{input.instanceOf.identifier}})</a>
+									</li>
+								</ul>
+							</div>
+							<div class="card" data-ng-show="input.instCount">
+								<div class="card-header font-weight-bold">Instances</div>
+								<ul class="list-group list-group-flush">
+									<li class="list-group-item">
+										<a href="wikilist.html?type={{page}}">List {{input.instCount}} instances</a>
+									</li>
+								</ul>
+							</div>
+							<div class="card">
+								<div class="card-header font-weight-bold">Identifier</div>
+								<ul class="list-group list-group-flush">
+									<li class="list-group-item">{{input.class.identifier}}</li>
+								</ul>
+							</div>
+							<div class="card" data-ng-show="input.format">
+								<div class="card-header font-weight-bold">Format</div>
+								<ul class="list-group list-group-flush">
+									<li class="list-group-item">
+										<a data-ng-link="{{input.format.value | relative}}">{{input.format.label}} ({{input.format.identifier}})</a>
+									</li>
+								</ul>
+							</div>
+							<div class="card" data-ng-show="input.partof && input.partof.length > 0">
+								<div class="card-header font-weight-bold">Part of</div>
+								<ul class="list-group list-group-flush">
+									<li class="list-group-item" data-ng-repeat="p in input.partof">
+										<a data-ng-link="{{p.value | relative}}">{{p.label}} ({{p.identifier}})</a>
+									</li>
+								</ul>
+							</div>
+							<div class="card" data-ng-show="input.parts && input.parts.length > 0">
+								<div class="card-header font-weight-bold">Parts</div>
+								<ul class="list-group list-group-flush">
+									<li class="list-group-item" data-ng-repeat="c in input.parts">
+										<a data-ng-link="{{c.value | relative}}">{{c.label}} ({{c.identifier}})</a>
+									</li>
+								</ul>
+							</div>
+							<div class="card" data-ng-show="input.base && input.base.length > 0">
+								<div class="card-header font-weight-bold">Subclass of</div>
+								<ul class="list-group list-group-flush">
+									<li class="list-group-item" data-ng-repeat="b in input.base">
+										<a data-ng-link="{{b.value | relative}}">{{b.label}} ({{b.identifier}})</a>
+									</li>
+								</ul>
+							</div>
+							<div class="card" data-ng-show="input.subtypes && input.subtypes.length > 0">
+								<div class="card-header font-weight-bold">SubTypes</div>
+								<ul class="list-group list-group-flush">
+									<li class="list-group-item" data-ng-repeat="s in input.subtypes">
+										<a data-ng-link="{{s.value | relative}}">{{s.label}} ({{s.identifier}})</a>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<br />
+					<div class="row" data-ng-show="input.attributes && input.attributes.length > 0">
+						<div class="col table-responsive">
+							<table class="table w-50">
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>Type</th>
+										<th data-ng-show="input.isInstance">Value</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr data-ng-repeat="a in input.attributes">
+										<td>
+											<a data-ng-href="{{a.attrib.value | relative}}" id="{{a.attrib.value | localname}}">
+												{{a.attrib.label}} ({{a.attrib.identifier}})
+											</a>
+										</td>
+										<td><a data-ng-link="{{a.range.value | relative}}">{{a.range.label}}</a></td>
+										<td data-ng-show="input.isInstance">
+											<a data-ng-if="a.value.label" data-ng-link="{{a.value.value | relative}}">{{a.value.label}}</a>
+											<p data-ng-if="!a.value.label">{{a.value}}</p>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+	<br />
+	<div data-ng-include="'template/footer.html'"></div>
+</body>
+
+</html>

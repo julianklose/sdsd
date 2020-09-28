@@ -1,0 +1,116 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<script src="js/jquery.min.js" type="text/javascript"></script>
+		<script src="js/jquery-ui.min.js" type="text/javascript"></script>
+		<script src="js/angular.min.js" type="text/javascript"></script>
+		<script src="js/i18n/angular-locale_de-de.js" type="text/javascript"></script>
+		<script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
+		<script src="js/jquery.datetimepicker.full.min.js" type="text/javascript"></script>
+		<script src="js/scrollglue.js" type="text/javascript"></script>
+		<script src="js/sdsd.js" type="text/javascript"></script>
+		<script src="js/register.js" type="text/javascript"></script>
+
+		<link href="css/bootstrap.css" rel="stylesheet" />
+		<link href="css/jquery-ui.css" rel="stylesheet" />
+		<link href="css/fontawesome.min.css" rel="stylesheet" />
+		<link href="css/jquery.datetimepicker.min.css" rel="stylesheet" />
+
+		<title>SDSD Registration</title>
+		<meta name="description" content="">
+		<meta name="author" content="Julian Klose, Hochschule Osnabrueck">
+		<link rel="shortcut icon" href="img/favicon.ico">
+		<link rel="apple-touch-icon image_src" href="img/apple-touch-icon.png">
+	</head>
+	<body data-ng-app="sdsd" class="container">
+		<div data-ng-include="'template/header.html'"></div>
+		<div data-ng-include="'template/menu.html'"></div>
+
+		<div data-ng-controller="regCtrl" data-ng-init="init()" data-ng-show="sdsd.username">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="form-group"  data-ng-show="username === null">
+					
+						<h1>Register</h1>
+						
+						For legal reasons, this feature is disabled until further notice. 
+						Please contact <a href="mailto:julian.klose@hs-osnabrueck.de">Julian Klose (julian.klose@hs-osnabrueck.de)</a> 
+						to get an account.
+						
+<!--					 <label>Username*: </label>
+						<input type="text" class="form-control" data-ng-model="usernameInput" 
+						data-ng-enter="reg()" placeholder="Username"/>
+						
+						<label>Email*: </label>
+						<input type="text" class="form-control" data-ng-model="emailInput" 
+						data-ng-enter="reg()" placeholder="Email"/>
+						
+						<label>Password*: </label>
+						<input type="password" class="form-control" data-ng-model="passwordInput" 
+						data-ng-enter="reg()" placeholder="Password"/>
+						
+						<label>Repeat password*: </label>
+						<input type="password" class="form-control" data-ng-model="passwordRepeatInput" 
+						data-ng-enter="reg()" placeholder="Repeated password"/>
+						
+						<br/>
+						<small>*Required</small>
+						<br/>
+						<br/>
+						
+						<button class="btn btn-primary" data-ng-click="reg()"><i class="fa fa-sign-in"></i> Register</button> -->
+						
+						<div class="alert alert-success" data-ng-show="success">
+							Account successful created.<br/>
+							<a href="/">Back to Home</a>
+						</div>
+						<div class="alert alert-warning" data-ng-show="message" data-ng-click="message = null;">
+							{{message}}
+						</div>
+					</div>
+					
+					<div class="form-group"  data-ng-show="username !== null">
+					
+						<h1>Change password</h1>
+					
+						<label>Current password*: </label>
+						<input type="password" class="form-control" data-ng-model="passwordOld" 
+						data-ng-enter="changePassword()" placeholder="Current password"/>
+						
+						<label>Password*: </label>
+						<input type="password" class="form-control" data-ng-model="passwordInput" 
+						data-ng-enter="changePassword()" placeholder="Password"/>
+						
+						<label>Repeat password*: </label>
+						<input type="password" class="form-control" data-ng-model="passwordRepeatInput" 
+						data-ng-enter="changePassword()" placeholder="Repeated password"/>
+						
+						<br/>
+						<small>*Required</small>
+						<br/>
+						<br/>
+						
+						<button class="btn btn-primary" data-ng-click="changePassword()"><i class="fa fa-sign-in"></i> Change</button>
+						
+						<div class="alert alert-success" data-ng-show="success">
+							Password successfully changed.<br/>
+							<a href="/">Back to Home</a>
+						</div>
+						<div class="alert alert-warning" data-ng-show="message" data-ng-click="message = null;">
+							{{message}}
+						</div>
+					</div>
+					
+				</div>
+			</div>
+			<br/>
+			<br/>
+			<br/>
+		</div>
+
+		<div data-ng-include="'template/footer.html'"></div>
+	</body>
+</html>

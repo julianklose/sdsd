@@ -1,0 +1,7 @@
+SELECT DISTINCT ?tlg ?tlgname
+FROM <${params.graph}>
+WHERE {
+    ?tlg dcterms:isPartOf <${params.uri}>;
+         wkn:isoxmlTLG\#A ?tlgname.
+}
+ORDER BY ?tlgname

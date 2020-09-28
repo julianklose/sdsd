@@ -1,0 +1,12 @@
+SELECT ?attributeUri ?attribute (GROUP_CONCAT(DISTINCT(COALESCE(?label, ?value)) ; separator=", ") as ?values)
+FROM <${params.graph}>
+FROM <${wikinormia}>
+WHERE {
+    <${params.uri}> wkn:isoxmlTSK\#C ?customer.
+    ?customer ?attributeUri ?value.
+    OPTIONAL { ?value rdfs:label ?label }
+    ?attributeUri rdfs:domain wkn:isoxmlCTR;
+                  rdfs:label ?attribute.
+}
+GROUP BY ?attributeUri ?attribute
+ORDER BY ?attribute

@@ -1,0 +1,58 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<script src="js/jquery.min.js" type="text/javascript"></script>
+		<script src="js/jquery-ui.min.js" type="text/javascript"></script>
+		<script src="js/angular.min.js" type="text/javascript"></script>
+		<script src="js/i18n/angular-locale_de-de.js" type="text/javascript"></script>
+		<script src="js/bootstrap.bundle.min.js" type="text/javascript"></script>
+		<script src="js/jquery.datetimepicker.full.min.js" type="text/javascript"></script>
+		<script src="js/scrollglue.js" type="text/javascript"></script>
+		<script src="js/sdsd.js" type="text/javascript"></script>
+		<script src="js/validator.js" type="text/javascript"></script>
+
+		<link href="css/bootstrap.css" rel="stylesheet" />
+		<link href="css/jquery-ui.css" rel="stylesheet" />
+		<link href="css/fontawesome.min.css" rel="stylesheet" />
+		<link href="css/jquery.datetimepicker.min.css" rel="stylesheet" />
+
+		<title>SDSD ISOXML Validator</title>
+		<meta name="description" content="">
+		<meta name="author" content="Julian Klose, Hochschule Osnabrueck">
+		<link rel="shortcut icon" href="img/favicon.ico">
+		<link rel="apple-touch-icon image_src" href="img/apple-touch-icon.png">
+	</head>
+	<body data-ng-app="sdsd" class="container">
+		<div data-ng-include="'template/header.html'"></div>
+		<div data-ng-include="'template/menu.html'"></div>
+
+		<div data-ng-controller="validator" data-ng-init="init()" data-ng-show="sdsd.username">
+			<h3>
+				<i class="fas fa-file-medical-alt"></i> ISOXML Validator 
+			</h3>
+	
+			<div class="row" style="height: 64%">
+				<div class="col-md-3">
+					<h4>ISOXML Files</h4>
+					<select class="form-control" data-ng-model="file" data-ng-options="f as f.filename for f in filelist">
+						<option style="display:none" value="" selected>Please choose a file</option>
+					</select>
+				</div>
+				<div class="col-md-9">
+					<h4>{{filename || 'Violations'}} <i class="fas fa-spinner fa-spin" data-ng-show="validatorLoading"></i></h4>
+					<div style="width: 100%; height: 100%; overflow: scroll; border: 1px solid gray;">
+						<p class="mb-0" data-ng-repeat="e in output track by $index">{{e}}</p>
+					</div>
+				</div>
+			</div>
+			<br/>
+			<br/>
+			<br/>
+		</div>
+
+		<div data-ng-include="'template/footer.html'"></div>
+	</body>
+</html>

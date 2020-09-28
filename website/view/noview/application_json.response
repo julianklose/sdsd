@@ -1,0 +1,5 @@
+{
+	<#list userFiles as file>
+	"${file.getFilename()}": "${util.link('view', 'graph', 'graph', file.getURI())}"<#if !(file?is_last)>,</#if>
+	</#list>
+}

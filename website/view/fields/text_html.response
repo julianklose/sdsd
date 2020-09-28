@@ -1,0 +1,19 @@
+
+${fields?size} entries found
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>URI</th>
+            <th>Label</th>
+        </tr>
+    </thead>
+    <tbody>
+<#list fields as field>
+    <tr>
+        <td>${field.get('uri')}</td>
+        <td>${field.getLiteral('label').getValue()}</td>
+    </tr>
+</#list>
+    </tbody>
+</table>

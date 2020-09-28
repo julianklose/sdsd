@@ -1,0 +1,20 @@
+select *
+{
+    graph <${graph}> {
+        <${uri}> rdfs:label ?label .
+		optional {
+			<${uri}> a ?type .
+
+			graph <https://app.sdsd-projekt.de/wikinormia/> {
+				?type a rdfs:Class .
+				optional {
+					?type rdfs:label ?type_label .
+				}
+			}
+		}
+        optional {
+            <${uri}> rdfs:comment ?comment .
+        }
+    }
+}
+limit 1

@@ -1,0 +1,10 @@
+<#if limit??>
+    <div>
+        <center>
+            <a href="${util.firstPageLink()}" class="btn float-left"><i class="fa fa-step-backward"></i></a>
+            <a href="${util.prevPageLink()}" class="btn float-left"><i class="fa fa-caret-left"></i></a>
+                Page ${((offset!'0')?number / (limit?number))+1}
+            <a href="${util.nextPageLink()}" class="btn float-right"><i class="fa fa-caret-right"></i></a>
+        </center>
+    </div>
+</#if>

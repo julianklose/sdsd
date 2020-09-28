@@ -1,0 +1,8 @@
+<#import "../macros.ftl" as m />
+
+{
+    "a": ${params.a},
+    "b[2]": ${params.b[2]?c},
+
+    "query": <@m.resultset2json resultset=query></@m.resultset2json>
+}

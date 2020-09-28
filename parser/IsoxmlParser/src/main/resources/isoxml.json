@@ -1,0 +1,841 @@
+{
+	"typeFormats": { 
+		"string": {"regex": ".+"},
+		"id": {"regex": "[A-Z]{3}-?\\d{1,10}"},
+		"idref": {"regex": "[A-Z]{3}-?\\d{1,10}"},
+		"oid": {"regex": "\\d{1,5}", "min": 1, "max": 65534},
+		"oidref": {"regex": "\\d{1,5}", "min": 1, "max": 65534},
+		"hex": {"regex": "[0-9A-Fa-f]+"},
+		"ddi": {"regex": "[0-9A-Fa-f]{1,4}"},
+		"long": {"regex": "(+|-)?\\d{1,10}", "min": -2147483648, "max": 2147483647},
+		"ulong": {"regex": "\\d{1,10}", "min": 0, "max": 4294967294},
+		"ushort": {"regex": "\\d{1,5}", "min": 0, "max": 65535},
+		"byte": {"regex": "\\d{1,3}", "min": 0, "max": 254},
+		"double": {"regex": "(+|-)?\\d+(\\.\\d+)?"},
+		"decimal": {"regex": "(+|-)?\\d+(\\.\\d)?"},
+		"datetime": {"regex": "\\d{4}-[01]\\d-[0-3]\\dT[012]\\d:[0-5]\\d:[0-5]\\d(\\.\\d{1,3})?(Z|(\\+|-)([01]\\d|[01]\\d[0-5]\\d|[01]\\d:[0-5]\\d))?"}
+	},
+	"taskdata": {
+		"ASP": {
+			"name": "AllocationStamp",
+			"attrib": {
+				"A": {"name": "start", "type": "datetime", "required": true},
+				"B": {"name": "stop", "type": "datetime", "required": false},
+				"C": {"name": "duration", "type": "ulong", "required": false},
+				"D": {"name": "type", "type": "enum", "values": [null, "PLANNED", null, null, "EFFECTIVE"], "required": true}
+			},
+			"content": {
+				"PTN": {"max": 2}
+			}
+		},
+
+		"AFE": {
+			"name": "AttachedFile",
+			"attrib": {
+				"A": {"name": "filenameWithExtension", "type": "string", "length": "12", "required": true},
+				"B": {"name": "preserve", "type": "enum", "values": [null, "PRESERVE_NO", "PRESERVE_YES"], "required": true},
+				"C": {"name": "manufacturerGln", "type": "string", "maxlength": 32, "required": true},
+				"D": {"name": "fileType", "type": "byte", "min": 1, "required": true},
+				"E": {"name": "fileVersion", "type": "string", "maxlength": 32, "required": false},
+				"F": {"name": "fileLength", "type": "ulong", "required": false}
+			}
+		},
+
+		"BSN": {
+			"name": "BaseStation",
+			"attrib": {
+				"A": {"name": "baseStationId", "type": "id", "required": true},
+				"B": {"name": "baseStationDesignator", "type": "string", "maxlength": 32, "required": true},
+				"C": {"name": "baseStationNorth", "type": "double", "min": -90, "max": 90, "required": true},
+				"D": {"name": "baseStationEast", "type": "double", "min": -180, "max": 180, "required": true},
+				"E": {"name": "baseStationUp", "type": "long", "required": true}
+			}
+		},
+
+		"CCT": {
+			"name": "CodedComment",
+			"attrib": {
+				"A": {"name": "codedCommentId", "type": "id", "required": true},
+				"B": {"name": "codedCommentDesignator", "type": "string", "maxlength": 32, "required": true},
+				"C": {"name": "codedCommentScope", "type": "enum", "values": [null, "POINT", "GLOBAL", "CONTINUOUS"], "required": true},
+				"D": {"name": "codedCommentGroupIdRef", "type": "idref", "ref": ["CCG"], "required": false}
+			},
+			"content": {
+				"CCL": {}
+			}
+		},
+
+		"CCG": {
+			"name": "CodedCommentGroup",
+			"attrib": {
+				"A": {"name": "codedCommentGroupId", "type": "id", "required": true},
+				"B": {"name": "codedCommentGroupDesignator", "type": "string", "maxlength": 32, "required": true}
+			}
+		},
+
+		"CCL": {
+			"name": "CodedCommentListValue",
+			"attrib": {
+				"A": {"name": "codedCommentListValueId", "type": "id", "required": true},
+				"B": {"name": "codedCommentListValueDesignator", "type": "string", "maxlength": 32, "required": true}
+			}
+		},
+
+		"CLD": {
+			"name": "ColourLegend",
+			"attrib": {
+				"A": {"name": "colourLegendId", "type": "id", "required": true},
+				"B": {"name": "defaultColour", "type": "byte", "required": false}
+			},
+			"content": {
+				"CRG": {"min": 1}
+			}
+		},
+
+		"CRG": {
+			"name": "ColourRange",
+			"attrib": {
+				"A": {"name": "minimumValue", "type": "long", "required": true},
+				"B": {"name": "maximumValue", "type": "long", "required": true},
+				"C": {"name": "colour", "type": "byte", "required": true}
+			}
+		},
+
+		"CAN": {
+			"name": "CommentAllocation",
+			"attrib": {
+				"A": {"name": "codedCommentIdRef", "type": "idref", "ref": ["CCT"], "required": false},
+				"B": {"name": "codedCommentListValueIdRef", "type": "idref", "ref": ["CCL"], "required": false},
+				"C": {"name": "freeCommentText", "type": "string", "maxlength": 32, "required": false}
+			},
+			"content": {
+				"ASP": {"max": 1}
+			}
+		},
+
+		"CNN": {
+			"name": "Connection",
+			"attrib": {
+				"A": {"name": "deviceIdRef_0", "type": "idref", "ref": ["DVC"], "required": true},
+				"B": {"name": "deviceElementIdRef_0", "type": "idref", "ref": ["DET"], "required": true},
+				"C": {"name": "deviceIdRef_1", "type": "idref", "ref": ["DVC"], "required": true},
+				"D": {"name": "deviceElementIdRef_1", "type": "idref", "ref": ["DET"], "required": true}
+			}
+		},
+
+		"CAT": {
+			"name": "ControlAssignment",
+			"attrib": {
+				"A": {"name": "sourceClientName", "type": "hex", "maxbytes": 8, "required": true},
+				"B": {"name": "userClientName", "type": "hex", "maxbytes": 8, "required": true},
+				"C": {"name": "sourceDeviceStructureLabel", "type": "hex", "maxbytes": 39, "required": true},
+				"D": {"name": "userDeviceStructureLabel", "type": "hex", "maxbytes": 39, "required": true},
+				"E": {"name": "sourceDeviceElementNumber", "type": "ushort", "max": "4095", "required": true},
+				"F": {"name": "userDeviceElementNumber", "type": "ushort", "max": "4095", "required": true},
+				"G": {"name": "processDataDdi", "type": "ddi", "required": true}
+			},
+			"content": {
+				"ASP": {"max": 1}
+			}
+		},
+
+		"CTP": {
+			"name": "CropType",
+			"attrib": {
+				"A": {"name": "cropTypeId", "type": "id", "required": true},
+				"B": {"name": "cropTypeDesignator", "type": "string", "maxlength": 32, "required": true},
+				"C": {"name": "productGroupIdRef", "type": "idref", "ref": ["PGP"], "required": false}
+			},
+			"content": {
+				"CVT": {"min": 0}
+			}
+		},
+
+		"CVT": {
+			"name": "CropVariety",
+			"attrib": {
+				"A": {"name": "cropVarietyId", "type": "id", "required": true},
+				"B": {"name": "cropVarietyDesignator", "type": "string", "maxlength": 32, "required": true},
+				"C": {"name": "productIdRef", "type": "idref", "ref": ["PDT"], "required": false}
+			}
+		},
+
+		"CPC": {
+			"name": "CulturalPractice",
+			"attrib": {
+				"A": {"name": "culturalPracticeId", "type": "id", "required": true},
+				"B": {"name": "culturalPracticeDesignator", "type": "string", "maxlength": 32, "required": true}
+			},
+			"content": {
+				"OTR": {"min": 0}
+			}
+		},
+
+		"CTR": {
+			"name": "Customer",
+			"attrib": {
+				"A": {"name": "customerId", "type": "id", "required": true},
+				"B": {"name": "customerLastName", "type": "string", "maxlength": 32, "required": true},
+				"C": {"name": "customerFirstName", "type": "string", "maxlength": 32, "required": false},
+				"D": {"name": "customerStreet", "type": "string", "maxlength": 32, "required": false},
+				"E": {"name": "customerPoBox", "type": "string", "maxlength": 32, "required": false},
+				"F": {"name": "customerPostalCode", "type": "string", "maxlength": 10, "required": false},
+				"G": {"name": "customerCity", "type": "string", "maxlength": 32, "required": false},
+				"H": {"name": "customerState", "type": "string", "maxlength": 32, "required": false},
+				"I": {"name": "customerCountry", "type": "string", "maxlength": 32, "required": false},
+				"J": {"name": "customerPhone", "type": "string", "maxlength": 20, "required": false},
+				"K": {"name": "customerMobile", "type": "string", "maxlength": 20, "required": false},
+				"L": {"name": "customerFax", "type": "string", "maxlength": 20, "required": false},
+				"M": {"name": "customerEmail", "type": "string", "maxlength": 64, "required": false}
+			}
+		},
+
+		"DLT": {
+			"name": "DataLogTrigger",
+			"attrib": {
+				"A": {"name": "dataLogDdi", "type": "ddi", "required": true},
+				"B": {"name": "dataLogMethod", "type": "byte", "min": 1, "max": 31, "required": true},
+				"C": {"name": "dataLogDistanceInterval", "type": "ulong", "max": 1000000, "required": false},
+				"D": {"name": "dataLogTimeInterval", "type": "ulong", "max": 60000, "required": false},
+				"E": {"name": "dataLogThresholdMinimum", "type": "long", "required": false},
+				"F": {"name": "dataLogThresholdMaximum", "type": "long", "required": false},
+				"G": {"name": "dataLogThresholdChange", "type": "long", "required": false},
+				"H": {"name": "deviceElementIdRef", "type": "idref", "ref": ["DET"], "required": false},
+				"I": {"name": "valuePresentationIdRef", "type": "idref", "ref": ["VPN"], "required": false},
+				"J": {"name": "dataLogPgn", "type": "ulong", "min": 0, "max": 262143, "required": false},
+				"K": {"name": "dataLogPgnStartBit", "type": "byte", "max": 63, "required": false},
+				"L": {"name": "dataLogPgnStopBit", "type": "byte", "max": 63, "required": false}
+			}
+		},
+
+		"DLV": {
+			"name": "DataLogValue",
+			"attrib": {
+				"A": {"name": "processDataDdi", "type": "ddi", "required": true},
+				"B": {"name": "processDataValue", "type": "long", "required": true},
+				"C": {"name": "deviceElementIdRef", "type": "idref", "ref": ["DET"], "required": true},
+				"D": {"name": "dataLogPgn", "type": "ulong", "max": 262143, "required": false},
+				"E": {"name": "dataLogPgnStartBit", "type": "byte", "max": 63, "required": false},
+				"F": {"name": "dataLogPgnStopBit", "type": "byte", "max": 63, "required": false}
+			}
+		},
+
+		"DVC": {
+			"name": "Device",
+			"attrib": {
+				"A": {"name": "deviceId", "type": "id", "required": true},
+				"B": {"name": "deviceDesignator", "type": "string", "maxlength": 32, "required": false},
+				"C": {"name": "deviceSoftwareVersion", "type": "string", "maxlength": 32, "required": false},
+				"D": {"name": "clientName", "type": "hex", "maxbytes": 8, "required": true},
+				"E": {"name": "deviceSerialNumber", "type": "string", "maxlength": 32, "required": false},
+				"F": {"name": "deviceStructureLabel", "type": "hex", "maxbytes": 39, "required": true},
+				"G": {"name": "deviceLocalizationLabel", "type": "hex", "maxbytes": 7, "required": true}
+			},
+			"content": {
+				"DET": {"min": 1},
+				"DPD": {},
+				"DPT": {},
+				"DVP": {}
+			}
+		},
+
+		"DAN": {
+			"name": "DeviceAllocation",
+			"attrib": {
+				"A": {"name": "clientNameValue", "type": "hex", "maxbytes": 8, "required": true},
+				"B": {"name": "clientNameMask", "type": "hex", "maxbytes": 8, "required": false},
+				"C": {"name": "deviceIdRef", "type": "idref", "ref": ["DVC"], "required": false}
+			},
+			"content": {
+				"ASP": {"max": 1}
+			}
+		},
+
+		"DET": {
+			"name": "DeviceElement",
+			"attrib": {
+				"A": {"name": "deviceElementId", "type": "id", "required": true},
+				"B": {"name": "deviceElementObjectId", "type": "oid", "required": true},
+				"C": {"name": "deviceElementType", "type": "enum", "values": [null, "DEVICE", "FUNCTION", "BIN", "SECTION", "UNIT", "CONNECTOR", "NAVIGATION"], "required": true},
+				"D": {"name": "deviceElementDesignator", "type": "string", "maxlength": 32, "required": false},
+				"E": {"name": "deviceElementNumber", "type": "ushort", "max": "4095", "required": true},
+				"F": {"name": "parentObjectId", "type": "oidref", "ref": ["DET"], "required": true}
+			},
+			"content": {
+				"DOR": {}
+			}
+		},
+
+		"DOR": {
+			"name": "DeviceObjectReference",
+			"attrib": {
+				"A": {"name": "deviceObjectId", "type": "oidref", "ref": ["DPD", "DPT"], "required": true}
+			}
+		},
+
+		"DPD": {
+			"name": "DeviceProcessData",
+			"attrib": {
+				"A": {"name": "deviceProcessDataObjectId", "type": "oid", "required": true},
+				"B": {"name": "deviceProcessDataDdi", "type": "ddi", "required": true},
+				"C": {"name": "deviceProcessDataProperty", "type": "byte", "max": 7, "required": true},
+				"D": {"name": "deviceProcessDataTriggerMethods", "type": "byte", "max": 31, "required": true},
+				"E": {"name": "deviceProcessDataDesignator", "type": "string", "maxlength": 32, "required": false},
+				"F": {"name": "deviceValuePresentationObjectId", "type": "oidref", "ref": ["DVP"], "required": false}
+			}
+		},
+
+		"DPT": {
+			"name": "DeviceProperty",
+			"attrib": {
+				"A": {"name": "devicePropertyObjectId", "type": "oid", "required": true},
+				"B": {"name": "devicePropertyDdi", "type": "ddi", "required": true},
+				"C": {"name": "devicePropertyValue", "type": "long", "required": true},
+				"D": {"name": "devicePropertyDesignator", "type": "string", "maxlength": 32, "required": false},
+				"E": {"name": "deviceValuePresentationObjectId", "type": "oidref", "ref": ["DVP"], "required": false}
+			}
+		},
+
+		"DVP": {
+			"name": "DeviceValuePresentation",
+			"attrib": {
+				"A": {"name": "deviceValuePresentationObjectId", "type": "oid", "required": true},
+				"B": {"name": "offset", "type": "long", "required": true},
+				"C": {"name": "scale", "type": "double", "min": 0.000000001, "max": 100000000.0, "required": true},
+				"D": {"name": "numberOfDecimals", "type": "byte", "max": 7, "required": true},
+				"E": {"name": "unitDesignator", "type": "string", "maxlength": 32, "required": false}
+			}
+		},
+
+		"FRM": {
+			"name": "Farm",
+			"attrib": {
+				"A": {"name": "farmId", "type": "id", "required": true},
+				"B": {"name": "farmDesignator", "type": "string", "maxlength": 32, "required": true},
+				"C": {"name": "farmStreet", "type": "string", "maxlength": 32, "required": false},
+				"D": {"name": "farmPoBox", "type": "string", "maxlength": 32, "required": false},
+				"E": {"name": "farmPostalCode", "type": "string", "maxlength": 10, "required": false},
+				"F": {"name": "farmCity", "type": "string", "maxlength": 32, "required": false},
+				"G": {"name": "farmState", "type": "string", "maxlength": 32, "required": false},
+				"H": {"name": "farmCountry", "type": "string", "maxlength": 32, "required": false},
+				"I": {"name": "customerIdRef", "type": "idref", "ref": ["CTR"], "required": false}
+			}
+		},
+
+		"GRD": {
+			"name": "Grid",
+			"attrib": {
+				"A": {"name": "gridMinimumNorthPosition", "type": "double", "min": -90.0, "max": 90.0, "required": true},
+				"B": {"name": "gridMinimumEastPosition", "type": "double", "min": -180.0, "max": 180.0, "required": true},
+				"C": {"name": "gridCellNorthSize", "type": "double", "min": 0.0, "max": 1.0, "required": true},
+				"D": {"name": "gridCellEastSize", "type": "double", "min": 0.0, "max": 1.0, "required": true},
+				"E": {"name": "gridMaximumColumn", "type": "ulong", "required": true},
+				"F": {"name": "gridMaximumRow", "type": "ulong", "required": true},
+				"G": {"name": "filename", "type": "string", "maxlength": 8, "required": true},
+				"H": {"name": "filelength", "type": "ulong", "required": false},
+				"I": {"name": "gridType", "type": "enum", "values": [null, "GRID_TYPE_1", "GRID_TYPE_2"], "required": true},
+				"J": {"name": "treatmentZoneCode", "type": "oidref", "ref": ["TZN"], "required": false}
+			}
+		},
+
+		"GAN": {
+			"name": "GuidanceAllocation",
+			"attrib": {
+				"A": {"name": "guidanceGroupIdRef", "type": "idref", "ref": ["GGP"], "required": true}
+			},
+			"content": {
+				"ASP": {"min": 1, "max": 1},
+				"GST": {}
+			}
+		},
+
+		"GGP": {
+			"name": "GuidanceGroup",
+			"attrib": {
+				"A": {"name": "guidanceGroupId", "type": "id", "required": true},
+				"B": {"name": "guidanceGroupDesignator", "type": "string", "maxlength": 32, "required": false}
+			},
+			"content": {
+				"GPN": {"min": 1},
+				"PLN": {}
+			}
+		},
+
+		"GPN": {
+			"name": "GuidancePattern",
+			"attrib": {
+				"A": {"name": "guidancePatternId", "type": "id", "required": true},
+				"B": {"name": "guidancePatternDesignator", "type": "string", "maxlength": 32, "required": false},
+				"C": {"name": "guidancePatternType", "type": "enum", "values": [null, "AB", "A_PLUS", "CURVE", "PIVOT", "SPIRAL"], "required": true},
+				"D": {"name": "guidancePatternOptions", "type": "enum", "values": [null, "CLOCKWISE", "COUNTER_CLOCKWISE", "FULL_CIRCLE"], "required": false},
+				"E": {"name": "guidancePatternPropagationDirection", "type": "enum", "values": [null, "BOTH", "LEFT", "RIGHT", "NO_PROP"], "required": false},
+				"F": {"name": "guidancePatternExtension", "type": "enum", "values": [null, "BOTH", "FIRST_ONLY", "LAST_ONLY", "NO_EXT"], "required": false},
+				"G": {"name": "guidancePatternHeading", "type": "double", "min": 0.0, "max": 360.0, "required": false},
+				"H": {"name": "guidancePatternRadius", "type": "ulong", "required": false},
+				"I": {"name": "guidancePatternGnssMethod", "type": "enum", "values": [null, "GNSS_FIX", "DGNSS_FIX", "PRECISE_GNSS", "RTK_FIXED_INTEGER", "RTK_FLOAT", "ESTIMATED_DR_MODE", "MANUAL_INPUT", "SIMULATE_MODE", null, null, null, null, null, null, null, "DESKTOP_GENERATED_DATA", "OTHER"], "required": false},
+				"J": {"name": "guidancePatternHorizontalAccuracy", "type": "double", "min": 0.0, "max": 65.0, "required": false},
+				"K": {"name": "guidancePatternVerticalAccuracy", "type": "double", "min": 0.0, "max": 65.0, "required": false},
+				"L": {"name": "baseStationIdRef", "type": "idref", "ref": ["BSN"], "required": false},
+				"M": {"name": "originalSrid", "type": "string", "maxlength": 32, "required": false},
+				"N": {"name": "numberOfSwathsLeft", "type": "ulong", "required": false},
+				"O": {"name": "numberOfSwathsRight", "type": "ulong", "required": false}
+			},
+			"content": {
+				"LSG": {"min": 1, "max": 1},
+				"PLN": {"min": 0}
+			}
+		},
+
+		"GST": {
+			"name": "GuidanceShift",
+			"attrib": {
+				"A": {"name": "guidanceGroupIdRef", "type": "idref", "ref": ["GGP"], "required": true},
+				"B": {"name": "guidancePatternIdRef", "type": "idref", "ref": ["GPN"], "required": true},
+				"C": {"name": "guidanceEastShift", "type": "long", "required": false},
+				"D": {"name": "guidanceNorthShift", "type": "long", "required": false},
+				"E": {"name": "propagationOffset", "type": "long", "required": false}
+			},
+			"content": {
+				"ASP": {"max": 1}
+			}
+		},
+
+		"ISO11783_TaskData": {
+			"name": "ISO11783_TaskData",
+			"attrib": {
+				"VersionMajor": {"name": "versionMajor", "type": "enum", "values": ["DIS", "FDIS_1", "FDIS_2", "E2_DIS", "E2_FDIS"], "required": true},
+				"VersionMinor": {"name": "versionMinor", "type": "byte", "min": 0, "max": 99, "required": true},
+				"ManagementSoftwareManufacturer": {"name": "managementSoftwareManufacturer", "type": "string", "maxlength": 32, "required": false},
+				"ManagementSoftwareVersion": {"name": "managementSoftwareVersion", "type": "string", "maxlength": 32, "required": false},
+				"TaskControllerManufacturer": {"name": "taskControllerManufacturer", "type": "string", "maxlength": 32, "required": false},
+				"TaskControllerVersion": {"name": "taskControllerVersion", "type": "string", "maxlength": 32, "required": false},
+				"DataTransferOrigin": {"name": "dataTransferOrigin", "type": "enum", "values": [null, "FMIS", "MICS"], "required": true},
+				"lang": {"name": "dataTransferLanguage", "type": "string", "maxlength": 32, "required": false}
+			},
+			"content": {
+				"AFE": {},
+				"BSN": {},
+				"CCT": {},
+				"CCG": {},
+				"CLD": {},
+				"CTP": {},
+				"CPC": {},
+				"CTR": {},
+				"DVC": {},
+				"FRM": {},
+				"OTQ": {},
+				"PFD": {},
+				"PDT": {},
+				"PGP": {},
+				"TSK": {},
+				"TCC": {"max": 1},
+				"VPN": {},
+				"WKR": {},
+				"XFR": {}
+			}
+		},
+
+		"LSG": {
+			"name": "LineString",
+			"attrib": {
+				"A": {"name": "lineStringType", "type": "enum", "values": [null, "POLYGON_EXTERIOR", "POLYGON_INTERIOR", "TRAM_LINE", "SAMPLING_ROUTE", "GUIDANCE_PATTERN", "DRAINAGE", "FENCE", "FLAG", "OBSTACLE"], "required": true},
+				"B": {"name": "lineStringDesignator", "type": "string", "maxlength": 32, "required": false},
+				"C": {"name": "lineStringWidth", "type": "ulong", "required": false},
+				"D": {"name": "lineStringLength", "type": "ulong", "required": false},
+				"E": {"name": "lineStringColour", "type": "byte", "required": false},
+				"F": {"name": "lineStringId", "type": "id", "required": false}
+			},
+			"content": {
+				"PNT": {"min": 1}
+			}
+		},
+
+		"OTQ": {
+			"name": "OperationTechnique",
+			"attrib": {
+				"A": {"name": "operationTechniqueId", "type": "id", "required": true},
+				"B": {"name": "operationTechniqueDesignator", "type": "string", "maxlength": 32, "required": true}
+			}
+		},
+
+		"OTR": {
+			"name": "OperationTechniqueReference",
+			"attrib": {
+				"A": {"name": "operationTechniqueIdRef", "type": "idref", "ref": ["OTQ"], "required": true}
+			}
+		},
+
+		"OTP": {
+			"name": "OperTechPractice",
+			"attrib": {
+				"A": {"name": "culturalPracticeIdRef", "type": "idref", "ref": ["CPC"], "required": true},
+				"B": {"name": "operationTechniqueIdRef", "type": "idref", "ref": ["OTQ"], "required": false}
+			}
+		},
+
+		"PFD": {
+			"name": "Partfield",
+			"attrib": {
+				"A": {"name": "partfieldId", "type": "id", "required": true},
+				"B": {"name": "partfieldCode", "type": "string", "maxlength": 32, "required": false},
+				"C": {"name": "partfieldDesignator", "type": "string", "maxlength": 32, "required": true},
+				"D": {"name": "partfieldArea", "type": "ulong", "required": true},
+				"E": {"name": "customerIdRef", "type": "idref", "ref": ["CTR"], "required": false},
+				"F": {"name": "farmIdRef", "type": "idref", "ref": ["FRM"], "required": false},
+				"G": {"name": "cropTypeIdRef", "type": "idref", "ref": ["CTP"], "required": false},
+				"H": {"name": "cropVarietyIdRef", "type": "idref", "ref": ["CVT"], "required": false},
+				"I": {"name": "fieldIdRef", "type": "idref", "ref": ["PFD"], "required": false}
+			},
+			"content": {
+				"PLN": {},
+				"LSG": {},
+				"PNT": {},
+				"GGP": {}
+			}
+		},
+
+		"PNT": {
+			"name": "Point",
+			"attrib": {
+				"A": {"name": "pointType", "type": "enum", "values": [null, "FLAG", "OTHER", "FIELD_ACCESS", "STORAGE", "OBSTACLE", "GUID_REF_A", "GUID_REF_B", "GUID_REF_CENTER", "GUID_POINT", "PARTFIELD_REF_POINT", "HOMEBASE"], "required": true},
+				"B": {"name": "pointDesignator", "type": "string", "maxlength": 32, "required": false},
+				"C": {"name": "pointNorth", "type": "double", "min": -90.0, "max": 90.0, "required": true},
+				"D": {"name": "pointEast", "type": "double", "min": -180.0, "max": 180.0, "required": true},
+				"E": {"name": "pointUp", "type": "long", "required": false},
+				"F": {"name": "pointColour", "type": "byte", "required": false},
+				"G": {"name": "pointId", "type": "id", "required": false},
+				"H": {"name": "pointHorizontalAccuracy", "type": "double", "min": 0.0, "max": 65.0, "required": false},
+				"I": {"name": "pointVerticalAccuracy", "type": "double", "min": 0.0, "max": 65.0, "required": false},
+				"J": {"name": "filename", "type": "string", "maxlength": 8, "required": false},
+				"K": {"name": "filelength", "type": "ulong", "required": false}
+			}
+		},
+
+		"PLN": {
+			"name": "Polygon",
+			"attrib": {
+				"A": {"name": "polygonType", "type": "enum", "values": [null, "PARTFIELD_BOUNDARY", "TREATMENT_ZONE", "WATER_SURFACE", "BUILDING", "ROAD", "OBSTACLE", "FLAG", "OTHER", "MAINFIELD", "HEADLAND", "BUFFER_ZONE", "WINDBREAK"], "required": true},
+				"B": {"name": "polygonDesignator", "type": "string", "maxlength": 32, "required": false},
+				"C": {"name": "polygonArea", "type": "ulong", "required": false},
+				"D": {"name": "polygonColour", "type": "byte", "required": false},
+				"E": {"name": "polygonId", "type": "id", "required": false}
+			},
+			"content": {
+				"LSG": {"min": 1}
+			}
+		},
+
+		"PTN": {
+			"name": "Position",
+			"attrib": {
+				"A": {"name": "positionNorth", "type": "double", "min": -90.0, "max": 90.0, "required": true},
+				"B": {"name": "positionEast", "type": "double", "min": -180.0, "max": 180.0, "required": true},
+				"C": {"name": "positionUp", "type": "long", "required": false},
+				"D": {"name": "positionStatus", "type": "enum", "values": ["NO_GPS", "GNSS", "DGNSS", "PRECISE_GNSS", "RTK_FINTEGER", "RTK_FLOAT", "EST_DR_MODE", "MANUAL_INPUT", "SIMULATE_MODE", null, null, null, null, null, "ERROR", "NOT_AVAILABLE"], "required": true},
+				"E": {"name": "pdop", "type": "decimal", "min": 0, "max": 99.9, "required": false},
+				"F": {"name": "hdop", "type": "decimal", "min": 0, "max": 99.9, "required": false},
+				"G": {"name": "numberOfSatellites", "type": "byte", "required": false},
+				"H": {"name": "gpsUtcTime", "type": "long", "min": 0, "max": 86399999, "required": false},
+				"I": {"name": "gpsUtcDate", "type": "ushort", "min": 0, "max": 65534, "required": false}
+			}
+		},
+
+		"PDV": {
+			"name": "ProcessDataVariable",
+			"attrib": {
+				"A": {"name": "processDataDdi", "type": "ddi", "required": true},
+				"B": {"name": "processDataValue", "type": "long", "required": true},
+				"C": {"name": "productIdRef", "type": "idref", "ref": ["PDT"], "required": false},
+				"D": {"name": "deviceElementIdRef", "type": "idref", "ref": ["DET"], "required": false},
+				"E": {"name": "valuePresentationIdRef", "type": "idref", "ref": ["VPN"], "required": false},
+				"F": {"name": "actualCulturalPracticeValue", "type": "long", "required": false},
+				"G": {"name": "elementTypeInstanceValue", "type": "long", "required": false}
+			},
+			"content": {
+				"PDV": {}
+			}
+		},
+
+		"PDT": {
+			"name": "Product",
+			"attrib": {
+				"A": {"name": "productId", "type": "id", "required": true},
+				"B": {"name": "productDesignator", "type": "string", "maxlength": 32, "required": true},
+				"C": {"name": "productGroupIdRef", "type": "idref", "ref": ["PGP"], "required": false},
+				"D": {"name": "valuePresentationIdRef", "type": "idref", "ref": ["VPN"], "required": false},
+				"E": {"name": "quantityDdi", "type": "ddi", "required": false},
+				"F": {"name": "productType", "type": "enum", "values": [null, "SINGLE", "MIXTURE", "TEMPORARY_MIXTURE"], "required": false},
+				"G": {"name": "mixtureRecipeQuantity", "type": "long", "min": 0, "required": false},
+				"H": {"name": "densityMassPerVolume", "type": "long", "min": 0, "required": false},
+				"I": {"name": "densityMassPerCount", "type": "long", "min": 0, "required": false},
+				"J": {"name": "densityVolumePerCount", "type": "long", "min": 0, "required": false}
+			},
+			"content": {
+				"PRN": {}
+			}
+		},
+
+		"PAN": {
+			"name": "ProductAllocation",
+			"attrib": {
+				"A": {"name": "productIdRef", "type": "idref", "ref": ["PDT"], "required": true},
+				"B": {"name": "quantityDdi", "type": "ddi", "required": false},
+				"C": {"name": "quantityValue", "type": "long", "min": 0, "required": false},
+				"D": {"name": "transferMode", "type": "enum", "values": [null, "FILLING", "EMPTYING", "REMAINDER"], "required": false},
+				"E": {"name": "deviceElementIdRef", "type": "idref", "ref": ["DET"], "required": false},
+				"F": {"name": "valuePresentationIdRef", "type": "idref", "ref": ["VPN"], "required": false}
+			},
+			"content": {
+				"ASP": {"max": 1}
+			}
+		},
+
+		"PGP": {
+			"name": "ProductGroup",
+			"attrib": {
+				"A": {"name": "productGroupId", "type": "id", "required": true},
+				"B": {"name": "productGroupDesignator", "type": "string", "maxlength": 32, "required": true},
+				"C": {"name": "productGroupType", "type": "enum", "values": [null, "PRODUCT_GROUP", "CROP_TYPE"], "required": false}
+			}
+		},
+
+		"PRN": {
+			"name": "ProductRelation",
+			"attrib": {
+				"A": {"name": "productIdRef", "type": "idref", "ref": ["PDT"], "required": true},
+				"B": {"name": "quantityValue", "type": "long", "min": 0, "required": true}
+			}
+		},
+
+		"TSK": {
+			"name": "Task",
+			"attrib": {
+				"A": {"name": "taskId", "type": "id", "required": true},
+				"B": {"name": "taskDesignator", "type": "string", "maxlength": 32, "required": false},
+				"C": {"name": "customerIdRef", "type": "idref", "ref": ["CTR"], "required": false},
+				"D": {"name": "farmIdRef", "type": "idref", "ref": ["FRM"], "required": false},
+				"E": {"name": "partfieldIdRef", "type": "idref", "ref": ["PFD"], "required": false},
+				"F": {"name": "responsibleWorkerIdRef", "type": "idref", "ref": ["WKR"], "required": false},
+				"G": {"name": "taskStatus", "type": "enum", "values": [null, "PLANNED", "RUNNING", "PAUSED", "COMPLETED", "TEMPLATE", "CANCELED"], "required": true},
+				"H": {"name": "defaultTreatmentZoneCode", "type": "byte", "required": false},
+				"I": {"name": "positionLostTreatmentZoneCode", "type": "byte", "required": false},
+				"J": {"name": "outOfFieldTreatmentZoneCode", "type": "byte", "required": false}
+			},
+			"content": {
+				"TZN": {},
+				"TIM": {},
+				"OTP": {"max": 1},
+				"WAN": {},
+				"DAN": {},
+				"CNN": {},
+				"PAN": {},
+				"DLT": {},
+				"CAN": {},
+				"TLG": {},
+				"GRD": {"max": 1},
+				"CAT": {},
+				"GAN": {}
+			}
+		},
+
+		"TCC": {
+			"name": "TaskControllerCapabilities",
+			"attrib": {
+				"A": {"name": "taskControllerControlFunctionName", "type": "hex", "maxbytes": 8, "required": true},
+				"B": {"name": "taskControllerDesignator", "type": "string", "maxlength": 153, "required": true},
+				"C": {"name": "versionNumber", "type": "enum", "values": ["DIS", "FDIS_1", "FDIS_2", "E2_DIS", "E2_FDIS"], "required": true},
+				"D": {"name": "providedCapabilities", "type": "byte", "max": 63, "required": true},
+				"E": {"name": "numberOfBoomsSectionControl", "type": "byte", "required": true},
+				"F": {"name": "numberOfSectionsSectionControl", "type": "byte", "required": true},
+				"G": {"name": "numberOfControlChannels", "type": "byte", "required": true}
+			}
+		},
+
+		"TIM": {
+			"name": "Time",
+			"attrib": {
+				"A": {"name": "start", "type": "datetime", "required": true},
+				"B": {"name": "stop", "type": "datetime", "required": false},
+				"C": {"name": "duration", "type": "ulong", "required": false},
+				"D": {"name": "type", "type": "enum", "values": [null, "PLANNED", "PRELIMINARY", null, "EFFECTIVE", "INEFFECTIVE", "REPAIR", "CLEARING", "POWERED_DOWN"], "required": true}
+			},
+			"content": {
+				"PTN": {"max": 2},
+				"DLV": {}
+			}
+		},
+
+		"TLG": {
+			"name": "TimeLog",
+			"attrib": {
+				"A": {"name": "filename", "type": "string", "maxlength": 8, "required": true},
+				"B": {"name": "filelength", "type": "ulong", "required": false},
+				"C": {"name": "timeLogType", "type": "enum", "values": [null, "BINARY_TIMELOG"], "required": true}
+			}
+		},
+
+		"TZN": {
+			"name": "TreatmentZone",
+			"attrib": {
+				"A": {"name": "treatmentZoneCode", "type": "oid", "min": 0, "max": 254, "required": true},
+				"B": {"name": "treatmentZoneDesignator", "type": "string", "maxlength": 32, "required": false},
+				"C": {"name": "treatmentZoneColour", "type": "byte", "required": false}
+			},
+			"content": {
+				"PLN": {},
+				"PDV": {}
+			}
+		},
+
+		"VPN": {
+			"name": "ValuePresentation",
+			"attrib": {
+				"A": {"name": "valuePresentationId", "type": "id", "required": true},
+				"B": {"name": "offset", "type": "long", "required": true},
+				"C": {"name": "scale", "type": "double", "min": 0.000000001, "max": 100000000.0, "required": true},
+				"D": {"name": "numberOfDecimals", "type": "byte", "max": 7, "required": true},
+				"E": {"name": "unitDesignator", "type": "string", "maxlength": 32, "required": false},
+				"F": {"name": "colourLegendIdRef", "type": "idref", "ref": ["CLD"], "required": false}
+			}
+		},
+
+		"WKR": {
+			"name": "Worker",
+			"attrib": {
+				"A": {"name": "workerId", "type": "id", "required": true},
+				"B": {"name": "workerLastName", "type": "string", "maxlength": 32, "required": true},
+				"C": {"name": "workerFirstName", "type": "string", "maxlength": 32, "required": false},
+				"D": {"name": "workerStreet", "type": "string", "maxlength": 32, "required": false},
+				"E": {"name": "workerPoBox", "type": "string", "maxlength": 32, "required": false},
+				"F": {"name": "workerPostalCode", "type": "string", "maxlength": 10, "required": false},
+				"G": {"name": "workerCity", "type": "string", "maxlength": 32, "required": false},
+				"H": {"name": "workerState", "type": "string", "maxlength": 32, "required": false},
+				"I": {"name": "workerCountry", "type": "string", "maxlength": 32, "required": false},
+				"J": {"name": "workerPhone", "type": "string", "maxlength": 20, "required": false},
+				"K": {"name": "workerMobile", "type": "string", "maxlength": 20, "required": false},
+				"L": {"name": "workerLicenseNumber", "type": "string", "maxlength": 32, "required": false},
+				"M": {"name": "workerEmail", "type": "string", "maxlength": 64, "required": false}
+			}
+		},
+
+		"WAN": {
+			"name": "WorkerAllocation",
+			"attrib": {
+				"A": {"name": "workerIdRef", "type": "idref", "ref": ["WKR"], "required": true}
+			},
+			"content": {
+				"ASP": {"max": 1}
+			}
+		},
+
+		"XFC": {
+			"name": "ExternalFileContents",
+			"attrib": {},
+			"content": {
+				"CCG": {},
+				"CCT": {},
+				"CLD": {},
+				"CPC": {},
+				"CTP": {},
+				"CTR": {},
+				"DVC": {},
+				"FRM": {},
+				"OTQ": {},
+				"PDT": {},
+				"PFD": {},
+				"PGP": {},
+				"TSK": {},
+				"VPN": {},
+				"WKR": {}
+			}
+		},
+
+		"XFR": {
+			"name": "ExternalFileReference",
+			"attrib": {
+				"A": {"name": "filename", "type": "string", "maxlength": 8, "required": true},
+				"B": {"name": "fileType", "type": "enum", "values": [null, "XML"], "required": true}
+			}
+		}
+	}, 
+
+	"logdata": {
+		"DLV": {
+			"name": "DataLogValue",
+			"attrib": {
+				"A": {"name": "processDataDdi", "type": "ddi", "required": true},
+				"B": {"name": "processDataValue", "type": "long", "required": true},
+				"C": {"name": "deviceElementIdRef", "type": "idref", "ref": ["DET"], "required": true}
+			}
+		},
+
+		"PTN": {
+			"name": "Position",
+			"attrib": {
+				"A": {"name": "positionNorth", "type": "double", "min": -90.0, "max": 90.0, "required": true},
+				"B": {"name": "positionEast", "type": "double", "min": -180.0, "max": 180.0, "required": true},
+				"C": {"name": "positionUp", "type": "long", "required": false},
+				"D": {"name": "positionStatus", "type": "enum", "values": ["NO_GPS", "GNSS", "DGNSS", "PRECISE_GNSS", "RTK_FINTEGER", "RTK_FLOAT", "EST_DR_MODE", "MANUAL_INPUT", "SIMULATE_MODE", null, null, null, null, null, "ERROR", "NOT_AVAILABLE"], "required": true},
+				"E": {"name": "pdop", "type": "decimal", "min": 0, "max": 99.9, "required": false},
+				"F": {"name": "hdop", "type": "decimal", "min": 0, "max": 99.9, "required": false},
+				"G": {"name": "numberOfSatellites", "type": "byte", "required": false},
+				"H": {"name": "gpsUtcTime", "type": "long", "min": 0, "max": 86399999, "required": false},
+				"I": {"name": "gpsUtcDate", "type": "ushort", "min": 0, "max": 65534, "required": false}
+			}
+		},
+
+		"TIM": {
+			"name": "Time",
+			"attrib": {
+				"A": {"name": "start", "type": "datetime", "required": true},
+				"D": {"name": "type", "type": "enum", "values": [null, "PLANNED", "PRELIMINARY", null, "EFFECTIVE", "INEFFECTIVE", "REPAIR", "CLEARING", "POWERED_DOWN"], "required": true}
+			},
+			"content": {
+				"PTN": {"min": 1, "max": 1},
+				"DLV": {}
+			}
+		}
+	},
+
+	"linklist": {
+		"ISO11783LinkList": {
+			"name": "ISO11783LinkList",
+			"attrib": {
+				"VersionMajor": {"name": "versionMajor", "type": "enum", "values": ["DIS", "FDIS_1", "FDIS_2", "E2_DIS", "E2_FDIS"], "required": true},
+				"VersionMinor": {"name": "versionMinor", "type": "byte", "min": 0, "max": 99, "required": true},
+				"ManagementSoftwareManufacturer": {"name": "managementSoftwareManufacturer", "type": "string", "maxlength": 32, "required": true},
+				"ManagementSoftwareVersion": {"name": "managementSoftwareVersion", "type": "string", "maxlength": 32, "required": true},
+				"TaskControllerManufacturer": {"name": "taskControllerManufacturer", "type": "string", "maxlength": 32, "required": false},
+				"TaskControllerVersion": {"name": "taskControllerVersion", "type": "string", "maxlength": 32, "required": false},
+				"FileVersion": {"name": "fileVersion", "type": "string", "maxlength": 32, "required": false},
+				"DataTransferOrigin": {"name": "dataTransferOrigin", "type": "enum", "values": [null, "FMIS", "MICS"], "required": true}
+			},
+			"content": {
+				"LGP": {"min": 1}
+			}
+		},
+
+		"LNK": {
+			"name": "Link",
+			"attrib": {
+				"A": {"name": "objectIdRef", "type": "idref", "required": true},
+				"B": {"name": "linkValue", "type": "string", "maxlength": 255, "required": true},
+				"C": {"name": "linkDesignator", "type": "string", "maxlength": 32, "required": false}
+			}
+		},
+
+		"LGP": {
+			"name": "LinkGroup",
+			"attrib": {
+				"A": {"name": "linkGroupId", "type": "id", "required": true},
+				"B": {"name": "linkGroupType", "type": "enum", "values": [null, "UUID", "GLN", "UNIQUE_URI", "INFO_URI"], "required": true},
+				"C": {"name": "manufacturerGLN", "type": "string", "maxlength": 64, "required": false},
+				"D": {"name": "linkGroupNamespace", "type": "string", "maxlength": 255, "required": false},
+				"E": {"name": "linkGroupDesignator", "type": "string", "maxlength": 32, "required": false}
+			},
+			"content": {
+				"LNK": {}
+			}
+		}
+	}
+}

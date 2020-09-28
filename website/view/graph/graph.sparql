@@ -1,0 +1,22 @@
+select ?uri ?label ?comment (count(distinct ?res) as ?count)
+{
+    graph <${graph}> {
+        ?res a ?uri .
+    }
+
+    graph <https://app.sdsd-projekt.de/wikinormia/> {
+        ?uri a rdfs:Class .
+        optional {
+            ?uri rdfs:label ?label .
+            ?uri rdfs:comment ?comment .
+        }
+    }
+}
+group by ?uri ?label ?comment
+order by ?label # desc(?count)
+<#if offset??>
+offset ${offset}
+</#if>
+<#if limit??>
+limit ${limit}
+</#if>
