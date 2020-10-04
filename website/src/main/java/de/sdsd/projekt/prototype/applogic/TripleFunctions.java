@@ -128,6 +128,8 @@ public class TripleFunctions implements Closeable {
 		Credentials credentials = new UsernamePasswordCredentials(stardog.getString("user"), stardog.getString("password"));
 		credentialsProvider.setCredentials(AuthScope.ANY, credentials);
 		recreateClient();
+		
+		insertDefaultsIntoWikinormia();
 	}
 	
 	public void recreateClient() {
@@ -413,6 +415,11 @@ public class TripleFunctions implements Closeable {
 	public static class WikiFormat extends WikiRes {
 		public WikiFormat(String identifier) {
 			super(createWikiResourceUri(identifier));
+		}
+		public static WikiFormat fromUri(String uri) throws IllegalArgumentException {
+			if(!uri.startsWith(NS_WIKI)) 
+				throw new IllegalArgumentException("URI is no wikinormia uri");
+			return new WikiFormat(uri.substring(NS_WIKI.length()));
 		}
 		public WikiType res(String identifier) {
 			return new WikiType(this, identifier);

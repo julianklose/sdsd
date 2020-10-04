@@ -101,18 +101,18 @@ public class FormatEndpoint extends JsonRpcEndpoint {
 			JS_MIME="mimetype", JS_ARTYPE="artype", 
 			JS_PARSER="parser", JS_PARSE_COMMAND="parseCommand", JS_TEST_COMMAND="testCommand";
 	
-	public JSONObject get(HttpServletRequest req, String identifier) throws JsonRpcException {
+	public JSONObject get(HttpServletRequest req, String uri) throws JsonRpcException {
 		User user = null;
 		try {
 			user = application.getUser(getSessionId(req));
-			System.out.println("format get: user(" + (user != null ? user.getName() : "none") + ") identifier(" + identifier + ")");
+			System.out.println("format get: user(" + (user != null ? user.getName() : "none") + ") uri(" + uri + ")");
 			
 			if (user == null) 
 				throw new NoLoginException();
 			else {
-				WikiFormat res = new WikiFormat(identifier);
+				WikiFormat res = WikiFormat.fromUri(uri);
 				if(!application.list.types.exists(null, res.getURI()))
-					throw new SDSDException("Format '" + identifier + "' not found");
+					throw new SDSDException("Format '" + uri + "' not found");
 				
 				SDSDType format = application.list.types.get(user, res.getURI());
 				

@@ -87,7 +87,7 @@ app.controller('simulator', function ($scope, $interval, sdsd) {
 		if(file) {
 			$scope.simulatorLoading = true;
 			sdsd.rpcCall("simulator", "timelogInfo", [file.id], function(data) {
-				$scope.file.timelogs = data;
+				$scope.file.timelogs = data.timelogs;
 			}, function() {
 				$scope.noTimelogs = jQuery.isEmptyObject($scope.file.timelogs);
 				$scope.simulatorLoading = false;

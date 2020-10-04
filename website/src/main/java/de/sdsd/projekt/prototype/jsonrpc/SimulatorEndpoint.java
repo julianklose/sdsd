@@ -21,6 +21,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
@@ -50,6 +52,8 @@ import efdi.GrpcEfdi;
 import efdi.GrpcEfdi.DataLogValue;
 import efdi.GrpcEfdi.Device;
 import efdi.GrpcEfdi.DeviceElement;
+import efdi.GrpcEfdi.DeviceObjectReference;
+import efdi.GrpcEfdi.DeviceProcessData;
 import efdi.GrpcEfdi.ISO11783_TaskData;
 import efdi.GrpcEfdi.Time;
 import efdi.GrpcEfdi.TimeLog;
@@ -113,14 +117,33 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 				GrpcEfdi.ISO11783_TaskData deviceDescription = efdi.getDeviceDescription();
 				if(deviceDescription == null) throw new FileNotFoundException("DeviceDescription is missing");
 				
+				JSONArray ddis = new JSONArray();
 				Map<Long, Device> deviceMap = new HashMap<>();
 				for(Device device : deviceDescription.getDeviceList()) {
+					Map<Integer, DeviceProcessData> dpds = device.getDeviceProcessDataList().stream()
+							.collect(Collectors.toMap(DeviceProcessData::getDeviceProcessDataObjectId, Function.identity()));
+					
+					JSONArray dets = new JSONArray();
 					for(DeviceElement det : device.getDeviceElementList()) {
 						deviceMap.put(det.getDeviceElementId().getNumber(), device);
+						JSONArray detddis = new JSONArray();
+						for(DeviceObjectReference dor : det.getDeviceObjectReferenceList()) {
+							DeviceProcessData dpd = dpds.get(dor.getDeviceObjectId());
+							if(dpd == null) continue;
+							detddis.put(new JSONObject()
+									.put("ddi", dpd.getDeviceProcessDataDdi())
+									.put("name", dpd.getDeviceProcessDataDesignator()));
+						}
+						dets.put(new JSONObject()
+								.put("element", det.getDeviceElementDesignator())
+								.put("ddis", detddis));
 					}
+					ddis.put(new JSONObject()
+							.put("device", device.getDeviceDesignator())
+							.put("elements", dets));
 				}
 				
-				JSONObject result = new JSONObject();
+				JSONObject timelogs = new JSONObject();
 				for(String name : efdi.getTimeLogNames()) {
 					TimeLog timelog = efdi.getTimeLog(name);
 					if(timelog == null) continue;
@@ -142,10 +165,12 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 					if(device.isPresent())
 						info.put("device", device.get().getDeviceDesignator());
 					
-					result.put(name, info);
+					timelogs.put(name, info);
 				}
 				
-				return result;
+				return new JSONObject()
+						.put("ddis", ddis)
+						.put("timelogs", timelogs);
 			}
 		} catch (IOException e) {
 			throw createError(user, new SDSDException(e.getMessage()));

@@ -8,9 +8,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.CheckForNull;
+
 import com.google.protobuf.Timestamp;
 
 import agrirouter.commons.Chunk.ChunkComponent;
+import agrirouter.commons.MessageOuterClass.Metadata;
 import agrirouter.feed.push.notification.PushNotificationOuterClass.PushNotification;
 import agrirouter.feed.response.FeedResponse.HeaderQueryResponse;
 import de.sdsd.projekt.agrirouter.ARMessageType;
@@ -30,6 +33,8 @@ public class ARMsgHeader {
 	private String teamSetContextId = null;
 	private Instant sentTime = null;
 	private final int contentSize;
+	@CheckForNull
+	private Metadata meta = null;
 	
 	/**
 	 * Converts a protobuf timestamp to an java time instant.
@@ -59,6 +64,7 @@ public class ARMsgHeader {
 		this.teamSetContextId = head.getTeamSetContextId();
 		this.sentTime = timestampToInstant(head.getSentTimestamp());
 		this.contentSize = (int) head.getPayloadSize();
+		this.meta = head.getMetadata();
 	}
 	
 	/**
@@ -85,6 +91,7 @@ public class ARMsgHeader {
 		this.type = ARMessageType.from(head.getTechnicalMessageType());
 		this.teamSetContextId = head.getTeamSetContextId();
 		this.sentTime = timestampToInstant(head.getSentTimestamp());
+		this.meta = head.getMetadata();
 	}
 	
 	/**
@@ -114,6 +121,7 @@ public class ARMsgHeader {
 			this.type = ARMessageType.from(head.getTechnicalMessageType());
 			this.teamSetContextId = head.getTeamSetContextId();
 			this.sentTime = timestampToInstant(head.getSentTimestamp());
+			this.meta = head.getMetadata();
 		}
 		return this;
 	}
@@ -132,6 +140,7 @@ public class ARMsgHeader {
 			this.type = ARMessageType.from(head.getTechnicalMessageType());
 			this.teamSetContextId = head.getTeamSetContextId();
 			this.sentTime = timestampToInstant(head.getSentTimestamp());
+			this.meta = head.getMetadata();
 		}
 		return this;
 	}
@@ -217,6 +226,15 @@ public class ARMsgHeader {
 	 */
 	public boolean isComplete() {
 		return msgids.size() == chunkLength;
+	}
+	
+	/**
+	 * Return the meta data sent along the message.
+	 * @return the metadata of the message
+	 */
+	@CheckForNull
+	public Metadata getMetadata() {
+		return meta;
 	}
 	
 //	@Override

@@ -29,10 +29,10 @@
 		<div data-ng-include="'template/header.html'"></div>
 		<div data-ng-include="'template/menu.html'"></div>
 
-		<div data-ng-controller="regCtrl" data-ng-init="init()" data-ng-show="sdsd.username">
+		<div data-ng-controller="regCtrl" data-ng-init="init()">
 			<div class="row">
 				<div class="col-md-12">
-					<div class="form-group"  data-ng-show="username === null">
+					<div class="form-group"  data-ng-show="sdsd.username === null">
 					
 						<h1>Register</h1>
 						
@@ -72,7 +72,7 @@
 						</div>
 					</div>
 					
-					<div class="form-group"  data-ng-show="username !== null">
+					<div class="form-group"  data-ng-show="sdsd.username !== null">
 					
 						<h1>Change password</h1>
 					

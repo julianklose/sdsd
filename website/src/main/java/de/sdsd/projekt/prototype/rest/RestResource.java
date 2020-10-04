@@ -46,6 +46,7 @@ import com.google.protobuf.util.Timestamps;
 import de.sdsd.projekt.agrirouter.ARException;
 import de.sdsd.projekt.prototype.applogic.ApplicationLogic;
 import de.sdsd.projekt.prototype.applogic.TripleFunctions;
+import de.sdsd.projekt.prototype.data.ARConn;
 import de.sdsd.projekt.prototype.data.EfdiTimeLog;
 import de.sdsd.projekt.prototype.data.File;
 import de.sdsd.projekt.prototype.data.SDSDException;
@@ -189,12 +190,13 @@ public class RestResource {
 			User user = application.user.getUser(username);
 			if(user == null) 
 				return Response.status(Status.NOT_FOUND).entity("User not found").build();
-			if(user.agrirouter() == null) 
+			ARConn ar = user.agrirouter();
+			if(ar == null) 
 				return Response.status(Status.NOT_FOUND).entity("User is not onboarded to the agrirouter").build();
 			
 			System.out.println("arconn: user(" + user.getName() + ")");
 			
-			byte[] bytes = user.agrirouter().getOnboardingInfo().getBytes(StandardCharsets.UTF_8);
+			byte[] bytes = ar.getOnboardingInfo().getBytes(StandardCharsets.UTF_8);
 			return Response.ok(bytes, MediaType.APPLICATION_JSON)
 					.header("Content-Disposition", "attachment; filename=\"arconn_" + username + ".json\"")
 					.header("Content-Length", bytes.length)
@@ -438,7 +440,7 @@ public class RestResource {
 			if(!application.list.types.update(user, type, type.setParser(path, parseCommand, testCommand)))
 				return appError(user, new SDSDException("Couldn't modify format information"));
 			
-			return Response.seeOther(URI.create("/format.html?format=" + identifier)).build();
+			return Response.seeOther(URI.create("/wikinormia.html")).build();
 			
 		} catch (Throwable e) {
 			return internalError(user, e);

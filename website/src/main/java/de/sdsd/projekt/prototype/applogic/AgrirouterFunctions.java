@@ -37,6 +37,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.mongodb.client.model.Updates;
 
 import agrirouter.commons.MessageOuterClass.Messages;
+import agrirouter.commons.MessageOuterClass.Metadata;
 import agrirouter.request.payload.endpoint.Capabilities.CapabilitySpecification.PushNotification;
 import de.sdsd.projekt.agrirouter.ARConfig;
 import de.sdsd.projekt.agrirouter.ARConfig.ARConfigBuilder;
@@ -59,6 +60,7 @@ import de.sdsd.projekt.agrirouter.request.feed.ARMsgHeader.ARMsgHeaderResult;
 import de.sdsd.projekt.agrirouter.request.feed.ARQueryMessageHeaders;
 import de.sdsd.projekt.agrirouter.request.feed.ARQueryMessages;
 import de.sdsd.projekt.prototype.data.ARCaps;
+import de.sdsd.projekt.prototype.data.ARConn;
 import de.sdsd.projekt.prototype.data.AREndpointStore;
 import de.sdsd.projekt.prototype.data.File;
 import de.sdsd.projekt.prototype.data.SDSDException;
@@ -85,10 +87,11 @@ public class AgrirouterFunctions {
 	}
 	
 	public AROnboarding getOnboarding(User user) throws SDSDException {
-		if(user.agrirouter() == null)
+		final ARConn ar = user.agrirouter();
+		if(ar == null)
 			throw new SDSDException("Not onboarded");
-		if(user.agrirouter().isMQTT()) return user.agrirouter().isQA() ? onboardingMqttQA : onboardingMqtt;
-		else return user.agrirouter().isQA() ? onboardingRestQA : onboardingRest;
+		if(ar.isMQTT()) return ar.isQA() ? onboardingMqttQA : onboardingMqtt;
+		else return ar.isQA() ? onboardingRestQA : onboardingRest;
 	}
 	
 	private AROnboarding createArOnboarding(JSONObject cfg, ARGateway gateway) throws Exception {
@@ -138,10 +141,11 @@ public class AgrirouterFunctions {
 	}
 	
 	public void reconnect(User user) throws MqttException, SDSDException {
-		if(user.agrirouter() == null)
+		final ARConn ar = user.agrirouter();
+		if(ar == null)
 			throw new SDSDException("Not onboarded");
 		user.closeAgrirouterConn();
-		user.agrirouter().conn();
+		ar.conn();
 	}
 	
 	public URI reonboard(User user) throws URISyntaxException, GeneralSecurityException, SDSDException {
@@ -193,11 +197,14 @@ public class AgrirouterFunctions {
 	}
 	
 	protected boolean sendCapabilities(User user) throws IOException, InterruptedException, ARException {
+		final ARConn ar = user.agrirouter();
+		if(ar == null)
+			return false;
 		try {
 			List<ARCaps> caps = app.list.capabilities.getList(user);
 			if(caps.isEmpty()) {
 				ARCapabilities request = getOnboarding(user).getCapabilitieDeclaration();
-				return user.agrirouter().conn().sendRequest(request, TIMEOUT_SECONDS, TimeUnit.SECONDS);
+				return ar.conn().sendRequest(request, TIMEOUT_SECONDS, TimeUnit.SECONDS);
 			} else
 				return sendCapabilities(user, caps.get(0));
 		} catch (SDSDException e) {
@@ -206,12 +213,15 @@ public class AgrirouterFunctions {
 	}
 	
 	protected boolean sendCapabilities(User user, ARCaps caps) throws IOException, InterruptedException, ARException {
+		final ARConn ar = user.agrirouter();
+		if(ar == null)
+			return false;
 		try {
 			ARConfig config = getOnboarding(user).getConfig();
 			ARCapabilities request = new ARCapabilities(config.getApplicationId(), config.getVersionId());
 			caps.getCapabilities().forEach(request::addCapability);
 			request.setPushNotifications(caps.getPushNotification());
-			return user.agrirouter().conn().sendRequest(request, TIMEOUT_SECONDS, TimeUnit.SECONDS);
+			return ar.conn().sendRequest(request, TIMEOUT_SECONDS, TimeUnit.SECONDS);
 		} catch (SDSDException e) {
 			return false;
 		}
@@ -227,9 +237,10 @@ public class AgrirouterFunctions {
 	}
 	
 	public boolean offboard(User user) throws IOException {
-		if(user.agrirouter() != null) {
+		final ARConn ar = user.agrirouter();
+		if(ar != null) {
 			try {
-				getOnboarding(user).revoke(user.agrirouter().conn(), user.agrirouter().getAccountId());
+				getOnboarding(user).revoke(ar.conn(), ar.getAccountId());
 			} catch (ARException e) {
 				System.err.println(e.getMessage());
 			} catch (Throwable e) {
@@ -246,7 +257,8 @@ public class AgrirouterFunctions {
 	}
 	
 	public CompletableFuture<List<AREndpoint>> readEndpoints(User user) throws IOException, ARException {
-		if (user.agrirouter() == null)
+		final ARConn ar = user.agrirouter();
+		if (ar == null)
 			return CompletableFuture.completedFuture(Collections.emptyList());
 		
 		CompletableFuture<List<AREndpoint>> pendingEndpoints = user.getPendingEndpoints();
@@ -255,10 +267,10 @@ public class AgrirouterFunctions {
 		else {
 			ARListEndpointsRequest request = new ARListEndpointsRequest();
 			
-			CompletableFuture<List<AREndpoint>> list = user.agrirouter().conn()
+			CompletableFuture<List<AREndpoint>> list = ar.conn()
 					.sendRequestAsync(request, TIMEOUT_SECONDS, TimeUnit.SECONDS);
 			
-			CompletableFuture<List<AREndpoint>> routes = user.agrirouter().conn().sendRequestAsync(
+			CompletableFuture<List<AREndpoint>> routes = ar.conn().sendRequestAsync(
 					request.considerRoutingRules(true).setDirection(ARDirection.SEND_RECEIVE), 
 					TIMEOUT_SECONDS, TimeUnit.SECONDS);
 			
@@ -286,97 +298,116 @@ public class AgrirouterFunctions {
 	
 	public CompletableFuture<Boolean> sendFile(User user, File file, boolean publish, List<String> targets) 
 			throws FileNotFoundException, ARException, IOException {
+		final ARConn ar = user.agrirouter();
+		if(ar == null)
+			return CompletableFuture.completedFuture(false);
 		byte[] content = app.file.downloadFile(user, file);
 		ARMessageType artype = app.list.types.get(null, file.getType()).getARType();
 		return new ARSendMessage()
 				.setTeamSetContextId(file.getFilename())
+				.setMetadata(Metadata.newBuilder()
+						.setFileName(file.getFilename())
+						.build())
 				.setType(artype)
 				.setPayload(content)
 				.addAllRecipients(targets)
 				.setPublish(publish)
-				.sendAsync(user.agrirouter().conn(), (file.getSize() / ARSendMessage.MAX_MESSAGE_SIZE + 1) * TIMEOUT_SECONDS , TimeUnit.SECONDS);
+				.sendAsync(ar.conn(), (file.getSize() / ARSendMessage.MAX_MESSAGE_SIZE + 1) * TIMEOUT_SECONDS , TimeUnit.SECONDS);
 	}
 	
 	public CompletableFuture<Boolean> sendDeviceDescription(User user, GrpcEfdi.ISO11783_TaskData deviceDescription, String contextId) 
 			throws ARException, IOException {
+		final ARConn ar = user.agrirouter();
+		if(ar == null)
+			return CompletableFuture.completedFuture(false);
 		return new ARSendMessage()
 				.setTeamSetContextId(contextId)
 				.setType(ARMessageType.DEVICE_DESCRIPTION)
 				.setPayload(deviceDescription)
 				.setPublish(true)
-				.sendAsync(user.agrirouter().conn(), TIMEOUT_SECONDS , TimeUnit.SECONDS);
+				.sendAsync(ar.conn(), TIMEOUT_SECONDS , TimeUnit.SECONDS);
 	}
 	
 	public CompletableFuture<Boolean> sendTimelog(User user, GrpcEfdi.TimeLog timelog, String contextId) 
 			throws ARException, IOException {
+		final ARConn ar = user.agrirouter();
+		if(ar == null)
+			return CompletableFuture.completedFuture(false);
 		return new ARSendMessage()
 				.setTeamSetContextId(contextId)
 				.setType(ARMessageType.TIME_LOG)
 				.setPayload(timelog)
 				.setPublish(true)
-				.sendAsync(user.agrirouter().conn(), timelog.getTimeCount() > 20 ? 6 * TIMEOUT_SECONDS : TIMEOUT_SECONDS , TimeUnit.SECONDS);
+				.sendAsync(ar.conn(), timelog.getTimeCount() > 20 ? 6 * TIMEOUT_SECONDS : TIMEOUT_SECONDS , TimeUnit.SECONDS);
 	}
 	
 	public CompletableFuture<ARMsgHeaderResult> readAllMessageHeaders(User user) throws IOException, ARException {
-		if(user.agrirouter() == null)
+		final ARConn ar = user.agrirouter();
+		if(ar == null)
 			return CompletableFuture.completedFuture(new ARMsgHeaderResult());
 		return new ARQueryMessageHeaders()
 				.setGetAllFilter()
-				.sendAsync(user.agrirouter().conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
+				.sendAsync(ar.conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
 	}
 	
 	public CompletableFuture<ARMsgHeaderResult> readMessageHeaders(User user, Instant from, Instant until) throws IOException, ARException {
-		if(user.agrirouter() == null)
+		final ARConn ar = user.agrirouter();
+		if(ar == null)
 			return CompletableFuture.completedFuture(new ARMsgHeaderResult());
 		return new ARQueryMessageHeaders()
 				.setValidityFilter(from, until)
-				.sendAsync(user.agrirouter().conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
+				.sendAsync(ar.conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
 	}
 	
 	public CompletableFuture<ARMsgHeaderResult> readMessageHeaders(User user, AREndpoint sender) throws IOException, ARException {
-		if(user.agrirouter() == null)
+		final ARConn ar = user.agrirouter();
+		if(ar == null)
 			return CompletableFuture.completedFuture(new ARMsgHeaderResult());
 		return new ARQueryMessageHeaders()
 				.addSenderFilter(sender.getId())
-				.sendAsync(user.agrirouter().conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
+				.sendAsync(ar.conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
 	}
 	
 	public CompletableFuture<ARMsgHeaderResult> readMessageHeaders(User user, AREndpoint sender, Instant from, Instant until) throws IOException, ARException {
-		if(user.agrirouter() == null)
+		final ARConn ar = user.agrirouter();
+		if(ar == null)
 			return CompletableFuture.completedFuture(new ARMsgHeaderResult());
 		return new ARQueryMessageHeaders()
 				.addSenderFilter(sender.getId())
 				.setValidityFilter(from, until)
-				.sendAsync(user.agrirouter().conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
+				.sendAsync(ar.conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
 	}
 	
 	public CompletableFuture<Messages> deleteMessages(final User user, List<ARMsgHeader> headers) throws IOException, ARException {
-		if(headers.isEmpty() || user.agrirouter() == null) 
+		final ARConn ar = user.agrirouter();
+		if(headers.isEmpty() || ar == null) 
 			return CompletableFuture.completedFuture(Messages.getDefaultInstance());
 		return new ARDeleteMessage()
 				.addMessages(headers)
-				.sendAsync(user.agrirouter().conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
+				.sendAsync(ar.conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
 	}
 	
 	public CompletableFuture<Messages> clearFeed(User user) throws IOException, ARException {
-		if(user.agrirouter() == null) 
+		final ARConn ar = user.agrirouter();
+		if(ar == null) 
 			return CompletableFuture.completedFuture(Messages.getDefaultInstance());
 		return new ARDeleteMessage()
 				.setValidityFilter(Instant.now().minus(27, ChronoUnit.DAYS), Instant.now())
-				.sendAsync(user.agrirouter().conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
+				.sendAsync(ar.conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
 	}
 	
 	private static final Pattern ISODATE_REGEX = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z_?");
 	public CompletableFuture<List<ReceivedMessageResult>> receiveMessages(final User user, List<ARMsgHeader> headers) 
 			throws ARException, IOException {
-		if(headers.isEmpty())
+		final ARConn ar = user.agrirouter();
+		if(ar == null || headers.isEmpty())
 			return CompletableFuture.completedFuture(Collections.emptyList());
 		if(headers.stream().filter(h -> h.getIds().isEmpty() || !h.isComplete()).findAny().isPresent()) 
 			throw new ARException("At least one message is incomplete or corrupted");
 		
 		return new ARQueryMessages()
 				.addMessageFilter(headers)
-				.sendAsync(user.agrirouter().conn(), 
+				.sendAsync(ar.conn(), 
 						headers.stream().mapToInt(ARMsgHeader::getChunkCount).sum() * TIMEOUT_SECONDS, TimeUnit.SECONDS)
 				.thenApply(msgs -> msgs.stream().map(msg -> handleReceivedMessage(user, msg)).collect(toList()));
 	}
@@ -466,13 +497,21 @@ public class AgrirouterFunctions {
 				else
 					return new ReceivedMessageResult(null, false);
 			} else {
-				String filename = DateTimeFormatter.ISO_OFFSET_DATE_TIME
-						.format(msg.header.getSentTime().truncatedTo(ChronoUnit.SECONDS).atOffset(ZoneOffset.UTC));
-				if(!msg.header.getTeamSetContextId().isEmpty()) {
-					String tscid = ISODATE_REGEX.matcher(msg.header.getTeamSetContextId()).replaceAll("");
-					if(filename.length() + tscid.length() > 250) tscid = tscid.substring(250-filename.length());
-					filename += '_' + tscid;
+				String filename;
+				Metadata metadata = msg.header.getMetadata();
+				if(metadata != null && !metadata.getFileName().isEmpty())
+					filename = metadata.getFileName();
+				else {
+					filename = DateTimeFormatter.ISO_OFFSET_DATE_TIME
+							.format(msg.header.getSentTime().truncatedTo(ChronoUnit.SECONDS).atOffset(ZoneOffset.UTC));
+					if(!msg.header.getTeamSetContextId().isEmpty()) {
+						String tscid = ISODATE_REGEX.matcher(msg.header.getTeamSetContextId()).replaceAll("");
+						filename += '_' + tscid;
+					}
 				}
+				if(filename.length() > 250)
+					filename = filename.substring(0, 250);
+				
 				File file = app.file.storeFile(user, filename, msg.getContent(), 
 						msg.header.getSentTime(), msg.header.getSender(), msg.header.getType());
 				return new ReceivedMessageResult(file != null ? file.getFilename() : null, file != null);
@@ -488,8 +527,9 @@ public class AgrirouterFunctions {
 			throws IOException, InterruptedException, ARException {
 		Set<ARMessageType> types = Stream.of(technicalMessageTypes)
 				.map(ARMessageType::from).collect(Collectors.toSet());
-		if(new ARSubscription(types).send(user.agrirouter().conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-			return app.user.updateUser(user, user.agrirouter().setSubscriptions(types));
+		final ARConn ar = user.agrirouter();
+		if(ar != null && new ARSubscription(types).send(ar.conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+			return app.user.updateUser(user, ar.setSubscriptions(types));
 		}
 		else
 			return false;

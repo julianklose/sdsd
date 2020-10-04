@@ -300,7 +300,8 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 				List<Node> wikitypes = new ArrayList<>();
 				for(int t = 0; t < types.length(); ++t) {
 					DraftItem.Ref type = DraftItem.Ref.of(types.getString(t));
-					if(type.isDraft()) drafttypes.add(type.asObjectId());
+					if(type == null) continue;
+					else if(type.isDraft()) drafttypes.add(type.asObjectId());
 					else wikitypes.add(type.asNode());
 				}
 				
@@ -318,13 +319,15 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 				
 				if(wikitypes.size() > 0) {
 					Var URI=Var.alloc("res"), LABEL=Var.alloc("label"), 
-							TYPE=Var.alloc("type"), TLABEL=Var.alloc("tLabel");
+							TYPE=Var.alloc("type"), TLABEL=Var.alloc("tLabel"), BASE=Var.alloc("base");
 					SelectBuilder query = new SelectBuilder()
 							.addVar(URI).addVar(LABEL).addVar(TYPE).addVar(TLABEL)
 							.from(TripleFunctions.TBOX)
 							.addWhere(URI, RDF.type, TYPE)
+							.addWhere(TYPE, TripleFunctions.SUBCLASS, BASE)
 							.addWhere(URI, RDFS.label, LABEL)
-							.addWhere(TYPE, RDFS.label, TLABEL);
+							.addWhere(TYPE, RDFS.label, TLABEL)
+							.addValueVar(BASE, wikitypes.toArray());
 					try(QueryResult qr = application.triple.query(query.build())) {
 						for(UtilQuerySolution qs : qr.iterate()) {
 							String type = qs.getUri(TYPE);

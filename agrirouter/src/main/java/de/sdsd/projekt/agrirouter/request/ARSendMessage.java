@@ -8,6 +8,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
 import agrirouter.commons.Chunk.ChunkComponent;
+import agrirouter.commons.MessageOuterClass.Metadata;
 import agrirouter.request.Request.RequestEnvelope;
 import agrirouter.request.Request.RequestEnvelope.Mode;
 import agrirouter.response.Response.ResponseEnvelope;
@@ -146,6 +147,17 @@ public class ARSendMessage extends ARRequest<Boolean> {
 	 */
 	public ARSendMessage setPayload(Message payload) {
 		this.efdiPayload = payload;
+		return this;
+	}
+	
+	/**
+	 * Sets the message metadata.
+	 *
+	 * @param metadata the metadata
+	 * @return this object for method chaining
+	 */
+	public ARSendMessage setMetadata(Metadata metadata) {
+		this.req.setMetadata(metadata);
 		return this;
 	}
 	

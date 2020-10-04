@@ -143,8 +143,9 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 				throw new NoLoginException();
 			else {
 				boolean ok = application.agrirouter.secureOnboard(user);
-				if(ok) application.logInfo(user, "Onboarded to agrirouter account " + user.agrirouter().getAccountId() 
-						+ " as endpoint " + user.agrirouter().getOwnEndpointId());
+				ARConn ar = user.agrirouter();
+				if(ok && ar != null) application.logInfo(user, "Onboarded to agrirouter account " + ar.getAccountId() 
+						+ " as endpoint " + ar.getOwnEndpointId());
 				return new JSONObject().put("success", ok);
 			}
 		} catch (Throwable e) {
@@ -176,16 +177,22 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 
 	private JSONObject endpointToJson(AREndpoint ep) {
 		if(ep == null) return new JSONObject();
-		JSONArray accepts = ep.getCapabilities() == null ? new JSONArray() : ep.getCapabilities().stream()
-				.filter(cap -> cap.getDirection() != ARDirection.SEND)
-				.map(cap -> cap.getType().technicalMessageType())
-				.collect(Util.toJSONArray());
+		JSONArray accepts = new JSONArray(), sends = new JSONArray();
+		if(ep.getCapabilities() != null) {
+			for(ARCapability cap : ep.getCapabilities()) {
+				if(cap.getDirection() != ARDirection.SEND)
+					accepts.put(cap.getType().technicalMessageType());
+				if(cap.getDirection() != ARDirection.RECEIVE)
+					sends.put(cap.getType().technicalMessageType());
+			}
+		}
 		return new JSONObject()
 				.put("id", ep.getId())
 				.put("name", ep.getName())
 				.put("type", ep.getType())
 				.put("active", ep.isActive())
-				.put("accepts", accepts);
+				.put("accepts", accepts)
+				.put("sends", sends);
 	}
 	
 	public JSONObject listEndpoints(HttpServletRequest req, boolean update) throws JsonRpcException {
@@ -432,10 +439,10 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 
 			if (user == null) 
 				throw new NoLoginException();
-			else if (user.agrirouter() == null)
-				return new JSONObject().put("subs", new JSONArray());
 			else {
-				Set<ARMessageType> subs = user.agrirouter().getSubscriptions();
+				ARConn ar = user.agrirouter();
+				if(ar == null) return new JSONObject().put("subs", new JSONArray());
+				Set<ARMessageType> subs = ar.getSubscriptions();
 				ARCaps caps = application.list.capabilities.get(user, user.username);
 				JSONArray array = caps.getCapabilities().stream()
 						.sorted()
@@ -481,15 +488,15 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 
 			if (user == null) 
 				throw new NoLoginException();
-			else if(user.agrirouter() == null)
-				throw new NoOnboardingException();
 			else {
+				ARConn ar = user.agrirouter();
+				if(ar == null) throw new NoOnboardingException();
 				ARCaps caps = application.list.capabilities.get(user, user.username);
 				
 				JSONArray array = new JSONArray();
 				for(ARMessageType t : ARMessageType.values()) {
 					if(t.technicalMessageType().isEmpty()) continue;
-					if(t == ARMessageType.OTHER && !user.agrirouter().isQA()) continue;
+					if(t == ARMessageType.OTHER && !ar.isQA()) continue;
 					JSONObject cap = artype(t);
 					ARDirection dir = caps.getCapability(t);
 					if(dir != null) cap.put("direction", dir.number());

@@ -45,6 +45,21 @@ app.directive('ngLink', $location => {
 	}
 });
 
+app.directive('customOnChange', function() {
+	return {
+		restrict: 'A',
+		link: function(scope, element, attrs) {
+			var onChangeHandler = scope.$eval(attrs.customOnChange);
+			element.on('change', (event) => {
+				scope.$apply(() => onChangeHandler(event))
+			});
+			element.on('$destroy', function() {
+				element.off();
+			});
+		}
+	};
+});
+
 app.filter('localname', () => {
 	return input => {
 		if (!input) return input;
@@ -61,6 +76,8 @@ app.controller('wikinormia', ($q, $scope, $location, $timeout, sdsd) => {
 	$scope.sdsd = sdsd;
 	$scope.page;
 
+	// ============================ $watch ======================================
+
 	$scope.$watch('sdsd.username', newVal => {
 		if (newVal) {
 			$scope.loadPage();
@@ -69,6 +86,7 @@ app.controller('wikinormia', ($q, $scope, $location, $timeout, sdsd) => {
 		} else {
 			$scope.page = undefined;
 			$scope.input = {};
+			$scope.initParserInput();
 			$scope.autocomplete = {
 				formats: [],
 				types: [],
@@ -76,6 +94,16 @@ app.controller('wikinormia', ($q, $scope, $location, $timeout, sdsd) => {
 			};
 		}
 	});
+
+	$scope.$watch('search.input', newVal => {
+		if (newVal) {
+			const ind = newVal.lastIndexOf('?page=');
+			$scope.search.page = ind >= 0 ? newVal.slice(ind + 6) : newVal;
+		} else
+			$scope.search.page = null;
+	});
+
+	// ============================== Load page =================================
 
 	$scope.loadPage = () => {
 		$scope.page = $location.search().page;
@@ -104,12 +132,74 @@ app.controller('wikinormia', ($q, $scope, $location, $timeout, sdsd) => {
 			});
 		}
 	}
+
+	// =============================== RPC Calls ================================
+
+	/**
+	 * @function
+	 * @name listLiteralTypes
+	 * @memberOf appcontroller
+	 * @description A function to encapsulate the RPC call to list literal types.
+	 * The used endpoint is format/listLiteralTypes.
+	 */
+	$scope.listFormats = () => {
+		return $q(resolve => {
+			$scope.sdsd.rpcCall('format', 'listFormats', [true], data => resolve(data));
+		});
+	}
+
+	$scope.getFormat = () => {
+		return $q(resolve => {
+			$scope.sdsd.rpcCall('format', 'get', [$scope.parserInput.class.value], data => resolve(data));
+		});
+	}
+
+	// ================================ $on =====================================
+
 	$scope.$on('$locationChangeSuccess', $scope.loadPage);
 
+	// ============================== Utitlity ==================================
+
+	$scope.initParserInput = () => {
+		$scope.parserInput = {
+			class: {},
+			format: '',
+			parser: '',
+			parseCommand: '',
+			testCommand: ''
+		};
+	}
+
+	$scope.removeForeignFormats = () => {
+		const temp = [];
+		for (const format of $scope.publishedFormats)
+			if (format.author === sdsd.username)
+				temp.push(format);
+		$scope.publishedFormats = temp;
+	}
+
+	$scope.parserUpload = event => {
+		if (event.target.files.length >= 0)
+			$scope.parserInput.parser = event.target.files[0].name;
+		else
+			$scope.parserInput.parser = null;
+	}
+
+	// ============================== Get data ==================================
+
 	$scope.getFormats = () => {
-		sdsd.rpcCall('format', 'listFormats', [true], data => {
+		$scope.listFormats().then(data => {
 			$scope.unpublishedFormats = data.drafts;
 			$scope.publishedFormats = data.formats;
+			$scope.removeForeignFormats();
+			console.log("listFormats:", $scope.publishedFormats);
+		});
+	}
+
+	$scope.getParserData = () => {
+		$scope.getFormat().then(data => {
+			$scope.parserInput = data;
+			console.log("getParserData:", $scope.parserInput);
 		});
 	}
 
@@ -131,63 +221,9 @@ app.controller('wikinormia', ($q, $scope, $location, $timeout, sdsd) => {
 		});
 	}
 
-	$scope.$watch('search.input', newVal => {
-		if (newVal) {
-			const ind = newVal.lastIndexOf('?page=');
-			$scope.search.page = ind >= 0 ? newVal.slice(ind + 6) : newVal;
-		} else
-			$scope.search.page = null;
-	});
-
 	$scope.search = () => {
 		$timeout(() => $location.search('page', $scope.search.page));
 	}
 });
 
-const pagelimit = 100;
-
-app.controller('wikilist', ($scope, $location, sdsd) => {
-	$scope.sdsd = sdsd;
-
-	$scope.init = () => {
-		$scope.type = $location.search().type;
-		$scope.page = $location.search().page || 1;
-	};
-
-	$scope.$watch('sdsd.username', newVal => {
-		if (newVal) {
-			$scope.loadPage();
-		} else {
-			$scope.title = '';
-			$scope.list = [];
-			$scope.pos = {};
-		}
-	});
-
-	$scope.loadPage = () => {
-		if ($scope.type && sdsd.username && !$scope.loading) {
-			$scope.loading = true;
-			sdsd.rpcCall('wikinormia', 'listInstances', [$scope.type, ($scope.page - 1) * pagelimit, pagelimit, true], data => {
-				$scope.title = data.title;
-				$scope.list = data.list;
-				$scope.pos = data.pos;
-			}, () => {
-				$scope.loading = false;
-			});
-		}
-	}
-
-	$scope.prev = () => {
-		if ($scope.pos.total && $scope.pos.offset > 0) {
-			$location.search('page', --$scope.page);
-			$scope.loadPage();
-		}
-	}
-
-	$scope.next = () => {
-		if ($scope.pos.total && ($scope.pos.offset + $scope.list.length) < $scope.pos.total) {
-			$location.search('page', ++$scope.page);
-			$scope.loadPage();
-		}
-	}
-});
+// ======================= End wikinormia Controller ==========================

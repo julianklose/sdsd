@@ -37,15 +37,70 @@
 
 	<div data-ng-controller="wikinormia" data-ng-show="sdsd.username">
 		<!-- Search box for classes -->
+		<!-- Modal for uploading a parser -->
+		<div class="modal fade" id="uploadParserModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="exampleModalLabel">Upload parser</h5>
+						<button type=" button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<form class="border rounded p-2" method="post" action="/rest/parser" enctype="multipart/form-data">
+						<div class="modal-body">
+							<div class="form-group">
+								<h5><label for"parserSelect">Wikinormia format</label></h5>
 
+								<select class="form-control" name="uri" id="parserSelect" data-ng-change="getParserData()" data-ng-model="parserInput.class.value">
+									<option value="{{format.value}}" data-ng-repeat="format in publishedFormats">
+										{{format.label}}
+									</option>
+								</select>
+							</div>
+
+							<div class="form-group">
+								<div class="custom-file">
+									<input type="file" class="custom-file-input" id="parserInput" name="parser" custom-on-change="parserUpload" aria-describedby="parserHelp">
+									<label class="custom-file-label" for="parserInput">{{parserInput.parser || "Choose file"}}</label>
+								</div>
+								<p class="small float-right">Ctrl + Click to choose multiple files</p>
+								<small id="parserHelp" class="form-text text-muted">Upload the runnable parser.</small>
+							</div>
+							<div class="form-group">
+								<h5><label for="parseCommandInput">Parser Command</label></h5>
+								<input type="text" class="form-control" id="parseCommandInput" data-ng-model="parserInput.parseCommand" name="parseCommand" placeholder="Parser Command" aria-describedby="parseCommandHelp" />
+								<small id="parseCommandHelp" class="form-text text-muted">The command to run the parser. Place <i>%path%</i> for the parser path.</small>
+							</div>
+							<div class="form-group">
+								<h5><label for="testCommandInput">Test Command</label></h5>
+								<input type="text" class="form-control" id="testCommandInput" data-ng-model="parserInput.testCommand" name="testCommand" placeholder="Test Command" aria-describedby="testCommandHelp" />
+								<small id="testCommandHelp" class="form-text text-muted">The command to run the parser in test mode. Place <i>%path%</i> for the parser path.</small>
+							</div>
+
+							<i class="fas fa-spinner fa-spin" data-ng-show="loading"></i>
+
+						</div>
+						<div class="modal-footer">
+							<button type="submit" class="btn btn-primary" data-ng-disabled="loading">Upload Parser</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
 		<div class="row mb-2">
-			<div class="col-12">
+			<div class="col-10">
 				<div class="input-group">
 					<input type="text" class="form-control" placeholder="Search for class" aria-label="Search" aria-describedby="searchButton" data-ng-autocomplete="autocomplete.types" data-ng-model="search.input" data-ng-enter="search()" />
 					<div class="input-group-append">
 						<button type="button" class="btn btn-outline-secondary" id="searchButton" data-ng-click="search()">Search</button>
 					</div>
 				</div>
+			</div>
+			<div class="col-2 text-right">
+				<button type="button" class="btn btn-primary" id="parserButton" data-ng-click="showParserView()" data-toggle="modal" data-target="#uploadParserModal">
+					<i class="fa fa-plus"></i> Add Parser
+				</button>
 			</div>
 		</div>
 		<div class="row" data-ng-if="!page">

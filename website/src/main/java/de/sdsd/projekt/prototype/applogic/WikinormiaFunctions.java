@@ -378,14 +378,11 @@ public class WikinormiaFunctions {
 			}
 		}
 		
-		System.out.println("Create SDSD type: " + SDSDType.create(user, formatCls.getUri(), format.getLabel(), format.getMimeType(), format.getArType()).toJson());
-		model.write(System.out, "TTL");
-		
-//		app.list.types.add(user, SDSDType.create(user, formatCls.getUri(), format.getLabel(), format.getMimeType(), format.getArType()));
-//		app.triple.insertData(model, TripleFunctions.TBOX);
-//		boolean ok = app.list.draftFormats.delete(user, format.filter());
-//		if(ok) ok = app.list.draftItems.delete(user, DraftItem.filterFormat(format.getId()));
-//		return ok;
-		return true;
+		app.list.types.add(user, SDSDType.create(user, formatCls.getUri(), format.getLabel(), format.getMimeType(), format.getArType()));
+		app.triple.insertData(model, TripleFunctions.TBOX);
+		boolean ok = app.list.draftFormats.delete(user, format.filter());
+		if(ok) ok = app.list.draftItems.delete(user, DraftItem.filterFormat(format.getId()));
+		System.out.format("Created format %s (%s) by %s: %b\n", format.getLabel(), format.getIdentifier(), user.getName(), ok);
+		return ok;
 	}
 }

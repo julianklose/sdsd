@@ -1,6 +1,8 @@
 'use strict';
 
 /**
+ * @author Noah Grosse Starmann
+ * @author Andreas Schliebitz
  * Class to obtain data to be shown in the dashboard.
  *
  * @class
@@ -10,7 +12,7 @@ class DashboardData {
 	/**
 	 * Constructor for the DashboardData class.
 	 * With the sdsd parameter access to the API is given.
-	 * @parameter {object} sdsd - Parameter to get access to the API.
+	 * @param {Object} sdsd - Parameter to get access to the API.
 	 *
 	 * @constructor
 	 */
@@ -19,7 +21,8 @@ class DashboardData {
 	}
 
 	/**
-	 * Getter function for sdsd object.
+   * Getter function for SDSD API object.
+   * @return {Object} SDSD API object
 	 */
 	get sdsd() {
 		return this._sdsd;
@@ -46,7 +49,6 @@ class DashboardData {
 
 	/**
 	 * Function to get machine type by uri from API.
-	 *
 	 * @param {string} uri - Unique identifier for a machine.
 	 * @return {Promise} Promise with requested machine type.
 	 */
@@ -80,10 +82,8 @@ class DashboardData {
 
 	/**
 	 * Function to obtain FieldInfo.
-	 *
 	 * @param {Array} res - Holds graph and uri information for API call.
 	 * @return {Promise} - Promise with requested FieldInfo in JSON format.
-	 *
 	 */
 	getFieldInfo(res) {
 		return new Promise(resolve => {
@@ -99,11 +99,9 @@ class DashboardData {
 
 	/**
 	 * Function to obtain WorkerInfo.
-	 *
-	 * @param {String} taskId - Id of the task containing the worker.
-	 * @param {String} graphId - Id of the graph containing the worker.
+	 * @param {string} taskId - Id of the task containing the worker.
+	 * @param {string} graphId - Id of the graph containing the worker.
 	 * @return {Promise} - Promise with requested worker infos in JSON format.
-	 *
 	 */
 	getWorkerInfo(taskId, graphId) {
 		return new Promise(resolve => {
@@ -120,11 +118,9 @@ class DashboardData {
 
 	/**
 	 * Function to obtain customer info
-	 *
-	 * @param {String} taskId - Id of the task to get customer info for.
-	 * @param {String} graphId - Id of the graph to get customer info.
+	 * @param {string} taskId - Id of the task to get customer info for.
+	 * @param {string} graphId - Id of the graph to get customer info.
 	 * @return {Promise} - Promise with requested customer info in JSON format.
-	 *
 	 */
 	getCustomerInfo(taskId, graphId) {
 		return new Promise(resolve => {
@@ -140,11 +136,9 @@ class DashboardData {
 	}
 	/**
 	 * Function to obtain farm info.
-	 *
-	 * @param {String} taskId - Id of the task to get farm info for.
-	 * @param {String} graphId - Id of the graph to get farm info.
+	 * @param {string} taskId - Id of the task to get farm info for.
+	 * @param {string} graphId - Id of the graph to get farm info.
 	 * @return {Promise} - Promise with requested farm info in JSON format.
-	 *
 	 */
 	getFarmInfo(taskId, graphId) {
 		return new Promise(resolve => {
@@ -161,11 +155,9 @@ class DashboardData {
 
 	/**
 	 * Function to obtain product allocation  info.
-	 *
-	 * @param {String} taskId - Id of the task to get product allocation info for.
-	 * @param {String} graphId - Id of the graph to get product allocation info.
+	 * @param {string} taskId - Id of the task to get product allocation info for.
+	 * @param {string} graphId - Id of the graph to get product allocation info.
 	 * @return {Promise} - Promise with requested product allocation info in JSON format.
-	 *
 	 */
 	getProductAllocationInfo(taskId, graphId) {
 		return new Promise(resolve => {
@@ -182,10 +174,8 @@ class DashboardData {
 
 	/**
 	 * Function to obtain machine type.
-	 *
-	 * @param {String} clientName - Client name to get machine type for.
+	 * @param {string} clientName - Client name to get machine type for.
 	 * @return {Promise} - Promise with requested machine type.
-	 *
 	 */
 	getMachineType(clientName) {
 		return new Promise(resolve => {
@@ -206,10 +196,8 @@ class DashboardData {
 
 	/**
 	 * Function to obtain task.
-	 *
 	 * @param {Array} res - Holds graph and uri information for API call.
 	 * @return {Promise} - Promise with requested task as JSON.
-	 *
 	 */
 	getTasks(res) {
 		return new Promise(resolve => {
@@ -228,11 +216,9 @@ class DashboardData {
 
 	/**
 	 * Function to get isoxml time values.
-	 *
-	 * @param {String} taskId - Holds id of task.
-	 * @param {String} graphId - Holds id of grap.
+	 * @param {string} taskId - Holds id of task.
+	 * @param {string} graphId - Holds id of grap.
 	 * @return {Promise} - Promise with requested time values as JSON.
-	 *
 	 */
 	getTimes(taskId, graphId) {
 		return new Promise(resolve => {
@@ -252,10 +238,8 @@ class DashboardData {
 
 	/**
 	 * Function to obtain device elements.
-	 *
 	 * @param {Array} res - Holds graph and uri information for API call.
 	 * @return {Promise} - Promise with requested device elements as JSON.
-	 *
 	 */
 	getDeviceElements(res) {
 		return new Promise(resolve => {
@@ -274,10 +258,8 @@ class DashboardData {
 
 	/**
 	 * Function to obtain device element properties.
-	 *
-	 * @param {Array} res - Holds graph and uri information for API call.
+	 * @param {Object} res - Holds graph and uri information for API call.
 	 * @return {Promise} - Promise with requested device element properties as JSON.
-	 *
 	 */
 	getDeviceElementProperties(res) {
 		return new Promise(resolve => {
@@ -296,10 +278,8 @@ class DashboardData {
 
 	/**
 	 * Function to obtain device element process data.
-	 *
-	 * @param {Array} res - Holds graph and uri information for API call.
+	 * @param {Object} res - Holds graph and uri information for API call.
 	 * @return {Promise} - Promise with requested device element process data as JSON.
-	 *
 	 */
 	getDeviceElementProcessData(res) {
 		return new Promise(resolve => {
@@ -318,10 +298,8 @@ class DashboardData {
 
 	/**
 	 * Function to obtain TimeLogs for a specific machine.
-	 *
-	 * @param {String} res - Machine id and grapth uri to get TimeLogs for.
+	 * @param {string} res - Machine id and graph uri to get TimeLogs for.
 	 * @return {Promise} - Promise with requested TimeLogs.
-	 *
 	 */
 	getDeviceTimeLogs(res) {
 		return new Promise(resolve => {
@@ -337,6 +315,11 @@ class DashboardData {
 		});
 	}
 
+	/**
+	 * Function to obtain TimeLogs for a specific task.
+	 * @param {string} taskId - ID of the task.
+	 * @param {string} graphId - Graph ID of the task.
+	 */
 	getTaskTimeLogs(taskId, graphId) {
 		return new Promise(resolve => {
 			this.sdsd.rpcCall(

@@ -269,7 +269,7 @@
 								<h5 class="card-title">Classes</h5>
 								<div class="mb-3">
 									<button type="button" class="btn btn-success btn-sm" data-ng-click="submitForm('#classDataForm', createOrUpdateDraftClass)"><i class="fa fa-save"></i> Save</button>
-									<button type="button" class="btn btn-primary btn-sm" data-ng-click="clearDraftClassData()"><i class="fa fa-plus"></i> Create</button>
+									<button type="button" class="btn btn-warning btn-sm" data-ng-click="discardDraftClassData()"><i class="fa fa-eraser"></i> Discard</button>
 									<button type="button" class="btn btn-danger btn-sm" data-ng-click="deleteSelectedDraftClass()"><i class="fa fa-trash"></i> Delete</button>
 								</div>
 								<input class="search-input" type="text" data-ng-model="inputClassSearchText" placeholder="Search class of selected format">
@@ -292,7 +292,7 @@
 								<h5 class="card-title">Instances</h5>
 								With instances it should be noted that only a <code>PartOf</code> relationship to another instance may exist if this relationship also exists among the classes of the instances.
 								<div class="mb-2"></div>
-								<table class="table table-responsive-lg dense-tds">
+								<table class="table table-responsive dense-tds">
 									<thead>
 										<tr>
 											<th class="pl-0">
@@ -377,7 +377,7 @@
 
 											</td>
 											<td>
-												<button type="button" class="text-nowrap btn btn-warning" data-ng-if="familyTree[0].partOf.length && familyTree[0].partOf[0].value" data-toggle="modal" data-target="#instance-{{iIndex}}-partof">
+												<button type="button" class="text-nowrap btn btn-warning" data-ng-if="familyTree[0].partOf.length && familyTree[0].partOf[0].value" data-ng-disabled="!i.identifier || !i.label" data-ng-click="getAutocompleteInstancesForPartOf()" data-toggle="modal" data-target="#instance-{{iIndex}}-partof">
 													<i class="fa fa-edit"></i> Edit
 												</button>
 
@@ -387,7 +387,7 @@
 													<div class="modal-dialog modal-lg" role="document">
 														<div class="modal-content">
 															<div class="modal-header">
-																<h5 class="modal-title">Parts of {{i.label}}</h5>
+																<h5 class="modal-title">{{i.label}} is part of ...</h5>
 																<button type="button" class="close" data-dismiss="modal">
 																	<span>&times;</span>
 																</button>
@@ -397,7 +397,7 @@
 																	<thead>
 																		<tr>
 																			<th class="pl-0">
-																				<button type="button" class="btn btn-outline-success" data-ng-click="addItem(familyTree[0].instances[iIndex].partOf);getAutocompleteInstancesForPartOf()">
+																				<button type="button" class="btn btn-outline-success" data-ng-disabled="!instancePartOfsExists()" data-ng-click="addItem(familyTree[0].instances[iIndex].partOf)">
 																					<i class="fas fa-plus"></i>
 																				</button>
 																			</th>
@@ -414,7 +414,7 @@
 																			<td>
 																				<input type="hidden" data-ng-model="part.identifier" value="{{i.identifier}}" />
 																				<select class="form-control mb-1" data-ng-model="part.value">
-																					<optgroup label="{{pEntry.label}}" data-ng-repeat="(pUri, pEntry) in autocomplete.instances.partOf">
+																					<optgroup data-ng-if="pEntry.list.length" label="{{pEntry.label}}" data-ng-repeat="(pUri, pEntry) in autocomplete.instances.partOf">
 																						<option label="{{pObj.label}}" value="{{pObj.value}}" data-ng-repeat="pObj in pEntry.list"></option>
 																					</optgroup>
 																				</select>

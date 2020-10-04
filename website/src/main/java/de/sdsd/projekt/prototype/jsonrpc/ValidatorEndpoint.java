@@ -96,6 +96,7 @@ public class ValidatorEndpoint extends JsonRpcEndpoint {
 				
 				return new JSONObject()
 						.put("filename", file.getFilename())
+						.put("id", file.getId().toHexString())
 						.put("output", errors.length() == 0 
 								? new JSONArray().put("No Errors found") 
 								: errors);
