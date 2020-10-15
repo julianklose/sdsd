@@ -23,6 +23,8 @@ public class ARMsg {
 	 * The header of the message contains a lot of metadata.
 	 */
 	public final ARMsgHeader header;
+	
+	/** The content. */
 	private final byte[][] content;
 	
 	/**
@@ -36,6 +38,7 @@ public class ARMsg {
 		this.content = new byte[header.getChunkCount()][];
 	}
 	
+	/** The Constant NEWLINE_REGEX. */
 	private static final Pattern NEWLINE_REGEX = Pattern.compile("[\\r\\n ]");
 	
 	/**
@@ -158,11 +161,21 @@ public class ARMsg {
 		return arr;
 	}
 	
+	/**
+	 * To string.
+	 *
+	 * @return the string
+	 */
 	@Override
 	public String toString() {
 		return "Message of " + header.toString();
 	}
 
+	/**
+	 * Hash code.
+	 *
+	 * @return the int
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -171,6 +184,12 @@ public class ARMsg {
 		return result;
 	}
 
+	/**
+	 * Equals.
+	 *
+	 * @param obj the obj
+	 * @return true, if successful
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

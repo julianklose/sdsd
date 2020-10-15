@@ -65,24 +65,50 @@ import efdi.GrpcEfdi.TimeLog;
 @Path("/")
 public class RestResource {
 
+	/** The application. */
 	@Inject private ApplicationLogic application;
 	
+	/**
+	 * App error.
+	 *
+	 * @param user the user
+	 * @param e the e
+	 * @return the response
+	 */
 	private Response appError(User user, Exception e) {
 		System.err.println(e.getMessage());
 		if(user != null) application.logError(user, e.getLocalizedMessage());
 		return Response.seeOther(URI.create("/")).build();
 	}
 	
+	/**
+	 * Internal error.
+	 *
+	 * @param user the user
+	 * @param e the e
+	 * @return the response
+	 */
 	private Response internalError(User user, Throwable e) {
 		e.printStackTrace();
 		if(user != null) application.logError(user, "Internal Server Error... Please report.");
 		return Response.serverError().entity("Internal Server Error... Please report.").build();
 	}
 	
+	/**
+	 * No login error.
+	 *
+	 * @return the response
+	 */
 	private Response noLoginError() {
 		return Response.serverError().entity("Not logged in!").build();
 	}
 	
+	/**
+	 * Gets the session id.
+	 *
+	 * @param req the req
+	 * @return the session id
+	 */
 	private String getSessionId(HttpServletRequest req) {
 		Cookie[] cookies = req.getCookies();
 		if (cookies != null) {
@@ -95,6 +121,14 @@ public class RestResource {
 		return null;
 	}
 
+	/**
+	 * Upload file.
+	 *
+	 * @param bodyParts the body parts
+	 * @param request the request
+	 * @return the response
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	//curl -X POST -F "file=@/path/to/test.png" http://sdsd:sdsd@localhost:8081/rest/upload
 	@POST
 	@Path("/upload")
@@ -148,6 +182,14 @@ public class RestResource {
 		}
 	}
 	
+	/**
+	 * Download file.
+	 *
+	 * @param fileid the fileid
+	 * @param request the request
+	 * @return the response
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	@GET
 	@Path("/download/{fileid : [a-fA-F0-9]+}")
 	public Response downloadFile(
@@ -178,6 +220,14 @@ public class RestResource {
 		}
 	}
 	
+	/**
+	 * Agrirouter connection information.
+	 *
+	 * @param username the username
+	 * @param request the request
+	 * @return the response
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	@GET
 	@Path("/arconn/{user : [A-Za-z0-9-_.!~*'()%]+}")
 	public Response agrirouterConnectionInformation(
@@ -207,6 +257,17 @@ public class RestResource {
 		}
 	}
 	
+	/**
+	 * Onboarded.
+	 *
+	 * @param state the state
+	 * @param token the token
+	 * @param signature the signature
+	 * @param error the error
+	 * @param request the request
+	 * @return the response
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	@GET
 	@Path("/onboard")
 	public Response onboarded(
@@ -240,6 +301,18 @@ public class RestResource {
 		}
 	}
 	
+	/**
+	 * Onboarded.
+	 *
+	 * @param state the state
+	 * @param token the token
+	 * @param signature the signature
+	 * @param error the error
+	 * @param statesig the statesig
+	 * @param request the request
+	 * @return the response
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	@GET
 	@Path("/onboard/{statesig : [a-fA-F0-9]+}")
 	public Response onboarded(
@@ -266,6 +339,17 @@ public class RestResource {
 		}
 	}
 	
+	/**
+	 * Download efdi.
+	 *
+	 * @param fileid the fileid
+	 * @param name the name
+	 * @param skip the skip
+	 * @param replaceTime the replace time
+	 * @param request the request
+	 * @return the response
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	@GET
 	@Path("/efdi/{fileid : [a-fA-F0-9]+}")
 	public Response downloadEfdi(
@@ -356,6 +440,14 @@ public class RestResource {
 		}
 	}
 	
+	/**
+	 * Download efdi as isoxml.
+	 *
+	 * @param fileid the fileid
+	 * @param request the request
+	 * @return the response
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	@GET
 	@Path("/isoxml/{fileid : [a-fA-F0-9]+}")
 	public Response downloadEfdiAsIsoxml(
@@ -398,6 +490,17 @@ public class RestResource {
 		}
 	}
 	
+	/**
+	 * Upload parser.
+	 *
+	 * @param uri the uri
+	 * @param parser the parser
+	 * @param parseCommand the parse command
+	 * @param testCommand the test command
+	 * @param req the req
+	 * @return the response
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	@POST
 	@Path("/parser")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)

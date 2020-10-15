@@ -14,8 +14,16 @@ import com.opencsv.bean.AbstractBeanField;
  *
  */
 public class HelmDateConverter extends AbstractBeanField<Object, Object> {
+	
+	/** The Constant DATE_FORMAT. */
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
+	/**
+	 * Convert.
+	 *
+	 * @param dateStr the date str
+	 * @return the date
+	 */
 	@Override
 	protected Date convert(String dateStr) {
 		if (dateStr.isEmpty())

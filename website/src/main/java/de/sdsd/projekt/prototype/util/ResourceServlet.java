@@ -17,58 +17,121 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 /**
+ * The Class ResourceServlet.
  *
  * @author Markus Schr&ouml;der
  */
 public class ResourceServlet extends HttpServlet {
 
+    /** The debug. */
     private boolean debug = true;
+    
+    /** The welcome file. */
     private String welcomeFile = null;
 
+    /** The symlinks. */
     private Map<String, String> symlinks;
+    
+    /** The virtuals. */
     private Map<String, Supplier<byte[]>> virtuals;
 
+    /** The path rewriter. */
     private Function<String, String> pathRewriter = Function.identity();
     
+    /**
+     * Instantiates a new resource servlet.
+     */
     public ResourceServlet() {
         symlinks = new HashMap<>();
         virtuals = new HashMap<>();
     }
 
+    /**
+     * Instantiates a new resource servlet.
+     *
+     * @param welcomeFile the welcome file
+     */
     public ResourceServlet(String welcomeFile) {
         this();
         this.welcomeFile = welcomeFile;
     }
 
+    /**
+     * Instantiates a new resource servlet.
+     *
+     * @param welcomeFile the welcome file
+     * @param debug the debug
+     */
     public ResourceServlet(String welcomeFile, boolean debug) {
         this(welcomeFile);
         this.debug = debug;
     }
 
+    /**
+     * Adds the symlink.
+     *
+     * @param src the src
+     * @param dst the dst
+     */
     public void addSymlink(String src, String dst) {
         symlinks.put(src, dst);
     }
 
+    /**
+     * Removes the symlink.
+     *
+     * @param src the src
+     */
     public void removeSymlink(String src) {
         symlinks.remove(src);
     }
 
+    /**
+     * Adds the virtual.
+     *
+     * @param src the src
+     * @param supplier the supplier
+     */
     public void addVirtual(String src, Supplier<byte[]> supplier) {
         virtuals.put(src, supplier);
     }
 
+    /**
+     * Removes the virtual.
+     *
+     * @param src the src
+     * @param supplier the supplier
+     */
     public void removeVirtual(String src, Supplier<byte[]> supplier) {
         virtuals.remove(src);
     }
 
+    /**
+     * Gets the path rewriter.
+     *
+     * @return the path rewriter
+     */
     public Function<String, String> getPathRewriter() {
         return pathRewriter;
     }
 
+    /**
+     * Sets the path rewriter.
+     *
+     * @param pathRewriter the path rewriter
+     */
     public void setPathRewriter(Function<String, String> pathRewriter) {
         this.pathRewriter = pathRewriter;
     }
     
+    /**
+     * Do get.
+     *
+     * @param req the req
+     * @param resp the resp
+     * @throws ServletException the servlet exception
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
@@ -132,6 +195,13 @@ public class ResourceServlet extends HttpServlet {
         //sos.flush();
     }
 
+    /**
+     * Content type by name ext.
+     *
+     * @param basename the basename
+     * @param ext the ext
+     * @return the string
+     */
     private String contentTypeByNameExt(String basename, String ext) {
         switch (ext) {
             case "js":
@@ -164,6 +234,13 @@ public class ResourceServlet extends HttpServlet {
         return "text/plain";
     }
 
+    /**
+     * Gets the relative path.
+     *
+     * @param request the request
+     * @param allowEmptyPath the allow empty path
+     * @return the relative path
+     */
     //shameless copied from DefaultServlet
     protected String getRelativePath(HttpServletRequest request, boolean allowEmptyPath) {
         // IMPORTANT: DefaultServlet can be mapped to '/' or '/path/*' but always
@@ -198,18 +275,38 @@ public class ResourceServlet extends HttpServlet {
         return result.toString();
     }
 
+    /**
+     * Checks if is debug.
+     *
+     * @return true, if is debug
+     */
     public boolean isDebug() {
         return debug;
     }
 
+    /**
+     * Sets the debug.
+     *
+     * @param debug the new debug
+     */
     public void setDebug(boolean debug) {
         this.debug = debug;
     }
 
+    /**
+     * Gets the welcome file.
+     *
+     * @return the welcome file
+     */
     public String getWelcomeFile() {
         return welcomeFile;
     }
 
+    /**
+     * Sets the welcome file.
+     *
+     * @param welcomeFile the new welcome file
+     */
     public void setWelcomeFile(String welcomeFile) {
         this.welcomeFile = welcomeFile;
     }

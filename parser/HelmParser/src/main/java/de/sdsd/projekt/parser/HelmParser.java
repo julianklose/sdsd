@@ -33,6 +33,7 @@ import com.opencsv.bean.CsvToBeanBuilder;
 
 import de.sdsd.projekt.api.ParserAPI;
 import de.sdsd.projekt.api.ParserAPI.GeoWriter;
+import de.sdsd.projekt.api.ParserAPI.Validation;
 import de.sdsd.projekt.api.ServiceAPI.ElementType;
 import de.sdsd.projekt.api.Util;
 import de.sdsd.projekt.api.Util.WikiFormat;
@@ -62,12 +63,20 @@ import de.sdsd.projekt.parser.wrapper.RdfModel;
  *
  */
 public final class HelmParser {
+	
+	/** The Constant CSV_SEPARATOR. */
 	private static final String CSV_SEPARATOR = ";";
+	
+	/** The Constant EOF_TOKEN. */
 	private static final String EOF_TOKEN = "[END]";
 
+	/** The Constant FORMAT. */
 	private static final String FORMAT = "HelmData";
+	
+	/** The Constant WIKI_FORMAT. */
 	private static final WikiFormat WIKI_FORMAT = Util.format(FORMAT);
 
+	/** The Constant ENTITIES. */
 	// Supported CSV delimiter tags.
 	private static final HashMap<String, Class<?>> ENTITIES = new HashMap<String, Class<?>>() {
 		private static final long serialVersionUID = 1L;
@@ -82,14 +91,17 @@ public final class HelmParser {
 		}
 	};
 
+	/** The Constant WIKI_RESOURCES. */
 	// Wiki resources representing the CSV entities of a .rax file.
 	private static final Map<Class<?>, WikiType> WIKI_RESOURCES = createWikiResources();
 
+	/** The helm ids. */
 	// IDs of identifiable CSV rows mapped to their generated Jena resource URIs.
 	private static HashMap<Id, Resource> HELM_IDS = new HashMap<>();
 
+	/** The errors. */
 	// List of caught exception messages.
-	private static List<String> ERRORS = new ArrayList<>();
+	private static Validation ERRORS = new Validation();
 
 	/**
 	 * Parses the CSV contents of a .rax file. Initially, the CSV entities are split
@@ -176,14 +188,14 @@ public final class HelmParser {
 	 * its parent(s). These connections are made inside of
 	 * {@link HelmParser#addReferencesToRdfModel(RdfModel)} after the model has been
 	 * initially built.
-	 * 
+	 *
 	 * @param parsedCsvEntities The parsed CSV entities of a .rax input file, mapped
 	 *                          to their POJO class type.
-	 * @see #addEntityToRdfModel(RdfModel, Entry)
-	 * @see #addReferencesToRdfModel(RdfModel)
 	 * @return Wrapper object of type {@code RdfModel} containing the loosely built
 	 *         Jena RDF model, a list of GPS coordinates and the list of references
 	 *         to parent objects.
+	 * @see #addEntityToRdfModel(RdfModel, Entry)
+	 * @see #addReferencesToRdfModel(RdfModel)
 	 */
 	private static RdfModel createRdfModel(Map<Class<?>, List<?>> parsedCsvEntities) {
 		RdfModel rdfModel = new RdfModel();
@@ -215,11 +227,11 @@ public final class HelmParser {
 	 * If the annotation {@code HelmReference} indicates that an attribute is a
 	 * reference to a parent element, it is inserted into the list of {@code RefIds}
 	 * called {@code refs}, located within the {@code RdfModel} wrapper object.
-	 * 
-	 * @see #addResourceLabel(Resource, Object)
-	 * @see #getFieldsWithValues(Object)
+	 *
 	 * @param rdfModel A reference to an initially empty RDF model wrapper instance.
 	 * @param entity   Mapping from an RAX entity to its class type.
+	 * @see #addResourceLabel(Resource, Object)
+	 * @see #getFieldsWithValues(Object)
 	 */
 	private static void addEntityToRdfModel(RdfModel rdfModel, Entry<Class<?>, List<?>> entity) {
 		Class<?> entityClass = entity.getKey();
@@ -425,8 +437,8 @@ public final class HelmParser {
 	/**
 	 * Uses the OpenCSV library to map the rows of a typed CSV file to a list of
 	 * objects of that type.
-	 * 
-	 * @param <T>
+	 *
+	 * @param <T> the generic type
 	 * @param csvRows   List of CSV rows to be mapped to their class type.
 	 * @param valueType Class type of the objects inside the returned list.
 	 * @return List of mapped POJOs. Each object inside this lists represents a row
@@ -551,7 +563,7 @@ public final class HelmParser {
 	 */
 	private static void error(String location, String msg) {
 		msg = "HelmParser::" + location + "(): " + msg;
-		ERRORS.add(msg);
+		ERRORS.error(msg);
 		System.err.println(msg);
 	}
 
@@ -561,7 +573,7 @@ public final class HelmParser {
 	 * @param e The raised and caught exception.
 	 */
 	private static void error(Throwable e) {
-		ERRORS.add(e.getMessage());
+		ERRORS.fatal(e.getMessage());
 		e.printStackTrace();
 	}
 }

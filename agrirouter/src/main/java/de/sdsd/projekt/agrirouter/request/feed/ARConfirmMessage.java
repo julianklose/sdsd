@@ -26,6 +26,7 @@ import de.sdsd.projekt.agrirouter.request.feed.ARMsgHeader.ARMsgHeaderResult;
  */
 public class ARConfirmMessage extends ARSingleRequest<Messages> {
 	
+	/** The param. */
 	private final MessageConfirm.Builder param;
 
 	/**
@@ -59,6 +60,8 @@ public class ARConfirmMessage extends ARSingleRequest<Messages> {
 	}
 	
 	/**
+	 * Count.
+	 *
 	 * @return The count of messages to confirm
 	 */
 	public int count() {
@@ -75,11 +78,25 @@ public class ARConfirmMessage extends ARSingleRequest<Messages> {
 		return this;
 	}
 	
+	/**
+	 * Gets the params.
+	 *
+	 * @return the params
+	 */
 	@Override
 	protected Message getParams() {
 		return param.build();
 	}
 
+	/**
+	 * Parses the response.
+	 *
+	 * @param header the header
+	 * @param params the params
+	 * @return the messages
+	 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+	 * @throws ARException the AR exception
+	 */
 	@Override
 	protected Messages parseResponse(ResponseEnvelope header, Any params)
 			throws InvalidProtocolBufferException, ARException {

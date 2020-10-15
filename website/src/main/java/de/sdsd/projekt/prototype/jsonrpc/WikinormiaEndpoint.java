@@ -58,10 +58,16 @@ import de.sdsd.projekt.prototype.data.WikiInstance.WikiAttributeValue;
  */
 public class WikinormiaEndpoint extends JsonRpcEndpoint {
 
+	/**
+	 * Instantiates a new wikinormia endpoint.
+	 *
+	 * @param application the application
+	 */
 	public WikinormiaEndpoint(ApplicationLogic application) {
 		super(application);
 	}
 	
+	/** The Constant JS_INSTCOUNT. */
 	private static final String JS_FORMAT="format", JS_CLASS="class", JS_COMMENT="description", 
 			JS_INSTANCE="isInstance", JS_INSTANCEOF="instanceOf", 
 			JS_BASE="base", JS_SUBTYPES="subtypes", JS_PARTOF="partof", JS_PARTS="parts",
@@ -69,6 +75,12 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 			JS_INSTCOUNT="instCount";
 	
 	
+	/**
+	 * Wiki head to json.
+	 *
+	 * @param wiki the wiki
+	 * @return the JSON object
+	 */
 	public static JSONObject wikiHeadToJson(WikiEntry wiki) {
 		if(wiki == null) return null;
 		return new JSONObject()
@@ -77,6 +89,12 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 				.put("label", wiki.getLabel());
 	}
 	
+	/**
+	 * Wiki list to json sorted.
+	 *
+	 * @param wiki the wiki
+	 * @return the JSON array
+	 */
 	public static JSONArray wikiListToJsonSorted(Collection<WikiEntry> wiki) {
 		return wiki.stream()
 				.sorted()
@@ -84,24 +102,48 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 				.collect(Util.toJSONArray());
 	}
 	
+	/**
+	 * Wiki list to json.
+	 *
+	 * @param wiki the wiki
+	 * @return the JSON array
+	 */
 	public static JSONArray wikiListToJson(Collection<WikiEntry> wiki) {
 		return wiki.stream()
 				.map(WikinormiaEndpoint::wikiHeadToJson)
 				.collect(Util.toJSONArray());
 	}
 	
+	/**
+	 * Wiki attr to json.
+	 *
+	 * @param attr the attr
+	 * @return the JSON object
+	 */
 	public static JSONObject wikiAttrToJson(WikiAttribute attr) {
 		return new JSONObject()
 				.put(JS_PROP, wikiHeadToJson(attr))
 				.put(JS_RANGE, wikiHeadToJson(attr.getRange()));
 	}
 	
+	/**
+	 * Wiki attr value to json.
+	 *
+	 * @param val the val
+	 * @return the stream
+	 */
 	public static Stream<JSONObject> wikiAttrValueToJson(WikiAttributeValue val) {
 		return val.getValues()
 				.map(WikinormiaEndpoint::wikiValueToJson)
 				.map(value -> wikiAttrToJson(val.attr).put(JS_VALUE, value));
 	}
 	
+	/**
+	 * Wiki value to json.
+	 *
+	 * @param value the value
+	 * @return the object
+	 */
 	private static Object wikiValueToJson(WikiInstance.Value value) {
 		if(value.isLiteral()) {
 			Object val = value.asLiteral().getValue();
@@ -118,6 +160,15 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the.
+	 *
+	 * @param req the req
+	 * @param page the page
+	 * @param inheritance the inheritance
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject get(HttpServletRequest req, String page, boolean inheritance) throws JsonRpcException {
 		User user = null;
 		try {
@@ -171,6 +222,13 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * List literal types.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listLiteralTypes(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -205,6 +263,13 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * List autocomplete types.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listAutocompleteTypes(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -250,6 +315,13 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * List types.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listTypes(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -286,6 +358,14 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the instances.
+	 *
+	 * @param req the req
+	 * @param types the types
+	 * @return the instances
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getInstances(HttpServletRequest req, JSONArray types) throws JsonRpcException {
 		User user = null;
 		try {
@@ -346,6 +426,17 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * List instances.
+	 *
+	 * @param req the req
+	 * @param type the type
+	 * @param offset the offset
+	 * @param limit the limit
+	 * @param inheritance the inheritance
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listInstances(HttpServletRequest req, String type, int offset, int limit, boolean inheritance) throws JsonRpcException {
 		User user = null;
 		try {
@@ -375,6 +466,14 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * List draft.
+	 *
+	 * @param req the req
+	 * @param formatID the format ID
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listDraft(HttpServletRequest req, String formatID) throws JsonRpcException {
 		User user = null;
 		try {
@@ -397,6 +496,14 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the draft.
+	 *
+	 * @param req the req
+	 * @param itemID the item ID
+	 * @return the draft
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getDraft(HttpServletRequest req, String itemID) throws JsonRpcException {
 		User user = null;
 		try {
@@ -416,6 +523,16 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets the draft.
+	 *
+	 * @param req the req
+	 * @param formatID the format ID
+	 * @param itemID the item ID
+	 * @param input the input
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setDraft(HttpServletRequest req, String formatID, String itemID, JSONObject input) throws JsonRpcException {
 		User user = null;
 		try {
@@ -482,6 +599,14 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Drop draft.
+	 *
+	 * @param req the req
+	 * @param itemID the item ID
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject dropDraft(HttpServletRequest req, String itemID) throws JsonRpcException {
 		User user = null;
 		try {
@@ -501,6 +626,13 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * List units.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listUnits(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -538,6 +670,14 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the family tree.
+	 *
+	 * @param req the req
+	 * @param bases the bases
+	 * @return the family tree
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getFamilyTree(HttpServletRequest req, JSONArray bases) throws JsonRpcException {
 		User user = null;
 		try {
@@ -624,6 +764,14 @@ public class WikinormiaEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Publish draft.
+	 *
+	 * @param req the req
+	 * @param formatID the format ID
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject publishDraft(HttpServletRequest req, String formatID) throws JsonRpcException {
 		User user = null;
 		try {

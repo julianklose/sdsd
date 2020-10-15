@@ -47,6 +47,7 @@ import de.sdsd.projekt.prototype.data.SDSDException;
 import de.sdsd.projekt.prototype.data.User;
 import de.sdsd.projekt.prototype.data.Util;
 
+// TODO: Auto-generated Javadoc
 /**
  * JSONRPC-Endpoint for field boundary functions.
  * 
@@ -54,6 +55,11 @@ import de.sdsd.projekt.prototype.data.Util;
  */
 public class FeldgrenzenEndpoint extends JsonRpcEndpoint {
 
+	/**
+	 * Instantiates a new feldgrenzen endpoint.
+	 *
+	 * @param application the application
+	 */
 	public FeldgrenzenEndpoint(ApplicationLogic application) {
 		super(application);
 	}
@@ -64,13 +70,30 @@ public class FeldgrenzenEndpoint extends JsonRpcEndpoint {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private static class ResourceResult extends ResourceInfo implements Comparable<ResourceResult> {
+		
+		/** The index. */
 		public final int index;
 
+		/**
+		 * Instantiates a new resource result.
+		 *
+		 * @param uri the uri
+		 * @param graph the graph
+		 * @param label the label
+		 * @param prefLabel the pref label
+		 * @param index the index
+		 */
 		public ResourceResult(String uri, String graph, @Nullable String label, @Nullable String prefLabel, int index) {
 			super(uri, graph, label, prefLabel);
 			this.index = index;
 		}
 
+		/**
+		 * Compare to.
+		 *
+		 * @param o the o
+		 * @return the int
+		 */
 		@Override
 		public int compareTo(ResourceResult o) {
 			if(prefLabel != null && o.prefLabel == null) return -1;
@@ -86,6 +109,14 @@ public class FeldgrenzenEndpoint extends JsonRpcEndpoint {
 		
 	}
 	
+	/**
+	 * Gets the same as.
+	 *
+	 * @param req the req
+	 * @param uri the uri
+	 * @return the same as
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getSameAs(HttpServletRequest req, String uri) throws JsonRpcException {
 		User user = null;
 		try {
@@ -155,6 +186,15 @@ public class FeldgrenzenEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets the preferred.
+	 *
+	 * @param req the req
+	 * @param uri the uri
+	 * @param prefLabel the pref label
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setPreferred(HttpServletRequest req, String uri, String prefLabel) throws JsonRpcException {
 		User user = null;
 		try {
@@ -183,6 +223,15 @@ public class FeldgrenzenEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Creates the isoxml.
+	 *
+	 * @param req the req
+	 * @param uri the uri
+	 * @param name the name
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject createIsoxml(HttpServletRequest req, String uri, @Nullable String name) throws JsonRpcException {
 		User user = null;
 		try {
@@ -226,6 +275,12 @@ public class FeldgrenzenEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Write line string.
+	 *
+	 * @param lsg the lsg
+	 * @param coords the coords
+	 */
 	private static void writeLineString(LineString lsg, JSONArray coords) {
 		JSONArray coord;
 		for(int c = 0; c < coords.length(); ++c) {

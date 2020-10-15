@@ -70,7 +70,11 @@ public class ApplicationLogic extends ResourceConfig {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class Mongo implements Cloneable {
+		
+		/** The mongo client. */
 		private final MongoClient mongoClient;
+		
+		/** The sdsd. */
 		public final MongoDatabase sdsd;
 		
 		/**
@@ -111,26 +115,48 @@ public class ApplicationLogic extends ResourceConfig {
 	 */
 	final Mongo mongo;
 	
+	/** The user. */
 	public final UserFunctions user;
+	
+	/** The agrirouter. */
 	public final AgrirouterFunctions agrirouter;
+	
+	/** The list. */
 	public final ListFunctions list;
+	
+	/** The dedup. */
 	final DuplicateFinderFunctions dedup;
+	
+	/** The parser. */
 	final ParserFunctions parser;
+	
+	/** The file. */
 	public final FileFunctions file;
+	
+	/** The triple. */
 	public final TripleFunctions triple;
+	
+	/** The table. */
 	public final TableFunctions table;
+	
+	/** The service. */
 	public final ServiceFunctions service;
+	
+	/** The wiki. */
 	public final WikinormiaFunctions wiki;
+	
+	/** The geo. */
 	public final GeoFunctions geo;
 	
+	/** The endpoints. */
 	private Map<String, JsonRpcEndpoint> endpoints;
 	
 
 	/**
 	 * Constructs and initialize the application logic.
-	 * 
+	 *
 	 * @param settings application settings
-	 * @throws Exception
+	 * @throws Exception the exception
 	 */
 	public ApplicationLogic(JSONObject settings) throws Exception {
 		this.settings = settings;
@@ -182,12 +208,17 @@ public class ApplicationLogic extends ResourceConfig {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private class AppLogicBinder extends AbstractBinder {
+		
+		/**
+		 * Configure.
+		 */
 		@Override
 		protected void configure() {
 			bind(ApplicationLogic.this).to(ApplicationLogic.class);
 		}
 	}
 	
+	/** The test runner. */
 	@SuppressWarnings("unused")
 	private Runnable testRunner = new Runnable() {
 		private void eachFile(@Nullable Bson filter) {
@@ -224,6 +255,9 @@ public class ApplicationLogic extends ResourceConfig {
 		}
 	};
 	
+	/**
+	 * Tidy up.
+	 */
 	void tidyUp() {
 		Set<ObjectId> fileIds = file.listAllFileIDs();
 		file.tidyUp(fileIds);
@@ -273,6 +307,12 @@ public class ApplicationLogic extends ResourceConfig {
 				bucket.delete();
 		}
 		
+		/**
+		 * Sets the admin.
+		 *
+		 * @param sessionId the session id
+		 * @param login the login
+		 */
 		public void setAdmin(String sessionId, boolean login) {
 			RBucket<Boolean> bucket = redis.getBucket("adminSession:" + sessionId);
 			if(login)
@@ -281,22 +321,48 @@ public class ApplicationLogic extends ResourceConfig {
 				bucket.delete();
 		}
 		
+		/**
+		 * Checks if is admin.
+		 *
+		 * @param sessionId the session id
+		 * @return true, if is admin
+		 */
 		public boolean isAdmin(String sessionId) {
 			RBucket<Boolean> bucket = redis.getBucket("adminSession:" + sessionId);
 			return bucket.isExists() ? bucket.get() : false;
 		}
 	}
 
+	/**
+	 * Gets the user.
+	 *
+	 * @param sessionId the session id
+	 * @return the user
+	 */
 	@CheckForNull
 	public User getUser(String sessionId) {
 		if(sessionId == null) return null;
 		return sessions.getUser(sessionId);
 	}
 	
+	/**
+	 * Log info.
+	 *
+	 * @param user the user
+	 * @param format the format
+	 * @param args the args
+	 */
 	public void logInfo(User user, String format, Object...args) {
 		list.logs.add(user, LogEntry.create(Instant.now(), "info", String.format(format, args)));
 	}
 	
+	/**
+	 * Log error.
+	 *
+	 * @param user the user
+	 * @param format the format
+	 * @param args the args
+	 */
 	public void logError(User user, String format, Object...args) {
 		try {
 			list.logs.add(user, LogEntry.create(Instant.now(), "error", String.format(format, args)));
@@ -307,24 +373,55 @@ public class ApplicationLogic extends ResourceConfig {
 
 	//endpoints
 	
+	/**
+	 * Register endpoint.
+	 *
+	 * @param name the name
+	 * @param endpoint the endpoint
+	 * @return the json rpc endpoint
+	 */
 	public JsonRpcEndpoint registerEndpoint(String name, JsonRpcEndpoint endpoint) {
 		endpoints.put(name, endpoint);
 		return endpoint;
 	}
 	
+	/**
+	 * Endpoint.
+	 *
+	 * @param name the name
+	 * @return the json rpc endpoint
+	 */
 	public JsonRpcEndpoint endpoint(String name) {
 		return endpoints.get(name);
 	}
 	
+	/**
+	 * Endpoint.
+	 *
+	 * @param <T> the generic type
+	 * @param name the name
+	 * @param type the type
+	 * @return the t
+	 */
 	@SuppressWarnings("unchecked")
 	public <T> T endpoint(String name, Class<T> type) {
 		return (T) endpoints.get(name);
 	}
 	
+	/**
+	 * Gets the endpoints.
+	 *
+	 * @return the endpoints
+	 */
 	public Set<Entry<String, JsonRpcEndpoint>> getEndpoints() {
 		return endpoints.entrySet();
 	}
 
+	/**
+	 * Gets the settings.
+	 *
+	 * @return the settings
+	 */
 	public JSONObject getSettings() {
 		return settings;
 	}

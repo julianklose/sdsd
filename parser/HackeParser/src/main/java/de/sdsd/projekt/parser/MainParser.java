@@ -8,7 +8,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,6 +20,7 @@ import org.apache.jena.vocabulary.RDFS;
 import de.sdsd.projekt.api.ParserAPI;
 import de.sdsd.projekt.api.ParserAPI.TimeLog;
 import de.sdsd.projekt.api.ParserAPI.TimeLogWriter;
+import de.sdsd.projekt.api.ParserAPI.Validation;
 import de.sdsd.projekt.api.ParserAPI.ValueInfo;
 import de.sdsd.projekt.api.Util;
 import de.sdsd.projekt.api.Util.WikiFormat;
@@ -32,11 +32,12 @@ import de.sdsd.projekt.api.Util.WikiFormat;
  *
  */
 public class MainParser {
+	
 	/**
 	 * Main function executes test or parse function depending on given arguments.
-	 * 
+	 *
 	 * @param args specifies names of files for input and output
-	 * @throws IOException
+	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static void main(String[] args) throws IOException {
 		if (args.length > 0) {
@@ -57,11 +58,21 @@ public class MainParser {
 			System.err.println("USAGE: java -jar parser.jar parse|validate|test|isoxml filepath");
 	}
 	
+	/** The Constant FORMAT. */
 	private static final WikiFormat FORMAT = Util.format("hacke");
 
+	/** The Constant DICOT. */
 	public static final String TLGNAME = "Hacke", MOCOT = "Mocot", DICOT = "Dicot";
+	
+	/** The Constant SCALE. */
 	private static final double SCALE = 0.0001;
 	
+	/**
+	 * To value.
+	 *
+	 * @param val the val
+	 * @return the long
+	 */
 	private static Long toValue(Double val) {
 		if(val == null || val.isNaN() || val.isInfinite()) 
 			return null;
@@ -83,7 +94,7 @@ public class MainParser {
 	public static void parse(InputStream input, OutputStream output) {
 
 		try (ParserAPI api = new ParserAPI(output)) {
-			List<String> errors = new ArrayList<>();
+			Validation errors = new Validation();
 			long t1 = System.nanoTime();
 
 			try {
@@ -133,7 +144,7 @@ public class MainParser {
 				}
 			} catch (Throwable e) {
 				e.printStackTrace();
-				errors.add(e.getMessage());
+				errors.fatal(e.getMessage());
 			}
 
 			api.setParseTime((System.nanoTime() - t1) / 1000000);

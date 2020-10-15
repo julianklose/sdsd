@@ -8,11 +8,19 @@ import java.io.InputStream;
 import org.json.JSONObject;
 
 /**
+ * The Class FileSizeUtil.
  *
  * @author Markus Schr&ouml;der
  */
 public class FileSizeUtil {
 
+    /**
+     * Human readable byte count.
+     *
+     * @param bytes the bytes
+     * @param si the si
+     * @return the string
+     */
     //from https://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
     public static String humanReadableByteCount(long bytes, boolean si) {
         int unit = si ? 1000 : 1024;
@@ -24,10 +32,21 @@ public class FileSizeUtil {
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
+    /**
+     * Human readable byte count.
+     *
+     * @param bytes the bytes
+     * @return the string
+     */
     public static String humanReadableByteCount(long bytes) {
         return humanReadableByteCount(bytes, true);
     }
 
+    /**
+     * Memory statistics.
+     *
+     * @return the string
+     */
     public static String memoryStatistics() {
         Runtime instance = Runtime.getRuntime();
 
@@ -46,6 +65,12 @@ public class FileSizeUtil {
         return sb.toString();
     }
 
+    /**
+     * Count lines.
+     *
+     * @param file the file
+     * @return the int
+     */
     // https://stackoverflow.com/questions/453018/number-of-lines-in-a-file-in-java
     public static int countLines(File file) {
         if(file.isDirectory())
@@ -99,6 +124,11 @@ public class FileSizeUtil {
 
     }
     
+    /**
+     * Memory statistics json.
+     *
+     * @return the JSON object
+     */
     public static JSONObject memoryStatisticsJson() {
         Runtime instance = Runtime.getRuntime();
 

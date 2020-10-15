@@ -27,6 +27,7 @@ import de.sdsd.projekt.agrirouter.ARRequest.ARSingleRequest;
  */
 public class ARDeleteMessage extends ARSingleRequest<Messages> {
 	
+	/** The param. */
 	private final MessageDelete.Builder param;
 
 	/**
@@ -52,8 +53,8 @@ public class ARDeleteMessage extends ARSingleRequest<Messages> {
 	/**
 	 * Add all messages to delete from the message box.
 	 * You can only delete messages that you haven't {@link ARQueryMessages obtained} yet.
-	 * 
-	 * @param headers
+	 *
+	 * @param headers the headers
 	 * @return this object for method chaining
 	 */
 	public ARDeleteMessage addMessages(Iterable<ARMsgHeader> headers) {
@@ -128,11 +129,25 @@ public class ARDeleteMessage extends ARSingleRequest<Messages> {
 		return this;
 	}
 
+	/**
+	 * Gets the params.
+	 *
+	 * @return the params
+	 */
 	@Override
 	protected Message getParams() {
 		return param.build();
 	}
 
+	/**
+	 * Parses the response.
+	 *
+	 * @param header the header
+	 * @param params the params
+	 * @return the messages
+	 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+	 * @throws ARException the AR exception
+	 */
 	@Override
 	protected Messages parseResponse(ResponseEnvelope header, Any params)
 			throws InvalidProtocolBufferException, ARException {

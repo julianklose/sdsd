@@ -16,29 +16,52 @@ import de.sdsd.projekt.parser.annotations.HelmTransient;
  *
  */
 public class Tagebuch {
+	
+	/** The schlag id. */
 	@CsvBindByName
 	@HelmIdReference(Schlag.class)
 	@HelmTransient
 	private Long schlagId;
+	
+	/** The buch nr. */
 	@CsvBindByName
 	private Long buchNr;
+	
+	/** The datum. */
 	@CsvCustomBindByName(converter = HelmDateConverter.class)
 	private Date datum;
+	
+	/** The ec. */
 	@CsvBindByName
 	private Long ec;
+	
+	/** The artikel id. */
 	@CsvBindByName
 	@HelmIdReference(Artikel.class)
 	@HelmTransient
 	private Long artikelId;
+	
+	/** The menge ha. */
 	@CsvBindByName
 	private Double mengeHa;
+	
+	/** The wartezeit. */
 	@CsvBindByName
 	private String wartezeit;
+	
+	/** The bearb flaeche ha. */
 	@CsvBindByName
 	private Double bearbFlaecheHa;
+	
+	/** The indikation bemerkung. */
 	@CsvBindByName
 	private String indikationBemerkung;
 
+	/**
+	 * To string.
+	 *
+	 * @return the string
+	 */
 	@Override
 	public String toString() {
 		return "Tagebuch [schlagId=" + schlagId + ", buchNr=" + buchNr + ", datum=" + datum + ", ec=" + ec

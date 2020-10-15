@@ -23,6 +23,14 @@ import org.apache.jena.vocabulary.RDFS;
  */
 public class WikiEntry implements Comparable<WikiEntry> {
 	
+	/**
+	 * Gets the main resource.
+	 *
+	 * @param model the model
+	 * @param uri the uri
+	 * @return the main resource
+	 * @throws NoSuchElementException the no such element exception
+	 */
 	private static Resource getMainResource(Model model, String uri) throws NoSuchElementException {
 		Resource res = model.getResource(uri);
 		if (!model.containsResource(res))
@@ -30,15 +38,35 @@ public class WikiEntry implements Comparable<WikiEntry> {
 		return res;
 	}
 
+	/** The uri. */
 	protected final String uri;
+	
+	/** The type. */
 	protected final Optional<WikiEntry> type;
+	
+	/** The identifier. */
 	protected final String identifier;
+	
+	/** The label. */
 	protected String label;
 	
+	/**
+	 * Instantiates a new wiki entry.
+	 *
+	 * @param model the model
+	 * @param uri the uri
+	 * @throws NoSuchElementException the no such element exception
+	 */
 	public WikiEntry(Model model, String uri) throws NoSuchElementException {
 		this(getMainResource(model, uri));
 	}
 	
+	/**
+	 * Instantiates a new wiki entry.
+	 *
+	 * @param res the res
+	 * @throws NoSuchElementException the no such element exception
+	 */
 	public WikiEntry(Resource res) throws NoSuchElementException {
 		this.uri = res.getURI();
 		Statement stmt = res.getProperty(RDF.type);
@@ -49,6 +77,15 @@ public class WikiEntry implements Comparable<WikiEntry> {
 		this.label = stmt != null ? stmt.getString() : identifier;
 	}
 	
+	/**
+	 * Instantiates a new wiki entry.
+	 *
+	 * @param uri the uri
+	 * @param type the type
+	 * @param identifier the identifier
+	 * @param label the label
+	 * @throws NoSuchElementException the no such element exception
+	 */
 	public WikiEntry(String uri, @Nullable WikiEntry type, String identifier, String label) throws NoSuchElementException {
 		this.uri = uri;
 		this.type = Optional.ofNullable(type);
@@ -56,31 +93,69 @@ public class WikiEntry implements Comparable<WikiEntry> {
 		this.label = label;
 	}
 	
+	/**
+	 * Res.
+	 *
+	 * @param model the model
+	 * @return the resource
+	 */
 	public Resource res(@Nullable Model model) {
 		return model != null ? model.createResource(uri) : ResourceFactory.createResource(uri);
 	}
 
+	/**
+	 * Gets the uri.
+	 *
+	 * @return the uri
+	 */
 	public String getUri() {
 		return uri;
 	}
 	
+	/**
+	 * Gets the type.
+	 *
+	 * @return the type
+	 */
 	public Optional<WikiEntry> getType() {
 		return type;
 	}
 	
+	/**
+	 * Gets the identifier.
+	 *
+	 * @return the identifier
+	 */
 	public String getIdentifier() {
 		return identifier;
 	}
 
+	/**
+	 * Gets the label.
+	 *
+	 * @return the label
+	 */
 	public String getLabel() {
 		return label;
 	}
 	
+	/**
+	 * Sets the label.
+	 *
+	 * @param label the label
+	 * @return the wiki entry
+	 */
 	public WikiEntry setLabel(String label) {
 		this.label = label;
 		return this;
 	}
 	
+	/**
+	 * Write to.
+	 *
+	 * @param model the model
+	 * @return the resource
+	 */
 	public Resource writeTo(Model model) {
 		Resource res = model.createResource(uri);
 		if(type.isPresent()) res.addProperty(RDF.type, model.createResource(type.get().uri));
@@ -89,21 +164,43 @@ public class WikiEntry implements Comparable<WikiEntry> {
 		return res;
 	}
 	
+	/**
+	 * To string.
+	 *
+	 * @return the string
+	 */
 	@Override
 	public String toString() {
 		return String.format("%s(%s)", label, identifier);
 	}
 
+	/**
+	 * Compare to.
+	 *
+	 * @param o the o
+	 * @return the int
+	 */
 	@Override
 	public int compareTo(WikiEntry o) {
 		return identifier.compareToIgnoreCase(o.identifier);
 	}
 
+	/**
+	 * Hash code.
+	 *
+	 * @return the int
+	 */
 	@Override
 	public int hashCode() {
 		return Objects.hash(uri);
 	}
 
+	/**
+	 * Equals.
+	 *
+	 * @param obj the obj
+	 * @return true, if successful
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

@@ -18,10 +18,24 @@ import de.sdsd.projekt.prototype.data.User;
  */
 public class AdminEndpoint extends JsonRpcEndpoint {
 
+	/**
+	 * Instantiates a new admin endpoint.
+	 *
+	 * @param application the application
+	 */
 	public AdminEndpoint(ApplicationLogic application) {
 		super(application);
 	}
 
+	/**
+	 * grants administrator privileges to the current user
+	 *
+	 * @param req http servlet request including userdata
+	 * @param res http servlet response
+	 * @param password for admin access
+	 * @return JSON object including "success" attribute
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject adminLogin(HttpServletRequest req, HttpServletResponse res, String password) throws JsonRpcException {
 		try {
 			boolean success = application.user.adminLogin(getSetSessionId(req, res), password);
@@ -32,6 +46,14 @@ public class AdminEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Checks if the current user has administrator privileges
+	 *
+	 * @param req http servlet request including userdata
+	 * @param res http servlet response
+	 * @return JSON object including "isLogin" attribute
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject adminStatus(HttpServletRequest req) throws JsonRpcException {
 		try {
 			return new JSONObject().put("isLogin", application.user.isAdmin(getSessionId(req)));
@@ -40,6 +62,14 @@ public class AdminEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Revokes administrator privileges from the current user
+	 *
+	 * @param req http servlet request including userdata
+	 * @param res http servlet response
+	 * @return JSON object including "adminLogout" attribute
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject adminLogout(HttpServletRequest req, HttpServletResponse res) throws JsonRpcException {
 		try {
 			boolean success = application.user.adminLogout(getSessionId(req));
@@ -50,6 +80,15 @@ public class AdminEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Creates a new User
+	 *
+	 * @param req http servlet request including userdata
+	 * @param res http servlet response
+	 * @param regForm JSON Object with registration data including username, password and email
+	 * @return JSON object including "success" attribute
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject adminCreateUser(HttpServletRequest req, HttpServletResponse res, JSONObject regForm) throws JsonRpcException {
 		try {
 			if(!application.user.isAdmin(getSessionId(req)))
@@ -65,6 +104,14 @@ public class AdminEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Lists all users
+	 *
+	 * @param req http servlet request including userdata
+	 * @param update boolean
+	 * @return JSON object including users with num, username, created, email, agrirouterId and adminLogin attributes.
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject adminListUsers(HttpServletRequest req, boolean update) throws JsonRpcException {
 		try {
 			String sessionId = getSessionId(req);
@@ -92,6 +139,14 @@ public class AdminEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Login as the selected user
+	 *
+	 * @param req http servlet request including userdata
+	 * @param username of the selected user
+	 * @return JSON object including "success" attribute
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject adminUserLogin(HttpServletRequest req, String username) throws JsonRpcException {
 		try {
 			String sessionId = getSessionId(req);
@@ -107,6 +162,15 @@ public class AdminEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * reset users password
+	 *
+	 * @param req http servlet request including userdata
+	 * @param username - selected user
+	 * @param password - new password
+	 * @return JSON object including "success" attribute
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject adminUserResetPassword(HttpServletRequest req, String username, String password) throws JsonRpcException {
 		try {
 			String sessionId = getSessionId(req);
@@ -124,6 +188,13 @@ public class AdminEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Establishes a mqtt connection with all mqtt endpoints.
+	 *
+	 * @param req http servlet request including userdata
+	 * @return JSON object including "success" attribute
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject adminConnectAllMqtt(HttpServletRequest req) throws JsonRpcException {
 		try {
 			String sessionId = getSessionId(req);
@@ -139,6 +210,13 @@ public class AdminEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Disconnects all mqtt connections.
+	 *
+	 * @param req http servlet request including userdata
+	 * @return JSON object including "success" attribute
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject adminDisconnectAllMqtt(HttpServletRequest req) throws JsonRpcException {
 		try {
 			String sessionId = getSessionId(req);

@@ -38,15 +38,30 @@ public class WebsocketEndpoint {
 		});
 	}
 	
+	/** The Constant sessions. */
 	private static final Map<String, String> sessions = new HashMap<>();
+	
+	/** The Constant connections. */
 	private static final Map<String, WebsocketConnection> connections = new HashMap<>();
 	
+	/**
+	 * On open.
+	 *
+	 * @param session the session
+	 * @param config the config
+	 */
 	@OnOpen
 	public void onOpen(Session session, EndpointConfig config) {
 		connections.put(session.getId(), new WebsocketConnection(session));
 		System.out.println("Websocket opened: " + session.getId());
 	}
 
+	/**
+	 * On close.
+	 *
+	 * @param session the session
+	 * @param reason the reason
+	 */
 	@OnClose
 	public void onClose(Session session, CloseReason reason) {
 		WebsocketConnection connection = connections.remove(session.getId());
@@ -56,13 +71,27 @@ public class WebsocketEndpoint {
 		System.out.format("Websocket %s closed: %s(%d)\n", session.getId(), reason.getReasonPhrase(), reason.getCloseCode().getCode());
 	}
 	
+	/**
+	 * On error.
+	 *
+	 * @param session the session
+	 * @param error the error
+	 */
 	@OnError
 	public void onError(Session session, Throwable error) {
 		System.err.format("Websocket %s error: (%s)%s\n", session.getId(), error.getClass().getName(), error.getMessage());
 	}
 	
+	/** The buffer. */
 	private final Map<String, StringBuffer> buffer = new HashMap<>();
 	
+	/**
+	 * On message.
+	 *
+	 * @param msgString the msg string
+	 * @param last the last
+	 * @param session the session
+	 */
 	@OnMessage
 	public void onMessage(String msgString, boolean last, Session session) {
 		//System.out.format("onMessage from %s: length(%d) last(%b)\n", session.getId(), msgString.length(), last);

@@ -31,6 +31,7 @@ import de.sdsd.projekt.agrirouter.request.feed.ARMsgHeader.ARMsgHeaderResult;
  */
 public class ARQueryMessageHeaders extends ARRequest<ARMsgHeaderResult> {
 	
+	/** The payload. */
 	private MessageQuery.Builder payload;
 
 	/**
@@ -118,15 +119,23 @@ public class ARQueryMessageHeaders extends ARRequest<ARMsgHeaderResult> {
 	 */
 	private static class QueryMessageHeadersInstance extends RequestInstance<ARMsgHeaderResult> {
 
+		/** The query. */
 		private final MessageQuery query;
+		
+		/** The chunks. */
 		private final Map<String, ARMsgHeader> chunks;
+		
+		/** The result. */
 		private final ARMsgHeaderResult result;
+		
+		/** The total pages. */
 		private int receivedPages = 0, totalPages = 1;
 		
 		/**
 		 * Constructs a one time use independent message query request.
-		 * 
+		 *
 		 * @param req request header
+		 * @param query the query
 		 */
 		public QueryMessageHeadersInstance(RequestEnvelope req, MessageQuery query) {
 			super(req);
@@ -135,21 +144,45 @@ public class ARQueryMessageHeaders extends ARRequest<ARMsgHeaderResult> {
 			this.result = new ARMsgHeaderResult();
 		}
 
+		/**
+		 * Checks for next.
+		 *
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean hasNext() {
 			return receivedPages < totalPages;
 		}
 
+		/**
+		 * Next.
+		 *
+		 * @return the AR message
+		 */
 		@Override
 		public ARMessage next() {
 			return createMessage().setParams(query);
 		}
 
+		/**
+		 * Gets the response.
+		 *
+		 * @return the response
+		 */
 		@Override
 		public ARMsgHeaderResult getResponse() {
 			return result;
 		}
 
+		/**
+		 * Read response.
+		 *
+		 * @param header the header
+		 * @param params the params
+		 * @return true, if successful
+		 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+		 * @throws ARException the AR exception
+		 */
 		@Override
 		protected boolean readResponse(ResponseEnvelope header, Any params)
 				throws InvalidProtocolBufferException, ARException {
@@ -188,6 +221,11 @@ public class ARQueryMessageHeaders extends ARRequest<ARMsgHeaderResult> {
 		}
 	}
 
+	/**
+	 * Builds the.
+	 *
+	 * @return the request instance
+	 */
 	@Override
 	public RequestInstance<ARMsgHeaderResult> build() {
 		return new QueryMessageHeadersInstance(req.build(), payload.build());

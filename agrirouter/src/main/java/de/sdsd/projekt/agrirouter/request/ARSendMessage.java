@@ -167,17 +167,25 @@ public class ARSendMessage extends ARRequest<Boolean> {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private static class SendMessageInstance extends RequestInstance<Boolean> {
+		
+		/** The chunkinfo. */
 		protected ChunkComponent.Builder chunkinfo;
+		
+		/** The payload. */
 		protected byte[] payload;
+		
+		/** The efdi payload. */
 		protected Message efdiPayload;
+		
+		/** The part. */
 		protected int part = 1;
 		
 		/**
 		 * Constructs a one time use independent file send request.
-		 * 
+		 *
 		 * @param req request header
 		 * @param payload file content
-		 * @param efdiPayload 
+		 * @param efdiPayload the efdi payload
 		 */
 		public SendMessageInstance(RequestEnvelope req, byte[] payload, Message efdiPayload) {
 			super(req);
@@ -193,11 +201,21 @@ public class ARSendMessage extends ARRequest<Boolean> {
 				: null;
 		}
 
+		/**
+		 * Checks for next.
+		 *
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean hasNext() {
 			return part <= (chunkinfo != null ? chunkinfo.getTotal() : 1);
 		}
 
+		/**
+		 * Next.
+		 *
+		 * @return the AR message
+		 */
 		@Override
 		public ARMessage next() {
 			if (!hasNext()) return null;
@@ -215,11 +233,25 @@ public class ARSendMessage extends ARRequest<Boolean> {
 			return message;
 		}
 
+		/**
+		 * Gets the response.
+		 *
+		 * @return the response
+		 */
 		@Override
 		public Boolean getResponse() {
 			return !hasNext();
 		}
 
+		/**
+		 * Read response.
+		 *
+		 * @param header the header
+		 * @param params the params
+		 * @return true, if successful
+		 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+		 * @throws ARException the AR exception
+		 */
 		@Override
 		protected boolean readResponse(ResponseEnvelope header, Any params)
 				throws InvalidProtocolBufferException, ARException {
@@ -228,6 +260,11 @@ public class ARSendMessage extends ARRequest<Boolean> {
 		
 	}
 
+	/**
+	 * Builds the.
+	 *
+	 * @return the request instance
+	 */
 	@Override
 	public RequestInstance<Boolean> build() {
 		return new SendMessageInstance(req.build(), payload, efdiPayload);

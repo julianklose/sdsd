@@ -29,13 +29,25 @@ import efdi.GrpcEfdi;
  * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
  */
 public class EfdiTimeLog {
+	
+	/** The Constant FILENAME_DEVICEDESCRIPTION. */
 	public static final String FILENAME_DEVICEDESCRIPTION = "DeviceDescription.bin";
+	
+	/** The Constant FORMAT_TIMELOG. */
 	public static final String FORMAT_TIMELOG = "TLG%05d.bin";
 	
+	/** The device description. */
 	@CheckForNull
 	private final byte[] deviceDescription;
+	
+	/** The timelogs. */
 	private final Map<String, byte[]> timelogs = new HashMap<>();
 	
+	/**
+	 * Instantiates a new efdi time log.
+	 *
+	 * @param input the input
+	 */
 	public EfdiTimeLog(InputStream input) {
 		byte[] deviceDescription = null;
 		try(ZipInputStream zip = new ZipInputStream(input, Charset.forName("Cp437"))) {
@@ -54,44 +66,96 @@ public class EfdiTimeLog {
 		this.deviceDescription = deviceDescription;
 	}
 	
+	/**
+	 * Instantiates a new efdi time log.
+	 *
+	 * @param content the content
+	 */
 	public EfdiTimeLog(byte[] content) {
 		this(new ByteArrayInputStream(content));
 	}
 	
+	/**
+	 * Instantiates a new efdi time log.
+	 *
+	 * @param deviceDescription the device description
+	 */
 	public EfdiTimeLog(GrpcEfdi.ISO11783_TaskData deviceDescription) {
 		this.deviceDescription = deviceDescription.toByteArray();
 	}
 	
+	/**
+	 * Instantiates a new efdi time log.
+	 *
+	 * @param deviceDescription the device description
+	 */
 	public EfdiTimeLog(DeviceDescription deviceDescription) {
 		this.deviceDescription = deviceDescription.getBinaryContent();
 	}
 	
+	/**
+	 * Gets the device description.
+	 *
+	 * @return the device description
+	 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+	 */
 	@CheckForNull
 	public GrpcEfdi.ISO11783_TaskData getDeviceDescription() throws InvalidProtocolBufferException {
 		if(deviceDescription == null) return null;
 		return GrpcEfdi.ISO11783_TaskData.parseFrom(deviceDescription);
 	}
 	
+	/**
+	 * Gets the time log names.
+	 *
+	 * @return the time log names
+	 */
 	public Set<String> getTimeLogNames() {
 		return timelogs.keySet();
 	}
 	
+	/**
+	 * Gets the time log.
+	 *
+	 * @param name the name
+	 * @return the time log
+	 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+	 */
 	@CheckForNull
 	public GrpcEfdi.TimeLog getTimeLog(String name) throws InvalidProtocolBufferException {
 		byte[] bs = timelogs.get(name);
 		return bs != null ? GrpcEfdi.TimeLog.parseFrom(bs) : null;
 	}
 	
+	/**
+	 * Sets the time log.
+	 *
+	 * @param name the name
+	 * @param tlg the tlg
+	 * @return the efdi time log
+	 */
 	public EfdiTimeLog setTimeLog(String name, GrpcEfdi.TimeLog tlg) {
 		timelogs.put(name, tlg.toByteArray());
 		return this;
 	}
 	
+	/**
+	 * Sets the time log.
+	 *
+	 * @param name the name
+	 * @param tlg the tlg
+	 * @return the efdi time log
+	 */
 	public EfdiTimeLog setTimeLog(String name, byte[] tlg) {
 		timelogs.put(name, tlg);
 		return this;
 	}
 	
+	/**
+	 * Gets the free time log name.
+	 *
+	 * @return the free time log name
+	 */
 	public String getFreeTimeLogName() {
 		for(int i = 1; i < 100000; ++i) {
 			String name = String.format(FORMAT_TIMELOG, i);
@@ -101,16 +165,33 @@ public class EfdiTimeLog {
 		throw new IndexOutOfBoundsException();
 	}
 	
+	/**
+	 * Adds the time log.
+	 *
+	 * @param tlg the tlg
+	 * @return the efdi time log
+	 */
 	public EfdiTimeLog addTimeLog(GrpcEfdi.TimeLog tlg) {
 		timelogs.put(getFreeTimeLogName(), tlg.toByteArray());
 		return this;
 	}
 	
+	/**
+	 * Adds the time log.
+	 *
+	 * @param tlg the tlg
+	 * @return the efdi time log
+	 */
 	public EfdiTimeLog addTimeLog(byte[] tlg) {
 		timelogs.put(getFreeTimeLogName(), tlg);
 		return this;
 	}
 	
+	/**
+	 * Write to zip.
+	 *
+	 * @param out the out
+	 */
 	public void writeToZip(OutputStream out) {
 		try(ZipOutputStream zip = new ZipOutputStream(out, Charset.forName("Cp437"))) {
 			if(deviceDescription != null) {
@@ -128,6 +209,11 @@ public class EfdiTimeLog {
 		}
 	}
 	
+	/**
+	 * To zip byte array.
+	 *
+	 * @return the byte[]
+	 */
 	public byte[] toZipByteArray() {
 		int size = deviceDescription != null ? deviceDescription.length : 0;
 		size += timelogs.values().stream().mapToInt(c -> c.length).sum();

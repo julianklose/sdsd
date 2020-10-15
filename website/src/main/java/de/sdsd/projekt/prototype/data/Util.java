@@ -47,6 +47,11 @@ public final class Util {
 				(l, r) -> { l.addAll(r); return l; });
 	}
 	
+	/**
+	 * To JSON array.
+	 *
+	 * @return the collector
+	 */
 	public static Collector<Object, JSONArray, JSONArray> toJSONArray() {
 		return Collector.of(JSONArray::new, JSONArray::put, (left, right) -> {
 			right.forEach(o -> left.put(o));
@@ -67,29 +72,68 @@ public final class Util {
 			return Stream.empty();
 	}
 	
+	/**
+	 * Iterator stream.
+	 *
+	 * @param <T> the generic type
+	 * @param it the it
+	 * @return the stream
+	 */
 	public static <T> Stream<T> iteratorStream(Iterator<T> it) {
 		Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(it, Spliterator.ORDERED);
 		return StreamSupport.stream(spliterator, false);
 	}
 	
+	/**
+	 * Iterate.
+	 *
+	 * @param <T> the generic type
+	 * @param it the it
+	 * @return the iterable
+	 */
 	public static <T> Iterable<T> iterate(Iterator<T> it) {
 		return () -> it;
 	}
 	
+	/**
+	 * First.
+	 *
+	 * @param <T> the generic type
+	 * @param it the it
+	 * @return the t
+	 */
 	@CheckForNull
 	public static <T> T first(Iterator<T> it) {
 		return it.hasNext() ? it.next() : null;
 	}
 	
+	/** The Constant OID_REGEX. */
 	private static final Pattern OID_REGEX = Pattern.compile("[A-Fa-f0-9]{24}");
+	
+	/**
+	 * Checks if is object id.
+	 *
+	 * @param input the input
+	 * @return true, if is object id
+	 */
 	public static boolean isObjectId(String input) {
 		return OID_REGEX.matcher(input).matches();
 	}
 	
+	/** The Constant SECURE_TOKEN_LENGTH. */
 	private static final int SECURE_TOKEN_LENGTH = 64;
+	
+	/** The Constant SYMBOLS. */
 	private static final char[] SYMBOLS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
+	
+	/** The Constant random. */
 	private static final SecureRandom random = new SecureRandom();
 	
+	/**
+	 * Creates the secure token.
+	 *
+	 * @return the string
+	 */
 	public static String createSecureToken() {
 		char[] buf = new char[SECURE_TOKEN_LENGTH];
 		for(int i = 0; i < buf.length; ++i) {
@@ -98,10 +142,22 @@ public final class Util {
 		return new String(buf);
 	}
 	
+	/**
+	 * Creates the uuid uri.
+	 *
+	 * @return the string
+	 */
 	public static String createUuidUri() {
 		return "sdsd:" + UUID.randomUUID().toString();
 	}
 	
+	/**
+	 * To camel case.
+	 *
+	 * @param input the input
+	 * @param upper the upper
+	 * @return the string
+	 */
 	public static String toCamelCase(String input, boolean upper) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < input.length(); ++i) {
@@ -117,39 +173,93 @@ public final class Util {
 		return sb.toString();
 	}
 	
+	/**
+	 * Path.
+	 *
+	 * @param node the node
+	 * @return the path
+	 */
 	public static Path path(RDFNode node) {
 		return PathFactory.pathLink(node.asNode());
 	}
 	
+	/**
+	 * Lit.
+	 *
+	 * @param value the value
+	 * @return the literal
+	 */
 	public static Literal lit(int value) {
 		return ResourceFactory.createTypedLiteral(value);
 	}
 
+	/**
+	 * Lit.
+	 *
+	 * @param value the value
+	 * @return the literal
+	 */
 	public static Literal lit(long value) {
 		return ResourceFactory.createTypedLiteral(value);
 	}
 
+	/**
+	 * Lit.
+	 *
+	 * @param value the value
+	 * @return the literal
+	 */
 	public static Literal lit(float value) {
 		return ResourceFactory.createTypedLiteral(value);
 	}
 
+	/**
+	 * Lit.
+	 *
+	 * @param value the value
+	 * @return the literal
+	 */
 	public static Literal lit(double value) {
 		return ResourceFactory.createTypedLiteral(value);
 	}
 
+	/**
+	 * Lit.
+	 *
+	 * @param value the value
+	 * @return the literal
+	 */
 	public static Literal lit(boolean value) {
 		return ResourceFactory.createTypedLiteral(value);
 	}
 
+	/**
+	 * Lit.
+	 *
+	 * @param value the value
+	 * @return the literal
+	 */
 	public static Literal lit(String value) {
 		return ResourceFactory.createStringLiteral(value);
 	}
 
+	/**
+	 * Lit.
+	 *
+	 * @param value the value
+	 * @return the literal
+	 */
 	public static Literal lit(Instant value) {
 		return ResourceFactory
 				.createTypedLiteral(GregorianCalendar.from(ZonedDateTime.ofInstant(value, ZoneOffset.UTC)));
 	}
 
+	/**
+	 * Lit.
+	 *
+	 * @param value the value
+	 * @return the literal
+	 */
 	public static Literal lit(byte[] value) {
 		return ResourceFactory.createTypedLiteral(Hex.encodeHexString(value, false), XSDDatatype.XSDhexBinary);
 	}

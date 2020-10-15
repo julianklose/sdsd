@@ -31,31 +31,54 @@ import org.jabsorb.JSONRPCBridge;
 import org.slf4j.LoggerFactory;
 
 /**
+ * The Class ServerManager.
  *
  * @author Markus Schr&ouml;der
  */
 public class ServerManager {
     
+    /** The tomcat server. */
     private TomcatServer tomcatServer;
+    
+    /** The resource servlet. */
     private ResourceServlet resourceServlet;
     
+    /** The tray icon. */
     private TrayIcon trayIcon;
     
+    /** The port. */
     private int port;
 
     //init
     
+    /**
+     * Inits the server.
+     *
+     * @param listeningPort the listening port
+     * @throws Exception the exception
+     */
     public void initServer(int listeningPort) throws Exception {
         this.port = listeningPort;
         // initialize tomcat server
         tomcatServer = new TomcatServer(listeningPort, false);
     }
 
+    /**
+     * Inits the resource servlet.
+     *
+     * @param indexFile the index file
+     * @throws Exception the exception
+     */
     public void initResourceServlet(String indexFile) throws Exception {
         //serve html/js/css from resources
         resourceServlet = tomcatServer.addResourceServlet("/", indexFile, false);
     }
     
+    /**
+     * Inits the resource servlet static.
+     *
+     * @throws Exception the exception
+     */
     public void initResourceServletStatic() throws Exception {
         //serve html/js/css from resources
         Context staticContext = tomcatServer.addContext("/static", "static");
@@ -66,6 +89,14 @@ public class ServerManager {
 
     //sys tray
     
+    /**
+     * Inits the tray.
+     *
+     * @param imgResourcePath the img resource path
+     * @param tooltip the tooltip
+     * @param trayClickURI the tray click URI
+     * @param fillPopup the fill popup
+     */
     public void initTray(String imgResourcePath, String tooltip, String trayClickURI, Consumer<PopupMenu> fillPopup) {
         URL iconUrl = ServerManager.class.getResource(imgResourcePath);
         Image icon = Toolkit.getDefaultToolkit().getImage(iconUrl);
@@ -113,6 +144,12 @@ public class ServerManager {
     
     //json rpc
     
+    /**
+     * Adds the json RPC.
+     *
+     * @param name the name
+     * @param endpoint the endpoint
+     */
     public void addJsonRPC(String name, Object endpoint) {
         //JSON RPC used by PRO-OPT Connector
         JSONRPCBridge.getGlobalBridge().registerObject(name, endpoint);
@@ -130,8 +167,15 @@ public class ServerManager {
     
     //websocket
     
+    /** The context path 2 endpoints. */
     public static Map<String, Class[]> contextPath2endpoints = new HashMap<>();
     
+    /**
+     * Adds the websocket endpoints.
+     *
+     * @param contextPath the context path
+     * @param endpoints the endpoints
+     */
     public void addWebsocketEndpoints(String contextPath, Class... endpoints) {
         contextPath2endpoints.put(contextPath, endpoints);
         
@@ -142,8 +186,16 @@ public class ServerManager {
         sc.addServletMappingDecoded("/", "default");
     }
 
+    /**
+     * The Class WebsocketEndpointInstaller.
+     */
     public static class WebsocketEndpointInstaller extends WsContextListener {
 
+        /**
+         * Context initialized.
+         *
+         * @param sce the sce
+         */
         @Override
         public void contextInitialized(ServletContextEvent sce) {
             super.contextInitialized(sce);
@@ -188,6 +240,14 @@ public class ServerManager {
         getTomcatServer().addServlet(contextPath, servletPath, servletName, sc);
     }
     
+    /**
+     * Adds the REST.
+     *
+     * @param contextPath the context path
+     * @param servletPath the servlet path
+     * @param servletName the servlet name
+     * @param resourceConfig the resource config
+     */
     public void addREST(String contextPath, String servletPath, String servletName, ResourceConfig resourceConfig) {
         ServletContainer sc = new ServletContainer(resourceConfig);
         getTomcatServer().addServlet(contextPath, servletPath, servletName, sc);
@@ -203,12 +263,24 @@ public class ServerManager {
     
     //run
     
+    /**
+     * Start and await server.
+     *
+     * @throws LifecycleException the lifecycle exception
+     */
     public void startAndAwaitServer() throws LifecycleException {
         // start tomcat
         tomcatServer.start();
         tomcatServer.await();
     }
     
+    /**
+     * Browse localhost.
+     *
+     * @param listeningPort the listening port
+     * @throws URISyntaxException the URI syntax exception
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
     public void browseLocalhost(int listeningPort) throws URISyntaxException, IOException {
         // browse to hosted webapp
         Desktop.getDesktop().browse(new URI("http://localhost:" + listeningPort));
@@ -216,19 +288,37 @@ public class ServerManager {
     
     //getter
     
+    /**
+     * Gets the tomcat server.
+     *
+     * @return the tomcat server
+     */
     public TomcatServer getTomcatServer() {
         return tomcatServer;
     }
 
+    /**
+     * Gets the resource servlet.
+     *
+     * @return the resource servlet
+     */
     public ResourceServlet getResourceServlet() {
         return resourceServlet;
     }
 
 
+    /**
+     * Gets the port.
+     *
+     * @return the port
+     */
     public int getPort() {
         return port;
     }
     
+    /**
+     * Sets the logger level to error.
+     */
     public static void setLoggerLevelToError() {
         //turn off anoying logger
         ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
@@ -237,6 +327,11 @@ public class ServerManager {
         //org.apache.catalina.startup.TldConfig.setNoTldJars("*.jar");
     }
 
+    /**
+     * Gets the tray icon.
+     *
+     * @return the tray icon
+     */
     public TrayIcon getTrayIcon() {
         return trayIcon;
     }

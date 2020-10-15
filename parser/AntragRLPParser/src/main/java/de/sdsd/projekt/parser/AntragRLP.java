@@ -45,6 +45,7 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import de.sdsd.projekt.api.ParserAPI;
+import de.sdsd.projekt.api.ParserAPI.Validation;
 import de.sdsd.projekt.api.ServiceAPI.JsonRpcException;
 import de.sdsd.projekt.api.ServiceResult.WikiInstance;
 import de.sdsd.projekt.api.Util;
@@ -58,18 +59,40 @@ import de.sdsd.projekt.api.Util.WikiType;
  */
 public class AntragRLP {
 
+	/** The crs. */
 	public final CoordinateReferenceSystem crs;
+	
+	/** The gf. */
 	private final GeometryFactory gf;
+	
+	/** The parser. */
 	private final SAXParser parser;
 	
+	/** The geometries. */
 	private final byte[] antrag, geometries;
-	private final List<String> errors;
 	
+	/** The errors. */
+	private final Validation errors;
+	
+	/** The year. */
 	private int year;
 	
+	/** The Constant XMLFILE. */
 	private static final Pattern XMLFILE = Pattern.compile("SchlagDaten_\\d+_(\\d+)\\.xml", Pattern.CASE_INSENSITIVE);
 	
-	public AntragRLP(InputStream antragzip, List<String> errors) 
+	/**
+	 * Instantiates a new antrag RLP.
+	 *
+	 * @param antragzip the antragzip
+	 * @param errors the errors
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws ParserConfigurationException the parser configuration exception
+	 * @throws ZipException the zip exception
+	 * @throws SAXException the SAX exception
+	 * @throws NoSuchAuthorityCodeException the no such authority code exception
+	 * @throws FactoryException the factory exception
+	 */
+	public AntragRLP(InputStream antragzip, Validation errors) 
 			throws IOException, ParserConfigurationException, ZipException, SAXException, NoSuchAuthorityCodeException, FactoryException {
 		this.crs = CRS.decode("EPSG:25832", false);
 		this.gf = new GeometryFactory(new PrecisionModel(), 25832);
@@ -102,6 +125,14 @@ public class AntragRLP {
 		this.geometries = geometries;
 	}
 	
+	/**
+	 * Read teilschlaggeometrien.
+	 *
+	 * @return the map
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws SAXException the SAX exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public Map<Integer, Geometry> readTeilschlaggeometrien() throws FileNotFoundException, SAXException, IOException {
 		AntragGMLHandler antragGMLHandler = new AntragGMLHandler();
 		InputSource is = new InputSource(new ByteArrayInputStream(geometries));
@@ -110,6 +141,14 @@ public class AntragRLP {
 		return antragGMLHandler.getGeometries();
 	}
 	
+	/**
+	 * Read flaechenverzeichnis.
+	 *
+	 * @return the map
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws SAXException the SAX exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public Map<Integer, SchlagInfo> readFlaechenverzeichnis() throws FileNotFoundException, SAXException, IOException {
 		AntragXMLHandler antragXMLHandler = new AntragXMLHandler();
 		InputSource is = new InputSource(new ByteArrayInputStream(antrag));
@@ -118,21 +157,53 @@ public class AntragRLP {
 		return antragXMLHandler.getSchlaege();
 	}
 	
-	public List<String> getErrors() {
+	/**
+	 * Gets the errors.
+	 *
+	 * @return the errors
+	 */
+	public Validation getErrors() {
 		return errors;
 	}
 	
+	/**
+	 * The Class AntragGMLHandler.
+	 */
 	private class AntragGMLHandler extends DefaultHandler {
+		
+		/** The geometries. */
 		private final Map<Integer, Geometry> geometries = new HashMap<>();
+		
+		/** The sb. */
 		private StringBuilder sb = null;
+		
+		/** The schlag. */
 		private Integer schlag = null;
+		
+		/** The gml. */
 		private GMLHandler gml = null;
+		
+		/** The geo. */
 		private Geometry geo = null;
 		
+		/**
+		 * Gets the geometries.
+		 *
+		 * @return the geometries
+		 */
 		public Map<Integer, Geometry> getGeometries() {
 			return geometries;
 		}
 
+		/**
+		 * Start element.
+		 *
+		 * @param uri the uri
+		 * @param localName the local name
+		 * @param qName the q name
+		 * @param attributes the attributes
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			if(gml != null)
@@ -145,6 +216,14 @@ public class AntragRLP {
 				gml = new GMLHandler(gf, null);
 		}
 
+		/**
+		 * End element.
+		 *
+		 * @param uri the uri
+		 * @param localName the local name
+		 * @param qName the q name
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 			if(localName.equals("GEOM")) {
@@ -157,14 +236,14 @@ public class AntragRLP {
 				try {
 					schlag = Integer.valueOf(sb.toString());
 				} catch (NumberFormatException e) {
-					errors.add("Invalid SLNR: " + sb.toString());
+					errors.error("Invalid SLNR: " + sb.toString());
 				}
 				sb = null;
 			} else if(localName.equals("Jahr")) {
 				try {
 					year = Integer.parseInt(sb.toString());
 				} catch (NumberFormatException e) {
-					errors.add("Invalid Jahr: " + sb.toString());
+					errors.error("Invalid Jahr: " + sb.toString());
 				}
 				sb = null;
 			} else if(localName.equals("Schlaege")) {
@@ -173,6 +252,14 @@ public class AntragRLP {
 			}
 		}
 
+		/**
+		 * Characters.
+		 *
+		 * @param ch the ch
+		 * @param start the start
+		 * @param length the length
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
 			if(gml != null)
@@ -181,38 +268,89 @@ public class AntragRLP {
 				sb.append(ch, start, length);
 		}
 
+		/**
+		 * Ignorable whitespace.
+		 *
+		 * @param ch the ch
+		 * @param start the start
+		 * @param length the length
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
 			if(gml != null)
 				gml.ignorableWhitespace(ch, start, length);
 		}
 
+		/**
+		 * Warning.
+		 *
+		 * @param e the e
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void warning(SAXParseException e) throws SAXException {
-			errors.add(e.toString());
+			errors.warn(e.toString());
 		}
 
+		/**
+		 * Error.
+		 *
+		 * @param e the e
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void error(SAXParseException e) throws SAXException {
-			errors.add(e.toString());
+			errors.error(e.toString());
 		}
 
+		/**
+		 * Fatal error.
+		 *
+		 * @param e the e
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void fatalError(SAXParseException e) throws SAXException {
 			throw e;
 		}
 	}
 
+	/**
+	 * The Class AntragXMLHandler.
+	 */
 	private class AntragXMLHandler extends DefaultHandler {
+		
+		/** The schlaege. */
 		private final Map<Integer, SchlagInfo> schlaege = new HashMap<>();
+		
+		/** The sb. */
 		private final StringBuilder sb = new StringBuilder();
+		
+		/** The antragsjahr. */
 		private String vorjahr, antragsjahr;
+		
+		/** The info. */
 		private SchlagInfo info = null;
 		
+		/**
+		 * Gets the schlaege.
+		 *
+		 * @return the schlaege
+		 */
 		public Map<Integer, SchlagInfo> getSchlaege() {
 			return schlaege;
 		}
 
+		/**
+		 * Start element.
+		 *
+		 * @param uri the uri
+		 * @param localName the local name
+		 * @param qName the q name
+		 * @param attributes the attributes
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			if(localName.equals("SchlagEintrag"))
@@ -220,6 +358,14 @@ public class AntragRLP {
 			sb.setLength(0);
 		}
 
+		/**
+		 * End element.
+		 *
+		 * @param uri the uri
+		 * @param localName the local name
+		 * @param qName the q name
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 			if(localName.equals("Vorjahr"))
@@ -257,34 +403,63 @@ public class AntragRLP {
 						break;
 					}
 				} catch (NumberFormatException e) {
-					errors.add("Invalid " + localName + ": " + antragsjahr);
+					errors.error("Invalid " + localName + ": " + antragsjahr);
 				}
 			}
 		}
 
+		/**
+		 * Characters.
+		 *
+		 * @param ch the ch
+		 * @param start the start
+		 * @param length the length
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
 			sb.append(ch, start, length);
 		}
 
+		/**
+		 * Warning.
+		 *
+		 * @param e the e
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void warning(SAXParseException e) throws SAXException {
-			errors.add(e.toString());
+			errors.warn(e.toString());
 		}
 
+		/**
+		 * Error.
+		 *
+		 * @param e the e
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void error(SAXParseException e) throws SAXException {
-			errors.add(e.toString());
+			errors.error(e.toString());
 		}
 
+		/**
+		 * Fatal error.
+		 *
+		 * @param e the e
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void fatalError(SAXParseException e) throws SAXException {
 			throw e;
 		}
 	}
 	
+	/** The Constant KULTUR. */
 	private static final WikiType ANTRAG = Util.UNKNOWN.res("applicationField"),
 			KULTUR = Util.UNKNOWN.res("kultur");
+	
+	/** The Constant AREA. */
 	private static final WikiAttr YEAR = ANTRAG.prop("year"),
 			NUMMER = ANTRAG.prop("number"),
 			NAME = ANTRAG.prop("name"),
@@ -293,10 +468,14 @@ public class AntragRLP {
 			USAGEPREV = ANTRAG.prop("prevUsage"),
 			AREA = ANTRAG.prop("area");
 	
+	/** The Constant TYPE. */
 	private static final WikiType TYPE = Util.format("antragRLP").res("schlag");
+	
+	/** The Constant OEVF. */
 	private static final WikiAttr OEKO= TYPE.prop("OekoSchlag"),
 			OEVF= TYPE.prop("Oevf");
 	
+	/** The Constant KULTUREN. */
 	private static final Map<String, WikiInstance> KULTUREN;
 	static {
 		Map<String, WikiInstance> kulturen = null;
@@ -310,40 +489,110 @@ public class AntragRLP {
 		KULTUREN = kulturen;
 	}
 	
+	/**
+	 * The Class SchlagInfo.
+	 */
 	public class SchlagInfo {
+		
+		/** The uri. */
 		public final String uri = Util.createRandomUri();
+		
+		/** The nummer. */
 		private Integer nummer;
+		
+		/** The name. */
 		private String name;
+		
+		/** The area. */
 		private double area = 0.;
+		
+		/** The flik. */
 		private final List<String> flik = new ArrayList<>();
+		
+		/** The usage cur. */
 		private int usagePrev, usageCur;
+		
+		/** The oevf. */
 		private boolean oeko, oevf;
 		
+		/**
+		 * Gets the nummer.
+		 *
+		 * @return the nummer
+		 */
 		public int getNummer() {
 			return nummer;
 		}
+		
+		/**
+		 * Gets the name.
+		 *
+		 * @return the name
+		 */
 		public String getName() {
 			return name;
 		}
+		
+		/**
+		 * Gets the area.
+		 *
+		 * @return the area
+		 */
 		public double getArea() {
 			return area;
 		}
+		
+		/**
+		 * Gets the flik.
+		 *
+		 * @return the flik
+		 */
 		public List<String> getFlik() {
 			return Collections.unmodifiableList(flik);
 		}
+		
+		/**
+		 * Gets the usage prev.
+		 *
+		 * @return the usage prev
+		 */
 		public int getUsagePrev() {
 			return usagePrev;
 		}
+		
+		/**
+		 * Gets the usage cur.
+		 *
+		 * @return the usage cur
+		 */
 		public int getUsageCur() {
 			return usageCur;
 		}
+		
+		/**
+		 * Checks if is oeko.
+		 *
+		 * @return true, if is oeko
+		 */
 		public boolean isOeko() {
 			return oeko;
 		}
+		
+		/**
+		 * Checks if is oevf.
+		 *
+		 * @return true, if is oevf
+		 */
 		public boolean isOevf() {
 			return oevf;
 		}
 		
+		/**
+		 * Write.
+		 *
+		 * @param model the model
+		 * @return the resource
+		 */
 		public Resource write(Model model) {
 			Resource res = model.createResource(uri)
 					.addProperty(RDF.type, TYPE)
@@ -372,6 +621,11 @@ public class AntragRLP {
 			return res;
 		}
 		
+		/**
+		 * Properties.
+		 *
+		 * @return the JSON object
+		 */
 		public JSONObject properties() {
 			JSONObject prop = new JSONObject()
 					.put("Antragsjahr", year)

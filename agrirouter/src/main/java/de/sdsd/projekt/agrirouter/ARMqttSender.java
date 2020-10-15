@@ -121,9 +121,23 @@ class ARMqttSender extends ARSender implements MqttCallback {
 		}
 	}
 	
+	private final long[] reconnects = new long[10];
+	private int reconnectIndex = 0;
+	
 	@Override
 	public void connectionLost(Throwable cause) {
+		final long now = System.currentTimeMillis();
 		System.out.println(conn.getEndpointId() + " connection lost: " + cause.getMessage());
+		synchronized (this) {
+			reconnectIndex = (reconnectIndex + 1) % 10;
+			if (now - reconnects[reconnectIndex] < 300000l) {
+				try {
+					System.err.println(conn.getEndpointId() + ": Too many reconnects. Connection closed.");
+					conn.close();
+				} catch (Exception e) {}
+			} else
+				reconnects[reconnectIndex] = now;
+		}
 	}
 
 	@Override

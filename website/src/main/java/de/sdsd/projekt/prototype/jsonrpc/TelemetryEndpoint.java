@@ -47,10 +47,25 @@ import efdi.GrpcEfdi;
  */
 public class TelemetryEndpoint extends JsonRpcEndpoint {
 
+	/*
+	 * Instantiates a new telemetry endpoint.
+	 *
+	 * @param application the application
+	 */
 	public TelemetryEndpoint(ApplicationLogic application) {
 		super(application);
 	}
 	
+	/**
+	 * Gets the requested telemetry data
+	 *
+	 * @param req the current request
+	 * @param fileid id of the file
+	 * @param offset default is 0
+	 * @param limit sets how many entries will be displayed. The default value is 50 entries.
+	 * @return the JSON object telemetry data
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject telemetry(HttpServletRequest req, String fileid, int offset, int limit) throws JsonRpcException {
 		User user = null;
 		try {
@@ -81,6 +96,15 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets a listener that triggers when the watched file changes
+	 *
+	 * @param req the current request
+	 * @param conn websocket connnection
+	 * @param fileid the files id
+	 * @return the JSON object changed telemetry data
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setUpdateListener(HttpServletRequest req, WebsocketConnection conn, String fileid) throws JsonRpcException {
 		User user = null;
 		try {
@@ -111,6 +135,16 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 		}
 	}
 
+	/**
+	 * Update the requested telemetry data.
+	 *
+	 * @param req the current request
+	 * @param fileid the files id
+	 * @param offset default is 0
+	 * @param limit sets how many entries will be displayed. The default value is 50 entries.
+	 * @return the JSON object updated telemetry data
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject updateTelemetry(HttpServletRequest req, String fileid, int offset, int limit) throws JsonRpcException {
 		User user = null;
 		try {
@@ -149,17 +183,42 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private static class DlvInfo implements Iterable<TimelogValueInfo> {
+		
+		/** The map. */
 		private final HashMap<Key, TimelogValueInfo> map = new HashMap<>();
+		
+		/** The first. */
 		private TimelogValueInfo first = null;
 
+		/**
+		 * Put - adds the new TimelogValueInfo to the map and sets the correct before and after attribute. Replaces any old entry with the same ddi and device element id.
+		 *
+		 * @param dvc the Device
+		 * @param det the Device Element
+		 * @param dpd the Device ProcessData 
+		 * @param dvp the Device Value Presentation
+		 */
 		public void put(GrpcEfdi.Device dvc, GrpcEfdi.DeviceElement det, GrpcEfdi.DeviceProcessData dpd, GrpcEfdi.DeviceValuePresentation dvp) {
 			put(new TimelogValueInfo(dvc, det, dpd, dvp));
 		}
 
+		/**
+		 * Put - adds the new TimelogValueInfo to the map and sets the correct before and after attribute. Replaces any old entry with the same ddi and device element id.
+		 *
+		 * @param dvc the Device
+		 * @param det the Device Element
+		 * @param dpt the Device DeviceProperty 
+		 * @param dvp the Device Value Presentation
+		 */
 		public void put(GrpcEfdi.Device dvc, GrpcEfdi.DeviceElement det, GrpcEfdi.DeviceProperty dpt, GrpcEfdi.DeviceValuePresentation dvp) {
 			put(new TimelogValueInfo(dvc, det, dpt, dvp));
 		}
 
+		/**
+		 * Put - adds the new TimelogValueInfo to the map and sets the correct before and after attribute. Replaces any old entry with the same ddi and device element id.
+		 *
+		 * @param tvi the Timelog Value Info
+		 */
 		private void put(TimelogValueInfo tvi) {
 			TimelogValueInfo old = map.put(new Key(tvi.det.getDeviceElementId(), tvi.getDDI()), tvi);
 
@@ -184,19 +243,43 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 			}
 		}
 
+		/**
+		 * Gets the timelog value info by device element id and ddi
+		 *
+		 * @param dlv the data log value
+		 * @return the timelog value info
+		 */
 		public TimelogValueInfo get(GrpcEfdi.DataLogValue dlv) {
 			return map.get(new Key(dlv.getDeviceElementIdRef(), dlv.getProcessDataDdi()));
 		}
 
+		/**
+		 * The Class Key.
+		 */
 		private static final class Key {
+			
+			/** The det. */
 			public final GrpcEfdi.UID det;
+			
+			/** The ddi. */
 			public final int ddi;
 
+			/**
+			 * Instantiates a new key.
+			 *
+			 * @param det the det
+			 * @param ddi the ddi
+			 */
 			Key(GrpcEfdi.UID det, int ddi) {
 				this.det = det;
 				this.ddi = ddi;
 			}
 
+			/**
+			 * Hash code.
+			 *
+			 * @return the int
+			 */
 			@Override
 			public int hashCode() {
 				final int prime = 31;
@@ -206,6 +289,12 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 				return result;
 			}
 
+			/**
+			 * Equals.
+			 *
+			 * @param obj the obj
+			 * @return true, if successful
+			 */
 			@Override
 			public boolean equals(Object obj) {
 				if (this == obj)
@@ -223,6 +312,11 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 			}
 		}
 
+		/**
+		 * Iterator.
+		 *
+		 * @return the iterator
+		 */
 		@Override
 		public Iterator<TimelogValueInfo> iterator() {
 			return new Iterator<TimelogValueInfo>() {
@@ -252,19 +346,44 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 	 */
 	private static class TimelogValueInfo implements Comparable<TimelogValueInfo> {
 
+		/** The dvc. */
 		public final GrpcEfdi.Device dvc;
+		
+		/** The det. */
 		public final GrpcEfdi.DeviceElement det;
+		
+		/** The dpd. */
 		@CheckForNull
 		public final GrpcEfdi.DeviceProcessData dpd;
+		
+		/** The dpt. */
 		@CheckForNull
 		public final GrpcEfdi.DeviceProperty dpt;
+		
+		/** The dvp. */
 		@CheckForNull
 		public final GrpcEfdi.DeviceValuePresentation dvp;
+		
+		/** The format. */
 		private final NumberFormat format = DecimalFormat.getInstance();
+		
+		/** The index. */
 		public int index = -1;
+		
+		/** The next. */
 		public TimelogValueInfo next = null;
+		
+		/** The start value. */
 		public long startValue;
 
+		/**
+		 * Instantiates a new timelog value info.
+		 *
+		 * @param dvc the dvc
+		 * @param det the det
+		 * @param dpd the dpd
+		 * @param dvp the dvp
+		 */
 		public TimelogValueInfo(GrpcEfdi.Device dvc, GrpcEfdi.DeviceElement det, 
 				GrpcEfdi.DeviceProcessData dpd, @Nullable GrpcEfdi.DeviceValuePresentation dvp) {
 			this.dvc = dvc;
@@ -277,6 +396,14 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 				format.setMaximumFractionDigits(dvp.getNumberOfDecimals());
 		}
 
+		/**
+		 * Instantiates a new timelog value info.
+		 *
+		 * @param dvc the dvc
+		 * @param det the det
+		 * @param dpt the dpt
+		 * @param dvp the dvp
+		 */
 		public TimelogValueInfo(GrpcEfdi.Device dvc, GrpcEfdi.DeviceElement det, 
 				GrpcEfdi.DeviceProperty dpt, @Nullable GrpcEfdi.DeviceValuePresentation dvp) {
 			this.dvc = dvc;
@@ -289,15 +416,31 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 				format.setMaximumFractionDigits(dvp.getNumberOfDecimals());
 		}
 
+		/**
+		 * Gets the ddi.
+		 *
+		 * @return the ddi
+		 */
 		public int getDDI() {
 			return dpd != null ? dpd.getDeviceProcessDataDdi() : dpt != null ? dpt.getDevicePropertyDdi() : 0;
 		}
 
+		/**
+		 * Gets the designator.
+		 *
+		 * @return the designator
+		 */
 		public String getDesignator() {
 			String designator = dpd != null ? dpd.getDeviceProcessDataDesignator() : dpt != null ? dpt.getDevicePropertyDesignator() : "";
 			return designator.isEmpty() ? Integer.toString(getDDI()) : designator;
 		}
 		
+		/**
+		 * Format value.
+		 *
+		 * @param value the value
+		 * @return the string
+		 */
 		public String formatValue(long value) {
 			if(dvp != null) {
 				double val = (value + dvp.getOffset()) * dvp.getScale();
@@ -306,10 +449,21 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 			return Long.toString(value);
 		}
 		
+		/**
+		 * Gets the unit.
+		 *
+		 * @return the unit
+		 */
 		public String getUnit() {
 			return dvp != null ? dvp.getUnitDesignator() : "";
 		}
 
+		/**
+		 * Compare to.
+		 *
+		 * @param o the o
+		 * @return the int
+		 */
 		@Override
 		public int compareTo(TimelogValueInfo o) {
 			int cmp = Long.compare(dvc.getDeviceId().getNumber(), o.dvc.getDeviceId().getNumber());
@@ -319,12 +473,25 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 		}
 	}
 
+	/**
+	 * Position.
+	 *
+	 * @param pos the pos
+	 * @return the JSON object
+	 */
 	public static JSONObject position(GrpcEfdi.Position pos) {
 		return new JSONObject()
 				.put("lat", pos.getPositionNorth())
 				.put("long", pos.getPositionEast());
 	}
 
+	/**
+	 * Geo position.
+	 *
+	 * @param pos the pos
+	 * @param time the time
+	 * @return the JSON array
+	 */
 	public static JSONArray geoPosition(GrpcEfdi.Position pos, Timestamp time) {
 		return new JSONArray()
 				.put(pos.getPositionEast())
@@ -333,6 +500,12 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 				.put(TimeUnit.SECONDS.toMillis(time.getSeconds()));
 	}
 
+	/**
+	 * Builds the info map.
+	 *
+	 * @param deviceDescription the device description
+	 * @return the dlv info
+	 */
 	DlvInfo buildInfoMap(GrpcEfdi.ISO11783_TaskData deviceDescription) {
 
 		DlvInfo dlvInfo = new DlvInfo();
@@ -365,6 +538,12 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 		return dlvInfo;
 	}
 
+	/**
+	 * Creates the caption.
+	 *
+	 * @param dlvInfo the dlv info
+	 * @return the JSON object
+	 */
 	JSONObject createCaption(DlvInfo dlvInfo) {
 		JSONObject empty = new JSONObject().put("span", 2).put("label", "");
 		JSONArray dvcs = new JSONArray().put(empty);
@@ -407,6 +586,14 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 		return new JSONObject().put("device", dvcs).put("deviceelement", dets).put("logvalues", dlvs);
 	}
 
+	/**
+	 * Creates the efdi table.
+	 *
+	 * @param timeList the time list
+	 * @param dlvInfo the dlv info
+	 * @param startingTimeList the starting time list
+	 * @return the JSON array
+	 */
 	JSONArray createEfdiTable(List<GrpcEfdi.Time> timeList, DlvInfo dlvInfo, List<GrpcEfdi.Time> startingTimeList) {
 		for(GrpcEfdi.Time time : startingTimeList) {
 			for (GrpcEfdi.DataLogValue dlv : time.getDataLogValueList()) {
@@ -443,6 +630,12 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 		return out;
 	}
 
+	/**
+	 * Creates the efdi geo JSON.
+	 *
+	 * @param timeList the time list
+	 * @return the JSON object
+	 */
 	JSONObject createEfdiGeoJSON(List<GrpcEfdi.Time> timeList) {
 		JSONArray lscoordinates = new JSONArray();
 		JSONArray features = new JSONArray();
@@ -470,6 +663,7 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 				.put("features", features);
 	}
 
+	/** The Constant timeComparator. */
 	public static final Comparator<GrpcEfdi.Time> timeComparator = new Comparator<GrpcEfdi.Time>() {
 		@Override
 		public int compare(GrpcEfdi.Time o1, GrpcEfdi.Time o2) {
@@ -480,6 +674,15 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 		}
 	};
 	
+	/**
+	 * To json.
+	 *
+	 * @param total the total
+	 * @param dlvInfo the dlv info
+	 * @param timeList the time list
+	 * @param startingTimeList the starting time list
+	 * @return the JSON object
+	 */
 	private JSONObject toJson(int total, DlvInfo dlvInfo, List<GrpcEfdi.Time> timeList, List<GrpcEfdi.Time> startingTimeList) {
 		return new JSONObject()
 				.put("total", total)
@@ -488,6 +691,18 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 				.put("geoJSON", createEfdiGeoJSON(timeList));
 	}
 
+	/**
+	 * Efdi telemetry.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @param offset the offset
+	 * @param limit the limit
+	 * @return the JSON object
+	 * @throws SDSDException the SDSD exception
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+	 */
 	private JSONObject efdiTelemetry(User user, File file, int offset, int limit) 
 			throws SDSDException, FileNotFoundException, InvalidProtocolBufferException {
 		EfdiTimeLog efdiTimeLog = new EfdiTimeLog(application.file.downloadFile(user, file));
@@ -516,6 +731,18 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 		return toJson(timeLog.getTimeCount(), dlvInfo, timeList, startingTimeList).put("offset", offset);
 	}
 	
+	/**
+	 * Sets the efdi update listener.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @param conn the conn
+	 * @param fileid the fileid
+	 * @return the JSON object
+	 * @throws SDSDException the SDSD exception
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+	 */
 	private JSONObject setEfdiUpdateListener(User user, File file, WebsocketConnection conn, String fileid) 
 			throws SDSDException, FileNotFoundException, InvalidProtocolBufferException {
 		EfdiTimeLog efdiTimeLog = new EfdiTimeLog(application.file.downloadFile(user, file));
@@ -544,14 +771,31 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private class TelemetryUpdateListener implements WebsocketConnection.CheckedFunction<byte[], JSONObject> {
+		
+		/** The dlv info. */
 		private final DlvInfo dlvInfo;
+		
+		/** The starting time list. */
 		private final List<GrpcEfdi.Time> startingTimeList;
 		
+		/**
+		 * Instantiates a new telemetry update listener.
+		 *
+		 * @param dlvInfo the dlv info
+		 * @param startingTimeList the starting time list
+		 */
 		public TelemetryUpdateListener(DlvInfo dlvInfo, List<GrpcEfdi.Time> startingTimeList) {
 			this.dlvInfo = dlvInfo;
 			this.startingTimeList = startingTimeList;
 		}
 
+		/**
+		 * Apply.
+		 *
+		 * @param content the content
+		 * @return the JSON object
+		 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+		 */
 		@Override
 		public JSONObject apply(byte[] content) throws InvalidProtocolBufferException {
 			GrpcEfdi.TimeLog timeLog = GrpcEfdi.TimeLog.parseFrom(content);
@@ -568,6 +812,20 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 		}
 	}
 
+	/**
+	 * Update efdi telemetry.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @param offset the offset
+	 * @param limit the limit
+	 * @return the JSON object
+	 * @throws SDSDException the SDSD exception
+	 * @throws ARException the AR exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+	 */
 	private JSONObject updateEfdiTelemetry(User user, File file, int offset, int limit) 
 			throws SDSDException, ARException, IOException, FileNotFoundException, InvalidProtocolBufferException {
 		final String contextId = application.file.getTimeLogContextId(file);
@@ -617,6 +875,13 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 		return toJson(timeLog.getTimeCount(), dlvInfo, timeList, startingTimeList).put("offset", offset);
 	}
 
+	/**
+	 * Receive files.
+	 *
+	 * @param user the user
+	 * @param headers the headers
+	 * @return the int
+	 */
 	private int receiveFiles(User user, List<ARMsgHeader> headers) {
 		if(headers.isEmpty()) return 0;
 		int received = 0;
@@ -645,6 +910,7 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 		return received;
 	}
 	
+	/** The Constant gpsComparator. */
 	public static final Comparator<Gps.GPSList.GPSEntry> gpsComparator = new Comparator<Gps.GPSList.GPSEntry>() {
 		@Override
 		public int compare(Gps.GPSList.GPSEntry o1, Gps.GPSList.GPSEntry o2) {
@@ -655,11 +921,18 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 		}
 	};
 	
+	/** The Constant GPS_HEIGHT_FORMAT. */
 	private static final NumberFormat GPS_HEIGHT_FORMAT = DecimalFormat.getInstance();
 	static {
 		GPS_HEIGHT_FORMAT.setMaximumFractionDigits(2);
 	}
 	
+	/**
+	 * Creates the gps table.
+	 *
+	 * @param timeList the time list
+	 * @return the JSON array
+	 */
 	static JSONArray createGpsTable(List<Gps.GPSList.GPSEntry> timeList) {
 		JSONArray row = new JSONArray()
 				.put(new JSONObject().put("value", 0).put("unit", ""))
@@ -685,6 +958,12 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 		return out;
 	}
 	
+	/**
+	 * Creates the gps geo JSON.
+	 *
+	 * @param timeList the time list
+	 * @return the JSON object
+	 */
 	static JSONObject createGpsGeoJSON(List<Gps.GPSList.GPSEntry> timeList) {
 		JSONArray lscoordinates = new JSONArray();
 		JSONArray features = new JSONArray();
@@ -715,6 +994,13 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 				.put("features", features);
 	}
 	
+	/**
+	 * To json.
+	 *
+	 * @param total the total
+	 * @param timeList the time list
+	 * @return the JSON object
+	 */
 	private static JSONObject toJson(int total, List<Gps.GPSList.GPSEntry> timeList) {
 		return new JSONObject()
 				.put("total", total)
@@ -732,6 +1018,18 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 				.put("geoJSON", createGpsGeoJSON(timeList));
 	}
 	
+	/**
+	 * Gps telemetry.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @param offset the offset
+	 * @param limit the limit
+	 * @return the JSON object
+	 * @throws SDSDException the SDSD exception
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+	 */
 	private JSONObject gpsTelemetry(User user, File file, int offset, int limit) 
 			throws SDSDException, FileNotFoundException, InvalidProtocolBufferException {
 		Gps.GPSList list = Gps.GPSList.parseFrom(application.file.downloadFile(user, file));
@@ -748,12 +1046,25 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 		return toJson(list.getGpsEntriesCount(), timeList).put("offset", offset);
 	}
 	
+	/**
+	 * Sets the gps update listener.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @param conn the conn
+	 * @param fileid the fileid
+	 * @return the JSON object
+	 * @throws SDSDException the SDSD exception
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+	 */
 	private JSONObject setGpsUpdateListener(User user, File file, WebsocketConnection conn, String fileid) 
 			throws SDSDException, FileNotFoundException, InvalidProtocolBufferException {
 		application.file.fileAppended.setListener(file, conn.listener("telemetry", "update", null, fileid, GPS_UPDATE_LISTENER));
 		return success(true);
 	}
 	
+	/** The Constant GPS_UPDATE_LISTENER. */
 	private static final WebsocketConnection.CheckedFunction<byte[], JSONObject> GPS_UPDATE_LISTENER = 
 			new WebsocketConnection.CheckedFunction<byte[], JSONObject>() {
 		
@@ -769,6 +1080,20 @@ public class TelemetryEndpoint extends JsonRpcEndpoint {
 		}
 	};
 
+	/**
+	 * Update gps telemetry.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @param offset the offset
+	 * @param limit the limit
+	 * @return the JSON object
+	 * @throws SDSDException the SDSD exception
+	 * @throws ARException the AR exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+	 */
 	private JSONObject updateGpsTelemetry(User user, File file, int offset, int limit) 
 			throws SDSDException, ARException, IOException, FileNotFoundException, InvalidProtocolBufferException {
 		Instant date = file.getCreated();

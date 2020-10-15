@@ -17,6 +17,7 @@ import de.sdsd.projekt.agrirouter.ARMessageType.ARDirection;
  */
 public class AREndpoint implements Serializable, Comparable<AREndpoint> {
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 6514636221732741587L;
 	/**
 	 * Agrirouter endpoint identifier.
@@ -142,8 +143,8 @@ public class AREndpoint implements Serializable, Comparable<AREndpoint> {
 	}
 	
 	/**
-	 * Can this endpoint send messages of the specified type?
-	 * 
+	 * Can this endpoint send messages of the specified type?.
+	 *
 	 * @param type agrirouter message type
 	 * @return true if it can send those messages
 	 */
@@ -157,8 +158,8 @@ public class AREndpoint implements Serializable, Comparable<AREndpoint> {
 	}
 	
 	/**
-	 * Can this endpoint send messages?
-	 * 
+	 * Can this endpoint send messages?.
+	 *
 	 * @return true if it can send those messages
 	 */
 	public boolean canSend() {
@@ -170,8 +171,8 @@ public class AREndpoint implements Serializable, Comparable<AREndpoint> {
 	}
 	
 	/**
-	 * Can this endpoint receive messages of the specified type?
-	 * 
+	 * Can this endpoint receive messages of the specified type?.
+	 *
 	 * @param type agrirouter message type
 	 * @return true if it can receive those messages
 	 */
@@ -185,8 +186,8 @@ public class AREndpoint implements Serializable, Comparable<AREndpoint> {
 	}
 	
 	/**
-	 * Can this endpoint receive messages?
-	 * 
+	 * Can this endpoint receive messages?.
+	 *
 	 * @return true if it can receive those messages
 	 */
 	public boolean canReceive() {
@@ -204,6 +205,11 @@ public class AREndpoint implements Serializable, Comparable<AREndpoint> {
 		capabilities.clear();
 	}
 	
+	/**
+	 * To string.
+	 *
+	 * @return the string
+	 */
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("{");
@@ -218,6 +224,11 @@ public class AREndpoint implements Serializable, Comparable<AREndpoint> {
 		return sb.toString();
 	}
 
+	/**
+	 * Hash code.
+	 *
+	 * @return the int
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -226,6 +237,12 @@ public class AREndpoint implements Serializable, Comparable<AREndpoint> {
 		return result;
 	}
 
+	/**
+	 * Equals.
+	 *
+	 * @param obj the obj
+	 * @return true, if successful
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -243,6 +260,12 @@ public class AREndpoint implements Serializable, Comparable<AREndpoint> {
 		return true;
 	}
 
+	/**
+	 * Compare to.
+	 *
+	 * @param o the o
+	 * @return the int
+	 */
 	@Override
 	public int compareTo(AREndpoint o) {
 		if(active != o.active) return active ? -1 : 1;

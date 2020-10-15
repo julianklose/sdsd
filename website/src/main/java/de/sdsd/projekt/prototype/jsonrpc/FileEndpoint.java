@@ -27,10 +27,21 @@ import org.json.JSONObject;
  */
 public class FileEndpoint extends JsonRpcEndpoint {
 
+	/**
+	 * Instantiates a new file endpoint.
+	 *
+	 * @param application the application
+	 */
 	public FileEndpoint(ApplicationLogic application) {
 		super(application);
 	}
 	
+	/**
+	 * Prints the file.
+	 *
+	 * @param file the file
+	 * @return the JSON object
+	 */
 	private JSONObject printFile(File file) {
 		User user = application.user.getUser(file.getUser());
 		return new JSONObject()
@@ -43,9 +54,17 @@ public class FileEndpoint extends JsonRpcEndpoint {
 				.put("expires", file.getExpires() != null ? isoUTC(file.getExpires()) : null)
 				.put("size", FileSizeUtil.humanReadableByteCount(file.getSize()))
 				.put("type", file.getType())
+				.put("validation", file.getValidation() != File.Validation.UNVALIDATED ? file.getValidation().name() : null)
 				.put("coredata", file.isCoreData());
 	}
 	
+	/**
+	 * List files.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listFiles(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -66,6 +85,15 @@ public class FileEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets the file listener.
+	 *
+	 * @param req the req
+	 * @param conn the conn
+	 * @param identifier the identifier
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setFileListener(HttpServletRequest req, WebsocketConnection conn, String identifier) throws JsonRpcException {
 		User user = null;
 		try {
@@ -83,6 +111,15 @@ public class FileEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Rename file.
+	 *
+	 * @param req the req
+	 * @param fileid the fileid
+	 * @param newName the new name
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject renameFile(HttpServletRequest req, String fileid, String newName) throws JsonRpcException {
 		User user = null;
 		try {
@@ -111,6 +148,15 @@ public class FileEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Change file type.
+	 *
+	 * @param req the req
+	 * @param fileid the fileid
+	 * @param type the type
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject changeFileType(HttpServletRequest req, String fileid, String type) throws JsonRpcException {
 		User user = null;
 		try {
@@ -141,6 +187,15 @@ public class FileEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets the core data.
+	 *
+	 * @param req the req
+	 * @param fileid the fileid
+	 * @param coredata the coredata
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setCoreData(HttpServletRequest req, String fileid, boolean coredata) throws JsonRpcException {
 		User user = null;
 		try {
@@ -164,6 +219,14 @@ public class FileEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Delete files.
+	 *
+	 * @param req the req
+	 * @param files the files
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject deleteFiles(HttpServletRequest req, String[] files) throws JsonRpcException {
 		User user = null;
 		try {
@@ -189,6 +252,13 @@ public class FileEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * List storage tasks.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listStorageTasks(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -228,6 +298,14 @@ public class FileEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Delete storage tasks.
+	 *
+	 * @param req the req
+	 * @param tasks the tasks
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject deleteStorageTasks(HttpServletRequest req, String[] tasks) throws JsonRpcException {
 		User user = null;
 		try {
@@ -253,6 +331,13 @@ public class FileEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Clear storage tasks.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject clearStorageTasks(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -271,6 +356,14 @@ public class FileEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Adds the storage task.
+	 *
+	 * @param req the req
+	 * @param task the task
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject addStorageTask(HttpServletRequest req, JSONObject task) throws JsonRpcException {
 		User user = null;
 		try {

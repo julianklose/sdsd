@@ -17,6 +17,7 @@ import org.json.JSONObject;
 
 import com.mongodb.client.model.Filters;
 
+import de.sdsd.projekt.api.ParserAPI.Validation;
 import de.sdsd.projekt.prototype.applogic.ApplicationLogic;
 import de.sdsd.projekt.prototype.data.File;
 import de.sdsd.projekt.prototype.data.SDSDException;
@@ -30,10 +31,22 @@ import de.sdsd.projekt.prototype.data.Util;
  */
 public class ValidatorEndpoint extends JsonRpcEndpoint {
 
+	/**
+	 * Instantiates a new validator endpoint.
+	 *
+	 * @param application the application
+	 */
 	public ValidatorEndpoint(ApplicationLogic application) {
 		super(application);
 	}
 	
+	/**
+	 * List iso xml files.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listIsoXmlFiles(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -57,6 +70,14 @@ public class ValidatorEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Validate.
+	 *
+	 * @param req the req
+	 * @param fileid the fileid
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject validate(HttpServletRequest req, String fileid) throws JsonRpcException {
 		User user = null;
 		try {
@@ -92,6 +113,19 @@ public class ValidatorEndpoint extends JsonRpcEndpoint {
 					while((line = in.readLine()) != null) {
 						errors.put(line);
 					}
+				}
+				
+				if(file.getValidation() == File.Validation.UNVALIDATED) {
+					File.Validation vali;
+					if(errors.length() == 0) vali = File.Validation.NO_ERROR;
+					else {
+						String err = errors.getString(0);
+						if(err.startsWith(Validation.FATAL)) vali = File.Validation.FATAL_ERRORS;
+						else if(err.startsWith(Validation.ERROR)) vali = File.Validation.ERRORS;
+						else if(err.startsWith(Validation.WARN)) vali = File.Validation.WARNINGS;
+						else vali = File.Validation.NO_ERROR;
+					}
+					application.list.files.update(user, file, file.setValidation(vali));
 				}
 				
 				return new JSONObject()

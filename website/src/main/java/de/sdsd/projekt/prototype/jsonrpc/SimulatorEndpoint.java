@@ -65,16 +65,32 @@ import efdi.GrpcEfdi.UID;
  * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
  */
 public class SimulatorEndpoint extends JsonRpcEndpoint {
+	
+	/** The on sended. */
 	private final SDSDEvent<User, TelemetrySimulator> onSended = new SDSDEvent<>();
 	
+	/** The Constant SEND. */
 	private static final boolean SEND = true;
 	
+	/** The running simulators. */
 	private final ConcurrentHashMap<User, TelemetrySimulator> runningSimulators = new ConcurrentHashMap<>();
 
+	/**
+	 * Instantiates a new simulator endpoint.
+	 *
+	 * @param application the application
+	 */
 	public SimulatorEndpoint(ApplicationLogic application) {
 		super(application);
 	}
 	
+	/**
+	 * List the users files.
+	 *
+	 * @param req the current request
+	 * @return the JSON object list of files
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listFiles(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -98,6 +114,14 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * gets timelog and ddi infos
+	 *
+	 * @param req the current request
+	 * @param fileid the parent files id
+	 * @return the JSON object timelog and ddi data. Includes the timelogs count, from and until timestamps and device name.
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject timelogInfo(HttpServletRequest req, String fileid) throws JsonRpcException {
 		User user = null;
 		try {
@@ -179,6 +203,15 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets a Listener that triggers on the SDSDEvent onSended.
+	 *
+	 * @param req http servlet request including userdata
+	 * @param conn websocket connnection
+	 * @param identifier the identifier
+	 * @return the JSON object including a success attribute
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setProgressListener(HttpServletRequest req, WebsocketConnection conn, String identifier) throws JsonRpcException {
 		User user = null;
 		try {
@@ -196,6 +229,13 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Progress.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject progress(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -213,6 +253,13 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Pause.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject pause(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -234,6 +281,13 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Resume.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject resume(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -255,6 +309,13 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Forward.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject forward(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -277,6 +338,13 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Stop.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject stop(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -298,6 +366,17 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Send entire.
+	 *
+	 * @param req the req
+	 * @param fileid the fileid
+	 * @param name the name
+	 * @param skip the skip
+	 * @param replaceTime the replace time
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject sendEntire(HttpServletRequest req, String fileid, String name, int skip, String replaceTime) throws JsonRpcException {
 		User user = null;
 		try {
@@ -384,6 +463,20 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Simulate.
+	 *
+	 * @param req the req
+	 * @param fileid the fileid
+	 * @param name the name
+	 * @param skip the skip
+	 * @param interval the interval
+	 * @param scale the scale
+	 * @param replaceTime the replace time
+	 * @param endless the endless
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject simulate(HttpServletRequest req, String fileid, String name, 
 			int skip, int interval, float scale, String replaceTime, boolean endless) throws JsonRpcException {
 		User user = null;
@@ -466,6 +559,13 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 	}
 	
 	
+	/**
+	 * Gets the duration.
+	 *
+	 * @param timelog the timelog
+	 * @param skip the skip
+	 * @return the duration
+	 */
 	public static long getDuration(TimeLog timelog, int skip) {
 		Timestamp start = timelog.getTime(skip).getStart();
 		Timestamp end = timelog.getTime(timelog.getTimeCount()-1).getStart();
@@ -479,23 +579,59 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 	 */
 	private class TimelogIterator implements Iterator<TelemetrySimulator> {
 		
+		/** The context id. */
 		public final String contextId = UUID.randomUUID().toString();
+		
+		/** The last error. */
 		public final AtomicReference<String> lastError = new AtomicReference<>();
 		
+		/** The user. */
 		private final User user;
+		
+		/** The device description. */
 		private final ISO11783_TaskData deviceDescription;
+		
+		/** The timelogs. */
 		private final List<TimeLog> timelogs;
+		
+		/** The interval. */
 		private final int interval;
+		
+		/** The scale. */
 		private final double scale;
+		
+		/** The endless. */
 		private final boolean endless;
 		
+		/** The index. */
 		private int skip, index;
+		
+		/** The remaining. */
 		private long remaining;
+		
+		/** The replace time. */
 		@CheckForNull
 		private Timestamp replaceTime;
+		
+		/** The started. */
 		@CheckForNull
 		private Timestamp started = null;
 		
+		/**
+		 * Instantiates a new timelog iterator.
+		 *
+		 * @param user the user
+		 * @param deviceDescription the device description
+		 * @param timelogs the timelogs
+		 * @param skip the skip
+		 * @param interval the interval
+		 * @param scale the scale
+		 * @param replaceTime the replace time
+		 * @param endless the endless
+		 * @throws FileNotFoundException the file not found exception
+		 * @throws SAXException the SAX exception
+		 * @throws IOException Signals that an I/O exception has occurred.
+		 */
 		public TimelogIterator(User user, ISO11783_TaskData deviceDescription, List<TimeLog> timelogs, 
 				int skip, int interval, float scale, @Nullable Timestamp replaceTime, boolean endless) 
 				throws FileNotFoundException, SAXException, IOException {
@@ -511,6 +647,9 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 			reset();
 		}
 		
+		/**
+		 * Reset.
+		 */
 		public void reset() {
 			index = 0;
 			remaining = 0;
@@ -522,15 +661,32 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 			}
 		}
 		
+		/**
+		 * Gets the remaining.
+		 *
+		 * @return the remaining
+		 */
 		public long getRemaining() {
 			return remaining;
 		}
 		
+		/**
+		 * Gets the started.
+		 *
+		 * @return the started
+		 */
 		@CheckForNull
 		public Timestamp getStarted() {
 			return started;
 		}
 		
+		/**
+		 * Sets the started.
+		 *
+		 * @throws ARException the AR exception
+		 * @throws IOException Signals that an I/O exception has occurred.
+		 * @throws SAXException the SAX exception
+		 */
 		public void setStarted() throws ARException, IOException, SAXException {
 			if(started == null) {
 				if(SEND) application.agrirouter.sendDeviceDescription(user, deviceDescription, contextId).exceptionally(this::onError);
@@ -540,6 +696,11 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 			}
 		}
 
+		/**
+		 * Checks for next.
+		 *
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean hasNext() {
 			if(remaining > 0) return true;
@@ -550,6 +711,11 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 			return false;
 		}
 
+		/**
+		 * Next.
+		 *
+		 * @return the telemetry simulator
+		 */
 		@Override
 		public TelemetrySimulator next() {
 			TelemetrySimulator simulator = null;
@@ -568,11 +734,22 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 			return simulator;
 		}
 		
+		/**
+		 * Next name.
+		 *
+		 * @return the string
+		 */
 		@CheckForNull
 		public String nextName() {
 			return hasNext() ? timelogs.get(index % timelogs.size()).getFilename() : null;
 		}
 		
+		/**
+		 * On error.
+		 *
+		 * @param e the e
+		 * @return true, if successful
+		 */
 		public boolean onError(Throwable e) {
 			if(e != null) {
 				lastError.set(e.getLocalizedMessage());
@@ -590,19 +767,48 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private class TelemetrySimulator {
+		
+		/** The chain. */
 		private final TimelogIterator chain;
+		
+		/** The user. */
 		public final User user;
+		
+		/** The timelog. */
 		public final TimeLog timelog;
 		
+		/** The interval. */
 		public final int skip, interval;
+		
+		/** The scale. */
 		public final double scale;
+		
+		/** The replace time. */
 		public final Timestamp replaceTime;
 		
+		/** The index. */
 		private int index = 0;
+		
+		/** The time diff. */
 		private double timeDiff = 0.;
+		
+		/** The eta. */
 		private Instant eta = Instant.EPOCH;
+		
+		/** The schedule. */
 		private ScheduledFuture<?> schedule = null;
 		
+		/**
+		 * Instantiates a new telemetry simulator.
+		 *
+		 * @param user the user
+		 * @param timelog the timelog
+		 * @param skip the skip
+		 * @param interval the interval
+		 * @param scale the scale
+		 * @param replaceTime the replace time
+		 * @param chain the chain
+		 */
 		public TelemetrySimulator(User user, TimeLog timelog, int skip,
 				int interval, double scale, @Nullable Timestamp replaceTime, 
 				TimelogIterator chain) {
@@ -617,19 +823,39 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 			this.index = skip;
 		}
 		
+		/**
+		 * Start.
+		 *
+		 * @throws ARException the AR exception
+		 * @throws IOException Signals that an I/O exception has occurred.
+		 * @throws SAXException the SAX exception
+		 */
 		public void start() throws ARException, IOException, SAXException {
 			chain.setStarted();
 			resume();
 		}
 		
+		/**
+		 * Gets the cur timestamp.
+		 *
+		 * @return the cur timestamp
+		 */
 		public Timestamp getCurTimestamp() {
 			return timelog.getTime(Math.max(index-1, 0)).getStart();
 		}
 		
+		/**
+		 * Gets the end timestamp.
+		 *
+		 * @return the end timestamp
+		 */
 		public Timestamp getEndTimestamp() {
 			return timelog.getTime(timelog.getTimeCount()-1).getStart();
 		}
 		
+		/**
+		 * Resume.
+		 */
 		public void resume() {
 			if(schedule == null || schedule.isDone()) {
 				
@@ -639,6 +865,9 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 			}
 		}
 		
+		/**
+		 * Cancel.
+		 */
 		public void cancel() {
 			if(schedule != null) {
 				schedule.cancel(false);
@@ -646,6 +875,12 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 			}
 		}
 		
+		/**
+		 * Progress.
+		 *
+		 * @return the JSON object
+		 * @throws Throwable the throwable
+		 */
 		public JSONObject progress() throws Throwable {
 			Timestamp tlStart = timelog.getTime(skip).getStart();
 			Timestamp tlCur = isRunning() 
@@ -678,14 +913,25 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 					.put("following", chain.nextName());
 		}
 		
+		/**
+		 * Checks if is running.
+		 *
+		 * @return true, if is running
+		 */
 		public boolean isRunning() {
 			return schedule != null && !schedule.isDone();
 		}
 		
+		/**
+		 * Checks if is done.
+		 *
+		 * @return true, if is done
+		 */
 		public boolean isDone() {
 			return  index >= timelog.getTimeCount();
 		}
 		
+		/** The sender. */
 		private final Runnable sender = new Runnable() {
 			@Override
 			public void run() {
@@ -723,6 +969,11 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 			}
 		};
 		
+		/**
+		 * Start next.
+		 *
+		 * @return the telemetry simulator
+		 */
 		@CheckForNull
 		public TelemetrySimulator startNext() {
 			try {
@@ -741,6 +992,13 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Isoxml to efdi.
+	 *
+	 * @param content the content
+	 * @return the efdi time log
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public static EfdiTimeLog isoxmlToEfdi(byte[] content) throws IOException {
 		Process process = new ProcessBuilder("java", "-jar", "parser/isoxml.jar", "efdi").start();
 		try (OutputStream processIn = process.getOutputStream()) {
@@ -749,6 +1007,13 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 		return new EfdiTimeLog(process.getInputStream());
 	}
 	
+	/**
+	 * Trim device description.
+	 *
+	 * @param deviceDescription the device description
+	 * @param timelog the timelog
+	 * @return the grpc efdi. ISO 11783 task data
+	 */
 	public static GrpcEfdi.ISO11783_TaskData trimDeviceDescription(GrpcEfdi.ISO11783_TaskData deviceDescription, GrpcEfdi.TimeLog timelog) {
 		Set<Long> deviceElements = timelog.getTimeList().stream()
 				.flatMap(time -> time.getDataLogValueList().stream())
@@ -769,6 +1034,15 @@ public class SimulatorEndpoint extends JsonRpcEndpoint {
 		return ddb.build();
 	}
 	
+	/**
+	 * Replace time.
+	 *
+	 * @param timelog the timelog
+	 * @param skip the skip
+	 * @param entry the entry
+	 * @param replacedStart the replaced start
+	 * @return the grpc efdi. time
+	 */
 	public static GrpcEfdi.Time replaceTime(GrpcEfdi.TimeLog timelog, int skip, GrpcEfdi.Time entry, @Nullable Timestamp replacedStart) {
 		if(replacedStart == null) return entry;
 		Timestamp tlStart = timelog.getTime(skip).getStart();

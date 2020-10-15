@@ -4,14 +4,20 @@
  * @file   Defines the angularJS telemetry controller.
  * @author Julian Klose, 48514372+julianklose@users.noreply.github.com.
  */
-
 app.filter('reverse', function () {
 	return function (items) {
 		return items.slice().reverse();
 	};
 });
-
+/**
+ * telemetryCtrl Controller
+ *
+ * @param scope variable scope
+ * @param sdsd sdsd module
+ * @param location service that parses the browser URL and makes it available
+ */
 app.controller('telemetryCtrl', function ($scope, $location, sdsd) {
+	// sdsd module scope
 	$scope.sdsd = sdsd;
 	
 	$scope.caption = [];
@@ -23,6 +29,10 @@ app.controller('telemetryCtrl', function ($scope, $location, sdsd) {
 	$scope.total = 50;
 	$scope.map = null;
 
+	/**
+	 * init - called on startup. Intializes a leaflet map and gets the url hash.
+	 *
+	 */
 	$scope.init = function () {
 		$scope.initMap();
 
@@ -31,6 +41,11 @@ app.controller('telemetryCtrl', function ($scope, $location, sdsd) {
 		$scope.update = false;
 	};
 	
+	/**
+	 * watch(sdsd.username) - watches the username variable. If theres a new user, the "listCapabilities" remote call is started.
+	 *
+	 * @param newVal new username
+	 */
 	$scope.$watch('sdsd.username', function (newVal) {
 		if (newVal) {
 			sdsd.rpcCall("agrirouter", "listCapabilities", [], function(data) {
@@ -60,11 +75,13 @@ app.controller('telemetryCtrl', function ($scope, $location, sdsd) {
 			}, null, function(error) {
 				$scope.loadTelemetry(false);
 			});
-		} else {
-
 		}
 	});
 	
+	/**
+	 * initMap - Intializes a leaflet map
+	 *
+	 */
 	$scope.initMap = function () {
 		$scope.map = L.map('map', {
 			'center': [0, 0],
@@ -90,6 +107,10 @@ app.controller('telemetryCtrl', function ($scope, $location, sdsd) {
 		});
 	};
 	
+	/**
+	 * updateMap - updates the leaflet map. Removes the old map layer and load and displays the new layer.
+	 *
+ 	 */
 	$scope.updateMap = function () {
 		if($scope.layer) $scope.layer.remove();
 		$scope.layer = L.geoJSON($scope.geoJSON);
@@ -102,7 +123,10 @@ app.controller('telemetryCtrl', function ($scope, $location, sdsd) {
 		if ($scope.inFocus)
 			$scope.$apply($scope.updateTelemetry());
 	};
-
+	/**
+	 * loadTelemetry - starts remote call that loads the telemetry data. After the call the data gets updated and displayed on the map
+	 * @param  updatetimer boolean. determines whether the telemetry data is updated every 30000 ms.
+	*/
 	$scope.loadTelemetry = function (updatetimer) {
 		$scope.autoupdate = updatetimer;
 		$scope.update = false;
@@ -124,7 +148,10 @@ app.controller('telemetryCtrl', function ($scope, $location, sdsd) {
 			$scope.updateLoading = false;
 		});
 	};
-
+	/**
+	 * updateTelemetry - starts remote call to update the Telemtry data. 
+	 *  
+	*/
 	$scope.updateTelemetry = function() {
 		if(!$scope.autoupdate) return;
 		$scope.update = false;
@@ -138,7 +165,10 @@ app.controller('telemetryCtrl', function ($scope, $location, sdsd) {
 			$scope.updateLoading = false;
 		});
 	};
-	
+		/**
+	 * appendData append received telemtry data and updates the leaflet map
+	 * @param  data telemtry data
+	*/
 	$scope.appendData = function(data) {
 		if(data.telemetry.length > 0) {
 			$scope.telemetry = $scope.telemetry.concat(data.telemetry);

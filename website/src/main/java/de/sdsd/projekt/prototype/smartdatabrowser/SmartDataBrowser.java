@@ -72,14 +72,24 @@ import spark.utils.MimeParse;
  */
 public class SmartDataBrowser {
 
+    /** The Constant APPNAME. */
     //constants
     private static final String APPNAME = "smart-data-browser";
+    
+    /** The Constant SITENAME. */
     private static final String SITENAME = "Smart Data Browser";
+    
+    /** The Constant DEFAULT_PORT. */
     private static final int DEFAULT_PORT = (int) 'S' * 100 + (int) 'D';
     
+    /** The cmd. */
     //cmd parsing
     private CommandLine cmd;
+    
+    /** The Constant parser. */
     private static final CommandLineParser parser = new DefaultParser();
+    
+    /** The Constant options. */
     private static final Options options = new Options();
     static {
         options.addOption("h", "help", false, "prints this help");
@@ -98,28 +108,52 @@ public class SmartDataBrowser {
         options.addOption("dc", "debug-context", false, "prints context");
     }
 
+    /** The free marker engine. */
     private FreeMarkerEngine freeMarkerEngine;
 
+    /** The Constant DEBUG_MODE. */
     private static final boolean DEBUG_MODE = "true".equalsIgnoreCase(System.getProperty("detailedDebugMode"));
     
+    /** The port. */
     private int port;
+    
+    /** The debug context. */
     private static boolean debugContext = DEBUG_MODE;
+    
+    /** The debug sparql. */
     private static boolean debugSparql = DEBUG_MODE;
     
+    /** The default page limit. */
     //use arg '-l'
     private int defaultPageLimit;
     
+    /** The views folder. */
     private File viewsFolder;
+    
+    /** The web folder. */
     private File webFolder;
+    
+    /** The prefix file. */
     private File prefixFile;
 
+    /** The sparql service. */
     private String sparqlService;
+    
+    /** The server address. */
     private String serverAddress;
+    
+    /** The http client. */
     private CloseableHttpClient httpClient;
 
+    /** The dataset. */
     private Dataset dataset;
 
     //all logged in users
+    /**
+     * Instantiates a new smart data browser.
+     *
+     * @param args the args
+     */
     //private Map<String, String> authKey2nickname;
     public SmartDataBrowser(String[] args) {
         initCmd(args);
@@ -136,6 +170,16 @@ public class SmartDataBrowser {
         }
     }
 
+    /**
+     * Server less.
+     *
+     * @param sparqlEndpoint the sparql endpoint
+     * @param username the username
+     * @param password the password
+     * @param serverAddress the server address
+     * @param limit the limit
+     * @return the smart data browser
+     */
     public static SmartDataBrowser serverLess(String sparqlEndpoint, String username, String password, String serverAddress, int limit) {
         return new SmartDataBrowser(new String[]{
             "-s", sparqlEndpoint,
@@ -156,7 +200,7 @@ public class SmartDataBrowser {
     /**
      * Inits command line interface and exits if help is shown.
      *
-     * @param args
+     * @param args the args
      */
     private void initCmd(String[] args) {
         try {
@@ -334,27 +378,53 @@ public class SmartDataBrowser {
                 + FileUtils.byteCountToDisplaySize(endUsed - beginUsed) + " used, " + elapsed + " ms");
     }
 
+    /**
+     * Used memory.
+     *
+     * @return the long
+     */
     private long usedMemory() {
         return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
     }
 
+    /** The Constant VIEW. */
     //==========================================================================
     public static final String VIEW = "view"; //decides HOW the uri is viewed
 
+    /** The Constant URI. */
     public static final String URI = "uri"; //decides WHAT should be presented
+    
+    /** The Constant GRAPH. */
     public static final String GRAPH = "graph"; //decides FROM WHERE it should be presented
 
+    /** The Constant LIMIT. */
     public static final String LIMIT = "limit"; //decides HOW MANY should be presented 
+    
+    /** The Constant OFFSET. */
     public static final String OFFSET = "offset";
 
+    /** The Constant LANG. */
     public static final String LANG = "lang"; //decides IN WHICH LANGUAGE it should be presented
 
+    /** The Constant QUERY_PARAMS. */
     public static final String QUERY_PARAMS = "queryParams"; //Set<String>
+    
+    /** The Constant QUERY_PARAMS_VALUES. */
     public static final String QUERY_PARAMS_VALUES = "queryParamsValues"; //Map<String, String[]>
 
+    /** The Constant RESPONSE_EXT. */
     private static final String RESPONSE_EXT = ".response";
+    
+    /** The Constant SPARQL_EXT. */
     private static final String SPARQL_EXT = ".sparql";
 
+    /**
+     * Gets the root.
+     *
+     * @param req the req
+     * @param resp the resp
+     * @return the root
+     */
     //via sparkjava route
     private Object getRoot(Request req, Response resp) {
 
@@ -383,6 +453,12 @@ public class SmartDataBrowser {
         return processView(ctx, resp);
     }
 
+    /**
+     * Context from URL.
+     *
+     * @param url the url
+     * @return the map
+     */
     public Map<String, Object> contextFromURL(URL url) {
         Map<String, Object> ctx = new HashMap<>();
 
@@ -413,6 +489,14 @@ public class SmartDataBrowser {
         return ctx;
     }
 
+    /**
+     * Process view.
+     *
+     * @param ctx the ctx
+     * @param resp the resp
+     * @return the object
+     * @throws HaltException the halt exception
+     */
     //via lib call
     public Object processView(Map<String, Object> ctx, Response resp) throws HaltException {
 
@@ -474,6 +558,12 @@ public class SmartDataBrowser {
         return response;
     }
 
+    /**
+     * Execute tree SPARQL.
+     *
+     * @param viewFolder the view folder
+     * @param ctx the ctx
+     */
     private void executeTreeSPARQL(File viewFolder, Map<String, Object> ctx) {
         final String splitSymbol = "_";
         
@@ -535,20 +625,41 @@ public class SmartDataBrowser {
         int a = 0;
     }
 
+    /**
+     * The Class TreeNode.
+     */
     private class TreeNode {
 
+        /** The child map. */
         private Map<String, TreeNode> childMap;
+        
+        /** The view folder. */
         private File viewFolder;
+        
+        /** The filename. */
         private String filename;
+        
+        /** The name. */
         private String name;
         
+        /** The result. */
         private List<CustomQuerySolution> result;
 
+        /**
+         * Instantiates a new tree node.
+         */
         //root
         public TreeNode() {
             childMap = new HashMap<>();
         }
         
+        /**
+         * Instantiates a new tree node.
+         *
+         * @param viewFolder the view folder
+         * @param name the name
+         * @param filename the filename
+         */
         public TreeNode(File viewFolder, String name, String filename) {
             this();
             this.viewFolder = viewFolder;
@@ -556,6 +667,12 @@ public class SmartDataBrowser {
             this.filename = filename;
         }
         
+        /**
+         * Exec.
+         *
+         * @param parent the parent
+         * @param ctx the ctx
+         */
         public void exec(TreeNode parent, Map<String, Object> ctx) {
             //there was a query before
             if(parent.result != null) {
@@ -578,6 +695,13 @@ public class SmartDataBrowser {
             }
         }
         
+        /**
+         * Exec.
+         *
+         * @param parent the parent
+         * @param parentQs the parent qs
+         * @param ctx the ctx
+         */
         private void exec(TreeNode parent, CustomQuerySolution parentQs, Map<String, Object> ctx) {
             
             SmartDataBrowserUtil util = (SmartDataBrowserUtil) ctx.get("util");
@@ -628,6 +752,11 @@ public class SmartDataBrowser {
             }
         }
 
+        /**
+         * To string.
+         *
+         * @return the string
+         */
         @Override
         public String toString() {
             if(name == null)
@@ -636,12 +765,24 @@ public class SmartDataBrowser {
             return name;
         }
         
+        /**
+         * To string tree.
+         *
+         * @return the string
+         */
         public String toStringTree() {
             StringBuilder sb = new StringBuilder();
             toStringTree("", true, sb);
             return sb.toString();
         }
 
+        /**
+         * To string tree.
+         *
+         * @param prefix the prefix
+         * @param isTail the is tail
+         * @param sb the sb
+         */
         private void toStringTree(String prefix, boolean isTail, StringBuilder sb) {
             List<TreeNode> children = getChildren();
             
@@ -656,6 +797,11 @@ public class SmartDataBrowser {
             }
         }
 
+        /**
+         * Gets the children.
+         *
+         * @return the children
+         */
         private List<TreeNode> getChildren() {
             return childMap.entrySet().stream().sorted(Entry.comparingByKey()).map(e -> e.getValue()).collect(toList());//new ArrayList<>(childMap.values());
         }
@@ -663,6 +809,11 @@ public class SmartDataBrowser {
     }
 
     //==========================================================================
+    /**
+     * Prints the.
+     *
+     * @param ctx the ctx
+     */
     //helper
     private void print(Map<String, Object> ctx) {
         for (String key : ctx.keySet().stream().sorted().toArray(i -> new String[i])) {
@@ -672,22 +823,55 @@ public class SmartDataBrowser {
         System.out.println();
     }
 
+    /**
+     * Filename 2 mimetype.
+     *
+     * @param mimetype the mimetype
+     * @return the string
+     */
     private String filename2mimetype(String mimetype) {
         return mimetype.replaceAll("\\_", "/");
     }
 
+    /**
+     * Mimetype 2 filename.
+     *
+     * @param filename the filename
+     * @return the string
+     */
     private String mimetype2filename(String filename) {
         return filename.replaceAll("\\/", "_");
     }
 
+    /**
+     * Render.
+     *
+     * @param ctx the ctx
+     * @param templateName the template name
+     * @return the string
+     */
     private String render(Map<String, Object> ctx, String templateName) {
         return freeMarkerEngine.render(new ModelAndView(ctx, templateName));
     }
 
+    /**
+     * Query exec.
+     *
+     * @param pss the pss
+     * @param reasoning the reasoning
+     * @return the query execution
+     */
     private QueryExecution queryExec(ParameterizedSparqlString pss, boolean reasoning) {
         return queryExec(pss.asQuery(), reasoning);
     }
 
+    /**
+     * Query exec.
+     *
+     * @param query the query
+     * @param reasoning the reasoning
+     * @return the query execution
+     */
     private QueryExecution queryExec(Query query, boolean reasoning) {
         if (sparqlService != null) {
             return QueryExecutionFactory.sparqlService(sparqlService + (reasoning ? "/reasoning" : ""), query, httpClient);
@@ -696,6 +880,12 @@ public class SmartDataBrowser {
         }
     }
 
+    /**
+     * Update exec.
+     *
+     * @param pss the pss
+     * @return the update processor
+     */
     private UpdateProcessor updateExec(ParameterizedSparqlString pss) {
         if (debugSparql) {
             System.out.println(pss.toString().trim());
@@ -705,10 +895,24 @@ public class SmartDataBrowser {
         return UpdateExecutionFactory.createRemote(pss.asUpdate(), sparqlService, httpClient);
     }
 
+    /**
+     * Query.
+     *
+     * @param pss the pss
+     * @param reasoning the reasoning
+     * @return the list
+     */
     private List<QuerySolution> query(ParameterizedSparqlString pss, boolean reasoning) {
         return query(pss.asQuery(), reasoning);
     }
 
+    /**
+     * Query.
+     *
+     * @param query the query
+     * @param reasoning the reasoning
+     * @return the list
+     */
     private List<QuerySolution> query(Query query, boolean reasoning) {
         
         long begin = System.currentTimeMillis();
@@ -729,6 +933,13 @@ public class SmartDataBrowser {
         return qss;
     }
 
+    /**
+     * Ask.
+     *
+     * @param pss the pss
+     * @param reasoning the reasoning
+     * @return true, if successful
+     */
     private boolean ask(ParameterizedSparqlString pss, boolean reasoning) {
         QueryExecution qe = queryExec(pss, reasoning);
 
@@ -745,6 +956,14 @@ public class SmartDataBrowser {
         return result;
     }
 
+    /**
+     * Gets the query.
+     *
+     * @param viewFolder the view folder
+     * @param sparqlFilename the sparql filename
+     * @param ctx the ctx
+     * @return the query
+     */
     private ParameterizedSparqlString getQuery(File viewFolder, String sparqlFilename, Map<String, Object> ctx) {
         ParameterizedSparqlString pss;
         try {
@@ -764,10 +983,19 @@ public class SmartDataBrowser {
         return pss;
     }
 
+    /**
+     * The Class EmptyQueryException.
+     */
     private class EmptyQueryException extends RuntimeException {
 
     }
     
+    /**
+     * Gets the default model.
+     *
+     * @param req the req
+     * @return the default model
+     */
     private Map<String, Object> getDefaultModel(Request req) {
         Map<String, Object> m = new HashMap<>();
         m.put("sitename", SITENAME);
@@ -775,18 +1003,42 @@ public class SmartDataBrowser {
         return m;
     }
 
+    /**
+     * Address.
+     *
+     * @param req the req
+     * @return the string
+     */
     private String address(Request req) {
         return serverAddress + req.uri();
     }
 
+    /**
+     * Address.
+     *
+     * @param path the path
+     * @return the string
+     */
     private String address(String path) {
         return serverAddress + path;
     }
 
+    /**
+     * User graph.
+     *
+     * @param req the req
+     * @return the string
+     */
     private String userGraph(Request req) {
         return serverAddress + "/user/" + req.params("username");
     }
 
+    /**
+     * User graph.
+     *
+     * @param username the username
+     * @return the string
+     */
     private String userGraph(String username) {
         return serverAddress + "/user/" + username;
     }
@@ -794,29 +1046,51 @@ public class SmartDataBrowser {
     /**
      * Removes the last path segment of the uri.
      *
-     * @param path
-     * @return
+     * @param path the path
+     * @return the string
      */
     private String up(String path) {
         return path.substring(0, path.lastIndexOf("/"));
     }
 
+    /**
+     * Ontology address.
+     *
+     * @param localname the localname
+     * @return the string
+     */
     private String ontologyAddress(String localname) {
         return serverAddress + "/ontology/" + localname;
     }
 
     //==========================================================================
     
+    /**
+     * The Class SmartDataBrowserUtil.
+     */
     public class SmartDataBrowserUtil {
 
+        /** The ctx. */
         private Map<String, Object> ctx;
         
+        /** The reasoning. */
         private boolean reasoning;
 
+        /**
+         * Instantiates a new smart data browser util.
+         *
+         * @param ctx the ctx
+         */
         public SmartDataBrowserUtil(Map<String, Object> ctx) {
             this.ctx = ctx;
         }
 
+        /**
+         * Link.
+         *
+         * @param keyValuePairs the key value pairs
+         * @return the string
+         */
         //use build() and LinkBuilder
         @Deprecated
         public String link(String... keyValuePairs) {
@@ -866,6 +1140,12 @@ public class SmartDataBrowser {
             return sb.toString();
         }
 
+        /**
+         * Page link.
+         *
+         * @param offsetFunc the offset func
+         * @return the string
+         */
         //deprecated because link() method deprecated
         @Deprecated
         private String pageLink(BiFunction<Integer, Integer, Integer> offsetFunc) {
@@ -883,12 +1163,22 @@ public class SmartDataBrowser {
             );
         }
 
+        /**
+         * Next page link.
+         *
+         * @return the string
+         */
         public String nextPageLink() {
             return pageLink((o, l) -> {
                 return o + l;
             });
         }
 
+        /**
+         * Prev page link.
+         *
+         * @return the string
+         */
         public String prevPageLink() {
             return pageLink((o, l) -> {
                 o = o - l;
@@ -899,6 +1189,11 @@ public class SmartDataBrowser {
             });
         }
 
+        /**
+         * First page link.
+         *
+         * @return the string
+         */
         public String firstPageLink() {
             return pageLink((o, l) -> {
                 return 0;
@@ -906,22 +1201,47 @@ public class SmartDataBrowser {
         }
 
         
+        /**
+         * Reasoning.
+         */
         public void reasoning() {
             reasoning = true;
         }
 
+        /**
+         * Checks if is reasoning.
+         *
+         * @return true, if is reasoning
+         */
         public boolean isReasoning() {
             return reasoning;
         }
         
+        /**
+         * Builds the.
+         *
+         * @return the link builder
+         */
         public LinkBuilder build() {
             return new LinkBuilder(ctx);
         }
         
+        /**
+         * Builds the.
+         *
+         * @param view the view
+         * @return the link builder
+         */
         public LinkBuilder build(String view) {
             return new LinkBuilder(ctx).view(view);
         }
         
+        /**
+         * Pivot SPO.
+         *
+         * @param input the input
+         * @return the list
+         */
         public List<QuerySolution> pivotSPO(List<QuerySolution> input) {
             //before
             //s  p  o
@@ -958,6 +1278,12 @@ public class SmartDataBrowser {
             return result;
         }
 
+        /**
+         * Pivot table.
+         *
+         * @param input the input
+         * @return the list
+         */
         public List<List<RDFNode>> pivotTable(List<QuerySolution> input) {
             //before
             //s  p  o
@@ -1046,10 +1372,19 @@ public class SmartDataBrowser {
         }
     }
     
+    /**
+     * The Class LinkBuilder.
+     */
     public class LinkBuilder {
         
+        /** The param 2 values. */
         private Map<String, List<String>> param2Values;
 
+        /**
+         * Instantiates a new link builder.
+         *
+         * @param ctx the ctx
+         */
         public LinkBuilder(Map<String, Object> ctx) {
             param2Values = new HashMap<>();
             for (String param : (Set<String>) ctx.get(QUERY_PARAMS)) {
@@ -1058,11 +1393,23 @@ public class SmartDataBrowser {
             }
         }
         
+        /**
+         * Clear.
+         *
+         * @return the link builder
+         */
         public LinkBuilder clear() {
             param2Values.clear();
             return this;
         }
         
+        /**
+         * Adds the.
+         *
+         * @param param the param
+         * @param value the value
+         * @return the link builder
+         */
         public LinkBuilder add(String param, Object value) {
             if(value == null)
                 return this;
@@ -1071,6 +1418,13 @@ public class SmartDataBrowser {
             return this;
         }
         
+        /**
+         * Adds the unique.
+         *
+         * @param param the param
+         * @param value the value
+         * @return the link builder
+         */
         public LinkBuilder addUnique(String param, Object value) {
             if(value == null)
                 return this;
@@ -1082,6 +1436,13 @@ public class SmartDataBrowser {
             return this;
         }
         
+        /**
+         * Put.
+         *
+         * @param param the param
+         * @param value the value
+         * @return the link builder
+         */
         public LinkBuilder put(String param, Object value) {
             if(value == null)
                 return this;
@@ -1090,11 +1451,24 @@ public class SmartDataBrowser {
             return this;
         }
         
+        /**
+         * Removes the.
+         *
+         * @param param the param
+         * @return the link builder
+         */
         public LinkBuilder remove(String param) {
             param2Values.remove(param);
             return this;
         }
         
+        /**
+         * Removes the.
+         *
+         * @param param the param
+         * @param value the value
+         * @return the link builder
+         */
         public LinkBuilder remove(String param, Object value) {
             if(value == null)
                 return this;
@@ -1105,11 +1479,22 @@ public class SmartDataBrowser {
             return this;
         }
         
+        /**
+         * View.
+         *
+         * @param view the view
+         * @return the link builder
+         */
         public LinkBuilder view(String view) {
             put(VIEW, view);
             return this;
         }
         
+        /**
+         * Link.
+         *
+         * @return the string
+         */
         public String link() {
             //build link
             StringBuilder sb = new StringBuilder();
@@ -1136,25 +1521,50 @@ public class SmartDataBrowser {
         }
     }
 
+    /**
+     * The Class SDBResponse.
+     */
     public static class SDBResponse extends Response {
 
+        /** The content type. */
         private String contentType;
+        
+        /** The headers. */
         private Map<String, String> headers;
 
+        /**
+         * Instantiates a new SDB response.
+         */
         public SDBResponse() {
             headers = new HashMap<>();
         }
 
+        /**
+         * Type.
+         *
+         * @param contentType the content type
+         */
         @Override
         public void type(String contentType) {
             this.contentType = contentType;
         }
 
+        /**
+         * Type.
+         *
+         * @return the string
+         */
         @Override
         public String type() {
             return this.contentType;
         }
 
+        /**
+         * Header.
+         *
+         * @param header the header
+         * @param value the value
+         */
         @Override
         public void header(String header, String value) {
             headers.put(header, value);
@@ -1165,9 +1575,8 @@ public class SmartDataBrowser {
     /**
      * Utility class for JavaScript compatible UTF-8 encoding and decoding.
      *
-     * @see
-     * http://stackoverflow.com/questions/607176/java-equivalent-to-javascripts-encodeuricomponent-that-produces-identical-output
      * @author John Topley
+     * @see http://stackoverflow.com/questions/607176/java-equivalent-to-javascripts-encodeuricomponent-that-produces-identical-output
      */
     private static class EncodingUtil {
 
@@ -1232,6 +1641,12 @@ public class SmartDataBrowser {
         }
     }
 
+    /**
+     * Split query.
+     *
+     * @param url the url
+     * @return the map
+     */
     public Map<String, List<String>> splitQuery(URL url) {
         if (url.getQuery() == null || url.getQuery().isEmpty()) {
             return Collections.emptyMap();
@@ -1241,6 +1656,12 @@ public class SmartDataBrowser {
                 .collect(Collectors.groupingBy(SimpleImmutableEntry::getKey, LinkedHashMap::new, mapping(Map.Entry::getValue, toList())));
     }
 
+    /**
+     * Split query parameter.
+     *
+     * @param it the it
+     * @return the simple immutable entry
+     */
     public SimpleImmutableEntry<String, String> splitQueryParameter(String it) {
         final int idx = it.indexOf("=");
         final String key = idx > 0 ? it.substring(0, idx) : it;
@@ -1252,6 +1673,7 @@ public class SmartDataBrowser {
     //    new SmartDataBrowser(args);
     //}
 
+    /** The logo. */
     private static String logo = "   _____                      __     ____        __           \n"
             + "  / ___/____ ___  ____ ______/ /_   / __ \\____ _/ /_____ _    \n"
             + "  \\__ \\/ __ `__ \\/ __ `/ ___/ __/  / / / / __ `/ __/ __ `/    \n"

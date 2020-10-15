@@ -19,17 +19,25 @@ import org.json.JSONObject;
 
 /**
  * Endpoint to access the Smart Data Browser functionality.
- * @see SmartDataBrowser
+ *
  * @author Markus Schr&ouml;der
+ * @see SmartDataBrowser
  */
 public class SmartDataBrowserEndpoint extends JsonRpcEndpoint {
 
+    /** The smart data browser. */
     //the actual smart data browser implementation
     private SmartDataBrowser smartDataBrowser;
 
+    /** The server address. */
     //address of the server for generating the links correctly
     private String serverAddress;
 
+    /**
+     * Instantiates a new smart data browser endpoint.
+     *
+     * @param application the application
+     */
     public SmartDataBrowserEndpoint(ApplicationLogic application) {
         super(application);
 
@@ -46,10 +54,11 @@ public class SmartDataBrowserEndpoint extends JsonRpcEndpoint {
     /**
      * Browses a given url with the smart data browser.
      * This calles {@link #browse(javax.servlet.http.HttpServletRequest, java.lang.String, java.lang.String) } with "application/json" as accept header key.
+     *
      * @param req the request filled by Jabsorb.
      * @param urlPart the actual url part that is browsed
      * @return a JSON representation of the rendered result.
-     * @throws de.sdsd.projekt.prototype.jsonrpc.JsonRpcEndpoint.JsonRpcException 
+     * @throws JsonRpcException the json rpc exception
      */
     public JSONObject browse(HttpServletRequest req, String urlPart) throws JsonRpcException {
         //return browse(req, urlPart, "text/html");
@@ -58,11 +67,12 @@ public class SmartDataBrowserEndpoint extends JsonRpcEndpoint {
 
     /**
      * Browses a given url with the smart data browser.
+     *
      * @param req the request filled by Jabsorb.
      * @param urlPart the actual url part that is browsed
      * @param accept a mime type what view should be used to render the result (e.g. text/json).
      * @return a JSON representation of the rendered result.
-     * @throws de.sdsd.projekt.prototype.jsonrpc.JsonRpcEndpoint.JsonRpcException 
+     * @throws JsonRpcException the json rpc exception
      */
     public JSONObject browse(HttpServletRequest req, String urlPart, String accept) throws JsonRpcException {
         User user = null;
@@ -137,12 +147,13 @@ public class SmartDataBrowserEndpoint extends JsonRpcEndpoint {
      * Instead of the browse method, this method receives the view name and parameters 
      * via arguments (not via URL query parameters).
      * This way the dashboard can easier call smart data browser views.
+     *
      * @param req the request filled by Jabsorb.
      * @param view name of the view
      * @param params parameters as JSON object.
      * @param accept a mime type what view should be used to render the result (e.g. text/json).
      * @return a JSON representation of the rendered result.
-     * @throws de.sdsd.projekt.prototype.jsonrpc.JsonRpcEndpoint.JsonRpcException 
+     * @throws JsonRpcException the json rpc exception
      */
     public JSONObject get(HttpServletRequest req, String view, JSONObject params, String accept) throws JsonRpcException {
         User user = null;

@@ -50,10 +50,22 @@ import de.sdsd.projekt.prototype.data.Util;
  */
 public class ServiceEndpoint extends JsonRpcEndpoint {
 
+	/**
+	 * Instantiates a new service endpoint.
+	 *
+	 * @param application the application
+	 */
 	public ServiceEndpoint(ApplicationLogic application) {
 		super(application);
 	}
 	
+	/**
+	 * List services.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listServices(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -79,6 +91,13 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * List my services.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listMyServices(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -105,6 +124,14 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * List my instances.
+	 *
+	 * @param req the req
+	 * @param serviceId the service id
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listMyInstances(HttpServletRequest req, String serviceId) throws JsonRpcException {
 		User user = null;
 		try {
@@ -134,6 +161,13 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * List active services.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listActiveServices(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -161,6 +195,13 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * List completed services.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listCompletedServices(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -190,6 +231,14 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the single instance of ServiceEndpoint.
+	 *
+	 * @param req the req
+	 * @param instanceId the instance id
+	 * @return single instance of ServiceEndpoint
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getInstance(HttpServletRequest req, String instanceId) throws JsonRpcException {
 		User user = null;
 		try {
@@ -257,6 +306,14 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the permission options.
+	 *
+	 * @param req the req
+	 * @param typeuri the typeuri
+	 * @return the permission options
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getPermissionOptions(HttpServletRequest req, String typeuri) throws JsonRpcException {
 		User user = null;
 		try {
@@ -289,8 +346,16 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/** The Constant TYPE. */
 	private static final Var OBJ = Var.alloc("obj"), GRAPH = Var.alloc("graph"), LABEL = Var.alloc("label"), TYPE = Var.alloc("type");
 	
+	/**
+	 * Gets the triple options.
+	 *
+	 * @param files the files
+	 * @param typeuri the typeuri
+	 * @return the triple options
+	 */
 	private JSONArray getTripleOptions(List<File> files, String typeuri) {
 		if(files.isEmpty()) return new JSONArray();
 		Groups options = new Groups(files.size());
@@ -318,6 +383,12 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		return options.toJson();
 	}
 	
+	/**
+	 * Gets the file options.
+	 *
+	 * @param files the files
+	 * @return the file options
+	 */
 	private JSONArray getFileOptions(List<File> files) {
 		if(files.isEmpty()) return new JSONArray();
 		List<SDSDType> types = application.list.types.getList(null);
@@ -330,6 +401,15 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		return options.toJson();
 	}
 	
+	/**
+	 * Sets the instance parameter.
+	 *
+	 * @param req the req
+	 * @param instanceId the instance id
+	 * @param values the values
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setInstanceParameter(HttpServletRequest req, String instanceId, JSONObject values) throws JsonRpcException {
 		User user = null;
 		try {
@@ -412,6 +492,16 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets the instance permissions.
+	 *
+	 * @param req the req
+	 * @param instanceId the instance id
+	 * @param perms the perms
+	 * @param timePermission the time permission
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setInstancePermissions(HttpServletRequest req, String instanceId, JSONArray perms, JSONObject timePermission) throws JsonRpcException {
 		User user = null;
 		try {
@@ -452,6 +542,14 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Activate service.
+	 *
+	 * @param req the req
+	 * @param serviceId the service id
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject activateService(HttpServletRequest req, String serviceId) throws JsonRpcException {
 		User user = null;
 		try {
@@ -471,6 +569,14 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Error instance.
+	 *
+	 * @param token the token
+	 * @param error the error
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject errorInstance(String token, String error) throws JsonRpcException {
 		try {
 			Optional<ServiceInstance> context = application.service.getInstance(ServiceInstance.filterToken(token));
@@ -486,6 +592,14 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Complete instance.
+	 *
+	 * @param token the token
+	 * @param result the result
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject completeInstance(String token, String result) throws JsonRpcException {
 		try {
 			Optional<ServiceInstance> context = application.service.getInstance(ServiceInstance.filterToken(token));
@@ -500,6 +614,14 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Delete instance.
+	 *
+	 * @param req the req
+	 * @param instanceId the instance id
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject deleteInstance(HttpServletRequest req, String instanceId) throws JsonRpcException {
 		User user = null;
 		try {
@@ -517,6 +639,14 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Creates the service.
+	 *
+	 * @param req the req
+	 * @param input the input
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject createService(HttpServletRequest req, JSONObject input) throws JsonRpcException {
 		User user = null;
 		try {
@@ -610,6 +740,15 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets the service visible.
+	 *
+	 * @param req the req
+	 * @param serviceId the service id
+	 * @param visible the visible
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setServiceVisible(HttpServletRequest req, String serviceId, boolean visible) throws JsonRpcException {
 		User user = null;
 		try {
@@ -630,6 +769,14 @@ public class ServiceEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Delete service.
+	 *
+	 * @param req the req
+	 * @param serviceId the service id
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject deleteService(HttpServletRequest req, String serviceId) throws JsonRpcException {
 		User user = null;
 		try {

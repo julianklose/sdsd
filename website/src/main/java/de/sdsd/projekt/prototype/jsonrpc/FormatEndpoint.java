@@ -30,14 +30,34 @@ import de.sdsd.projekt.prototype.data.WikiInstance;
  */
 public class FormatEndpoint extends JsonRpcEndpoint {
 
+	/**
+	 * Instantiates a new format endpoint.
+	 *
+	 * @param application the application
+	 */
 	public FormatEndpoint(ApplicationLogic application) {
 		super(application);
 	}
 	
+	/**
+	 * List formats.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listFormats(HttpServletRequest req) throws JsonRpcException {
 		return listFormats(req, false);
 	}
 	
+	/**
+	 * List formats.
+	 *
+	 * @param req the req
+	 * @param draft the draft
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listFormats(HttpServletRequest req, boolean draft) throws JsonRpcException {
 		User user = null;
 		try {
@@ -72,6 +92,13 @@ public class FormatEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * List AR types.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listARTypes(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -97,10 +124,19 @@ public class FormatEndpoint extends JsonRpcEndpoint {
 		}
 	}
 
+	/** The Constant JS_TEST_COMMAND. */
 	private static final String JS_CLASS="class", JS_COMMENT="description", 
 			JS_MIME="mimetype", JS_ARTYPE="artype", 
 			JS_PARSER="parser", JS_PARSE_COMMAND="parseCommand", JS_TEST_COMMAND="testCommand";
 	
+	/**
+	 * Gets the.
+	 *
+	 * @param req the req
+	 * @param uri the uri
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject get(HttpServletRequest req, String uri) throws JsonRpcException {
 		User user = null;
 		try {
@@ -145,6 +181,14 @@ public class FormatEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the draft.
+	 *
+	 * @param req the req
+	 * @param formatID the format ID
+	 * @return the draft
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getDraft(HttpServletRequest req, String formatID) throws JsonRpcException {
 		User user = null;
 		try {
@@ -164,6 +208,15 @@ public class FormatEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets the draft.
+	 *
+	 * @param req the req
+	 * @param formatID the format ID
+	 * @param input the input
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setDraft(HttpServletRequest req, String formatID, JSONObject input) throws JsonRpcException {
 		User user = null;
 		try {
@@ -205,6 +258,14 @@ public class FormatEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Drop draft.
+	 *
+	 * @param req the req
+	 * @param formatID the format ID
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject dropDraft(HttpServletRequest req, String formatID) throws JsonRpcException {
 		User user = null;
 		try {

@@ -78,17 +78,36 @@ import org.json.JSONObject;
  * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
  */
 public class FileFunctions {
+	
+	/** The device descriptions. */
 	final DeviceDescriptions deviceDescriptions;
 	
+	/** The app. */
 	private final ApplicationLogic app;
+	
+	/** The mongo file. */
 	final MongoCollection<Document> mongoFile;
+	
+	/** The mongo content. */
 	final MongoCollection<Document> mongoContent;
 	
+	/** The data added. */
 	public final SDSDEvent<User, File> dataAdded = new SDSDEvent<>();
+	
+	/** The parser finished. */
 	public final SDSDEvent<User, File> parserFinished = new SDSDEvent<>();
+	
+	/** The file appended. */
 	public final SDSDEvent<File, byte[]> fileAppended = new SDSDEvent<>();
+	
+	/** The file deleted. */
 	public final SDSDEvent<User, File> fileDeleted = new SDSDEvent<>();
 
+	/**
+	 * Instantiates a new file functions.
+	 *
+	 * @param app the app
+	 */
 	FileFunctions(ApplicationLogic app) {
 		this.app = app;
 		this.mongoFile = app.mongo.sdsd.getCollection("fileUploads");
@@ -102,6 +121,17 @@ public class FileFunctions {
 				Duration.between(now, start).getSeconds(), 24*60*60, TimeUnit.SECONDS);
 	}
 	
+	/**
+	 * Store file.
+	 *
+	 * @param user the user
+	 * @param filename the filename
+	 * @param content the content
+	 * @param created the created
+	 * @param source the source
+	 * @param artype the artype
+	 * @return the file
+	 */
 	@CheckForNull
 	public File storeFile(User user, String filename, byte[] content, Instant created, String source, @Nullable ARMessageType artype) {
 		SDSDType type = app.parser.determineType(content, filename, artype);
@@ -129,6 +159,15 @@ public class FileFunctions {
 		return file;
 	}
 	
+	/**
+	 * Check storage tasks.
+	 *
+	 * @param user the user
+	 * @param type the type
+	 * @param source the source
+	 * @param created the created
+	 * @return the instant
+	 */
 	@CheckForNull
 	protected Instant checkStorageTasks(User user, String type, String source, Instant created) {
 		boolean discard = true;
@@ -145,6 +184,14 @@ public class FileFunctions {
 	
 	
 	
+	/**
+	 * Gets the content.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @return the content
+	 * @throws FileNotFoundException the file not found exception
+	 */
 	@Nonnull
 	protected FileContent getContent(User user, File file) throws FileNotFoundException {
 		Document doc = mongoContent.find(FileContent.filter(user, file.getId())).first();
@@ -153,11 +200,26 @@ public class FileFunctions {
 		return new FileContent(doc);
 	}
 	
+	/**
+	 * Download file.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @return the byte[]
+	 * @throws FileNotFoundException the file not found exception
+	 */
 	@Nonnull
 	public byte[] downloadFile(User user, File file) throws FileNotFoundException {
 		return getContent(user, file).getContent();
 	}
 
+	/**
+	 * Delete file.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @return true, if successful
+	 */
 	public boolean deleteFile(User user, File file) {
 		app.parser.removeFileDataAsync(user, file.getId().toHexString(), true);
 		
@@ -170,6 +232,11 @@ public class FileFunctions {
 		return ok;
 	}
 	
+	/**
+	 * List all file I ds.
+	 *
+	 * @return the sets the
+	 */
 	Set<ObjectId> listAllFileIDs() {
 		Set<ObjectId> files = new HashSet<>();
 		for(Document doc : mongoFile.find()) {
@@ -178,6 +245,11 @@ public class FileFunctions {
 		return files;
 	}
 	
+	/**
+	 * Tidy up.
+	 *
+	 * @param fileIds the file ids
+	 */
 	void tidyUp(Set<ObjectId> fileIds) {
 		Set<ObjectId> delete = new HashSet<>();
 		for(Document doc : mongoContent.find(Filters.nin(FileContent.FILEID, fileIds))) {
@@ -191,6 +263,14 @@ public class FileFunctions {
 			System.out.println("Success: " + mongoContent.deleteMany(Filters.in(FileContent.FILEID, delete)).wasAcknowledged());
 	}
 	
+	/**
+	 * Reparse file.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @return the future
+	 * @throws FileNotFoundException the file not found exception
+	 */
 	public Future<Boolean> reparseFile(User user, File file) throws FileNotFoundException {
 		byte[] content = downloadFile(user, file);
 		return app.parser.deleteAndParseFileAsync(user, file, content, true);
@@ -202,6 +282,10 @@ public class FileFunctions {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private class ExpireDaemon implements Runnable {
+		
+		/**
+		 * Run.
+		 */
 		@Override
 		public void run() {
 			try {
@@ -230,8 +314,13 @@ public class FileFunctions {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public class DeviceDescriptions {
+		
+		/** The mongo. */
 		private final MongoCollection<Document> mongo = app.mongo.sdsd.getCollection("deviceDescriptions");
 		
+		/**
+		 * Instantiates a new device descriptions.
+		 */
 		public DeviceDescriptions() {
 			mongo.createIndex(Indexes.ascending(DeviceDescription.CONTEXTID), new IndexOptions().unique(true));
 			
@@ -243,6 +332,14 @@ public class FileFunctions {
 //					15, 24*60*60, TimeUnit.SECONDS);
 		}
 		
+		/**
+		 * Store.
+		 *
+		 * @param user the user
+		 * @param contextId the context id
+		 * @param content the content
+		 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+		 */
 		public void store(User user, String contextId, byte[] content) 
 				throws InvalidProtocolBufferException {
 			GrpcEfdi.ISO11783_TaskData.parseFrom(content);
@@ -252,6 +349,12 @@ public class FileFunctions {
 					new UpdateOptions().upsert(true));
 		}
 		
+		/**
+		 * Gets the.
+		 *
+		 * @param contextId the context id
+		 * @return the device description
+		 */
 		@CheckForNull
 		public DeviceDescription get(String contextId) {
 			Document doc = mongo.find(DeviceDescription.filter(contextId)).first();
@@ -259,7 +362,14 @@ public class FileFunctions {
 			return new DeviceDescription(doc);
 		}
 		
+		/**
+		 * The Class RemoveDaemon.
+		 */
 		private class RemoveDaemon implements Runnable {
+			
+			/**
+			 * Run.
+			 */
 			@Override
 			public void run() {
 				try {
@@ -324,6 +434,7 @@ public class FileFunctions {
 		};
 	}
 	
+	/** The parse timer. */
 	private final ConcurrentMap<ObjectId, DelayedParser> parseTimer = new ConcurrentHashMap<>();
 	/**
 	 * Base class for delayed calling of parsers.
@@ -332,11 +443,28 @@ public class FileFunctions {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private abstract class DelayedParser implements Runnable {
+		
+		/** The user. */
 		public final User user;
+		
+		/** The file. */
 		public final File file;
+		
+		/** The log. */
 		public final boolean log;
+		
+		/** The future. */
 		private ScheduledFuture<?> future;
 		
+		/**
+		 * Instantiates a new delayed parser.
+		 *
+		 * @param user the user
+		 * @param file the file
+		 * @param delay the delay
+		 * @param unit the unit
+		 * @param log the log
+		 */
 		public DelayedParser(User user, File file, long delay, TimeUnit unit, boolean log) {
 			this.user = user;
 			this.file = file;
@@ -344,6 +472,12 @@ public class FileFunctions {
 			this.future = app.executor.schedule(this, delay, unit);
 		}
 		
+		/**
+		 * Adds the.
+		 *
+		 * @param delay the delay
+		 * @param unit the unit
+		 */
 		protected void add(long delay, TimeUnit unit) {
 			this.future.cancel(false);
 			this.future = app.executor.schedule(this, delay, unit);
@@ -352,24 +486,47 @@ public class FileFunctions {
 	
 	/**
 	 * Delayed EFDI timelog parser.
-	 * 
-	 * @see DelayedParser
+	 *
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+	 * @see DelayedParser
 	 */
 	private class DelayedTimelogParser extends DelayedParser {
+		
+		/** The tlg. */
 		private final GrpcEfdi.TimeLog.Builder tlg;
 		
+		/**
+		 * Instantiates a new delayed timelog parser.
+		 *
+		 * @param user the user
+		 * @param file the file
+		 * @param delay the delay
+		 * @param unit the unit
+		 * @param log the log
+		 * @param tlg the tlg
+		 */
 		public DelayedTimelogParser(User user, File file, long delay, TimeUnit unit, boolean log, GrpcEfdi.TimeLog tlg) {
 			super(user, file, delay, unit, log);
 			this.tlg = tlg.toBuilder();
 		}
 		
+		/**
+		 * Adds the.
+		 *
+		 * @param delay the delay
+		 * @param unit the unit
+		 * @param tlg the tlg
+		 * @return the delayed timelog parser
+		 */
 		public DelayedTimelogParser add(long delay, TimeUnit unit, GrpcEfdi.TimeLog tlg) {
 			this.tlg.addAllTime(tlg.getTimeList());
 			super.add(delay, unit);
 			return this;
 		}
 
+		/**
+		 * Run.
+		 */
 		@Override
 		public void run() {
 			if(parseTimer.remove(file.getId()) == null) return;
@@ -421,24 +578,47 @@ public class FileFunctions {
 	
 	/**
 	 * Delayed GPS Info parser.
-	 * 
-	 * @see DelayedParser
+	 *
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+	 * @see DelayedParser
 	 */
 	private class DelayedGpsParser extends DelayedParser {
+		
+		/** The gps. */
 		private final GPSList.Builder gps;
 		
+		/**
+		 * Instantiates a new delayed gps parser.
+		 *
+		 * @param user the user
+		 * @param file the file
+		 * @param delay the delay
+		 * @param unit the unit
+		 * @param log the log
+		 * @param gps the gps
+		 */
 		public DelayedGpsParser(User user, File file, long delay, TimeUnit unit, boolean log, GPSList gps) {
 			super(user, file, delay, unit, log);
 			this.gps = gps.toBuilder();
 		}
 		
+		/**
+		 * Adds the.
+		 *
+		 * @param delay the delay
+		 * @param unit the unit
+		 * @param gps the gps
+		 * @return the delayed gps parser
+		 */
 		public DelayedGpsParser add(long delay, TimeUnit unit, GPSList gps) {
 			this.gps.addAllGpsEntries(gps.getGpsEntriesList());
 			super.add(delay, unit);
 			return this;
 		}
 
+		/**
+		 * Run.
+		 */
 		@Override
 		public void run() {
 			if(parseTimer.remove(file.getId()) == null) return;
@@ -446,19 +626,53 @@ public class FileFunctions {
 		}
 	}
 	
+	/**
+	 * Parses the delayed.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @param delay the delay
+	 * @param unit the unit
+	 * @param log the log
+	 * @param tlg the tlg
+	 */
 	private void parseDelayed(User user, File file, long delay, TimeUnit unit, boolean log, GrpcEfdi.TimeLog tlg) {
 		DelayedParser dp = parseTimer.get(file.getId());
 		if(dp == null) parseTimer.put(file.getId(), new DelayedTimelogParser(user, file, delay, unit, log, tlg));
 		else ((DelayedTimelogParser)dp).add(delay, unit, tlg);
 	}
+	
+	/**
+	 * Parses the delayed.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @param delay the delay
+	 * @param unit the unit
+	 * @param log the log
+	 * @param gps the gps
+	 */
 	private void parseDelayed(User user, File file, long delay, TimeUnit unit, boolean log, GPSList gps) {
 		DelayedParser dp = parseTimer.get(file.getId());
 		if(dp == null) parseTimer.put(file.getId(), new DelayedGpsParser(user, file, delay, unit, log, gps));
 		else ((DelayedGpsParser)dp).add(delay, unit, gps);
 	}
 	
+	/** The Constant TIMELOG_PARSE_DELAY. */
 	private static final long TIMELOG_PARSE_DELAY = 60; // seconds
 	
+	/**
+	 * Store time log.
+	 *
+	 * @param user the user
+	 * @param contextId the context id
+	 * @param content the content
+	 * @param created the created
+	 * @param source the source
+	 * @return the file
+	 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+	 * @throws ARException the AR exception
+	 */
 	@CheckForNull
 	public File storeTimeLog(User user, String contextId, byte[] content, Instant created, String source) throws InvalidProtocolBufferException, ARException {
 		GrpcEfdi.TimeLog log = GrpcEfdi.TimeLog.parseFrom(content);
@@ -534,6 +748,12 @@ public class FileFunctions {
 		}
 	}
 	
+	/**
+	 * Gets the time log context id.
+	 *
+	 * @param file the file
+	 * @return the time log context id
+	 */
 	@CheckForNull
 	public String getTimeLogContextId(File file) {
 		Document doc = mongoFile.find(file.filter()).first();
@@ -541,6 +761,17 @@ public class FileFunctions {
 		return doc.getString(DeviceDescription.CONTEXTID);
 	}
 	
+	/**
+	 * Store gps info.
+	 *
+	 * @param user the user
+	 * @param content the content
+	 * @param created the created
+	 * @param source the source
+	 * @return the file
+	 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+	 * @throws ARException the AR exception
+	 */
 	public File storeGpsInfo(User user, byte[] content, Instant created, String source) throws InvalidProtocolBufferException, ARException {
 		GPSList gps = Gps.GPSList.parseFrom(content);
 
@@ -585,6 +816,14 @@ public class FileFunctions {
 		}
 	}
 	
+	/**
+	 * Append file.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @param newContent the new content
+	 * @return true, if successful
+	 */
 	@CheckForNull
 	public boolean appendFile(User user, File file, byte[] newContent) {
 		try {

@@ -46,16 +46,39 @@ import de.sdsd.projekt.prototype.websocket.SDSDEvent;
  * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
  */
 public class ListFunctions {
+	
+	/** The app. */
 	private final ApplicationLogic app;
+	
+	/** The endpoints. */
 	public final ListFunction<AREndpoint> endpoints;
+	
+	/** The capabilities. */
 	public final ListFunction<ARCaps> capabilities;
+	
+	/** The files. */
 	public final ListFunction<File> files;
+	
+	/** The storage tasks. */
 	public final ListFunction<StorageTask> storageTasks;
+	
+	/** The logs. */
 	public final ListFunction<LogEntry> logs;
+	
+	/** The types. */
 	public final TypeList types;
+	
+	/** The draft formats. */
 	public final ListFunction<DraftFormat> draftFormats;
+	
+	/** The draft items. */
 	public final ListFunction<DraftItem> draftItems;
 
+	/**
+	 * Instantiates a new list functions.
+	 *
+	 * @param app the app
+	 */
 	ListFunctions(ApplicationLogic app) {
 		this.app = app;
 		this.endpoints = new EndpointList();
@@ -68,6 +91,11 @@ public class ListFunctions {
 		this.draftItems = new DraftItemList();
 	}
 	
+	/**
+	 * Clear all.
+	 *
+	 * @param user the user
+	 */
 	public void clearAll(User user) {
 		endpoints.clear(user);
 		capabilities.clear(user);
@@ -80,17 +108,31 @@ public class ListFunctions {
 	
 	/**
 	 * Acts as an interface for functions, that can be applied to a list.
-	 * 
-	 * @param <T> type of the items in the list
+	 *
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+	 * @param <T> type of the items in the list
 	 */
 	public abstract class ListFunction<T> extends SDSDEvent<User, T> {
+		
+		/** The mongo. */
 		final MongoCollection<Document> mongo;
 		
+		/**
+		 * Instantiates a new list function.
+		 *
+		 * @param collection the collection
+		 */
 		public ListFunction(@Nullable String collection) {
 			this.mongo = collection != null ? app.mongo.sdsd.getCollection(collection) : null;
 		}
 
+		/**
+		 * Exists.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return true, if successful
+		 */
 		public boolean exists(User user, String id) {
 			try {
 				return exists(user, new ObjectId(id));
@@ -99,16 +141,43 @@ public class ListFunctions {
 			}
 		}
 		
+		/**
+		 * Exists.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return true, if successful
+		 */
 		public boolean exists(User user, ObjectId id) {
 			return exists(user, Filters.eq(id));
 		}
 		
+		/**
+		 * Exists.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return true, if successful
+		 */
 		public boolean exists(User user, Bson filter) {
 			return mongo.find(filter).iterator().hasNext();
 		}
 		
+		/**
+		 * Gets the list.
+		 *
+		 * @param user the user
+		 * @return the list
+		 */
 		public abstract List<T> getList(User user);
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return the t
+		 */
 		public T get(User user, String id) {
 			try {
 				return get(user, new ObjectId(id));
@@ -117,10 +186,31 @@ public class ListFunctions {
 			}
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return the t
+		 */
 		public abstract T get(User user, ObjectId id);
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return the list
+		 */
 		public abstract List<T> get(User user, Bson filter);
 
+		/**
+		 * Delete.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return true, if successful
+		 */
 		public boolean delete(User user, String id) {
 			try {
 				return delete(user, new ObjectId(id));
@@ -129,92 +219,220 @@ public class ListFunctions {
 			}
 		}
 
+		/**
+		 * Delete.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return true, if successful
+		 */
 		public boolean delete(User user, ObjectId id) {
 			return delete(user, Filters.eq(id));
 		}
 
+		/**
+		 * Delete.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return true, if successful
+		 */
 		public abstract boolean delete(User user, Bson filter);
 		
+		/**
+		 * Clear.
+		 *
+		 * @param user the user
+		 * @return true, if successful
+		 */
 		public abstract boolean clear(User user);
 
+		/**
+		 * Adds the.
+		 *
+		 * @param user the user
+		 * @param doc the doc
+		 * @return the t
+		 */
 		public abstract T add(User user, Document doc);
 
+		/**
+		 * Update.
+		 *
+		 * @param user the user
+		 * @param entry the entry
+		 * @param update the update
+		 * @return true, if successful
+		 */
 		public abstract boolean update(User user, T entry, Bson update);
 		
 	}
 
+	/**
+	 * The Class EndpointList.
+	 */
 	private class EndpointList extends ListFunction<AREndpoint> {
 
+		/**
+		 * Instantiates a new endpoint list.
+		 */
 		public EndpointList() {
 			super(null);
 		}
 
+		/**
+		 * Gets the list.
+		 *
+		 * @param user the user
+		 * @return the list
+		 */
 		@Override
 		public List<AREndpoint> getList(User user) {
 			Collection<AREndpoint> endpoints = new AREndpointStore(app.redis, user).readAll();
 			return endpoints.stream().sorted().collect(toList());
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return the AR endpoint
+		 */
 		@Override
 		public AREndpoint get(User user, String id) {
 			return new AREndpointStore(app.redis, user).read(id);
 		}
 
+		/**
+		 * Delete.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean delete(User user, String id) {
 			new AREndpointStore(app.redis, user).delete(id);
 			return true;
 		}
 
+		/**
+		 * Clear.
+		 *
+		 * @param user the user
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean clear(User user) {
 			new AREndpointStore(app.redis, user).clear();
 			return true;
 		}
 
+		/**
+		 * Exists.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean exists(User user, String id) {
 			return new AREndpointStore(app.redis, user).exists(id);
 		}
 		
+		/**
+		 * Sets the listener.
+		 *
+		 * @param user the user
+		 * @param listener the listener
+		 */
 		@Override
 		public void setListener(User user, SDSDListener<User, AREndpoint> listener) {
 			throw new NotSupportedException();
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return the AR endpoint
+		 */
 		@Override
 		public AREndpoint get(User user, ObjectId id) {
 			throw new NotSupportedException();
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return the list
+		 */
 		@Override
 		public List<AREndpoint> get(User user, Bson filter) {
 			throw new NotSupportedException();
 		}
 
+		/**
+		 * Delete.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean delete(User user, Bson filter) {
 			throw new NotSupportedException();
 		}
 
+		/**
+		 * Adds the.
+		 *
+		 * @param user the user
+		 * @param doc the doc
+		 * @return the AR endpoint
+		 */
 		@Override
 		public AREndpoint add(User user, Document doc) {
 			throw new NotSupportedException();
 		}
 
+		/**
+		 * Update.
+		 *
+		 * @param user the user
+		 * @param entry the entry
+		 * @param update the update
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean update(User user, AREndpoint entry, Bson update) {
 			throw new NotSupportedException();
 		}
 	};
 	
+	/**
+	 * The Class CapabilityList.
+	 */
 	private class CapabilityList extends ListFunction<ARCaps> {
 
+		/**
+		 * Instantiates a new capability list.
+		 */
 		public CapabilityList() {
 			super("capabilities");
 			mongo.createIndex(Indexes.ascending(ARCaps.USER), new IndexOptions().unique(true));
 		}
 
+		/**
+		 * Gets the list.
+		 *
+		 * @param user the user
+		 * @return the list
+		 */
 		@Override
 		public List<ARCaps> getList(User user) {
 			Document doc = mongo.find(ARCaps.filter(user)).first();
@@ -222,11 +440,25 @@ public class ListFunctions {
 					: Collections.singletonList(new ARCaps(doc));
 		}
 		
+		/**
+		 * Exists.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean exists(User user, String id) {
 			return mongo.countDocuments(ARCaps.filter(user)) > 0;
 		}
 		
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return the AR caps
+		 */
 		@Override
 		public ARCaps get(User user, String id) {
 			Document doc = mongo.find(ARCaps.filter(user)).first();
@@ -239,6 +471,13 @@ public class ListFunctions {
 			}
 		}
 		
+		/**
+		 * Adds the.
+		 *
+		 * @param user the user
+		 * @param doc the doc
+		 * @return the AR caps
+		 */
 		@Override
 		public ARCaps add(User user, Document doc) {
 			ARCaps arCaps = new ARCaps(doc);
@@ -246,32 +485,74 @@ public class ListFunctions {
 			return arCaps;
 		}
 		
+		/**
+		 * Update.
+		 *
+		 * @param user the user
+		 * @param entry the entry
+		 * @param update the update
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean update(User user, ARCaps entry, Bson update) {
 			if(!user.getName().equals(entry.getUser())) return false;
 			return mongo.updateOne(entry.filter(), update).wasAcknowledged();
 		}
 		
+		/**
+		 * Delete.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean delete(User user, String id) {
 			return mongo.deleteOne(ARCaps.filter(user)).wasAcknowledged();
 		}
 
+		/**
+		 * Clear.
+		 *
+		 * @param user the user
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean clear(User user) {
 			return mongo.deleteOne(ARCaps.filter(user)).wasAcknowledged();
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return the AR caps
+		 */
 		@Override
 		public ARCaps get(User user, ObjectId id) {
 			throw new NotSupportedException();
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return the list
+		 */
 		@Override
 		public List<ARCaps> get(User user, Bson filter) {
 			throw new NotSupportedException();
 		}
 
+		/**
+		 * Delete.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean delete(User user, Bson filter) {
 			throw new NotSupportedException();
@@ -279,13 +560,25 @@ public class ListFunctions {
 		
 	}
 
+	/**
+	 * The Class FileList.
+	 */
 	private class FileList extends ListFunction<File> {
 		
+		/**
+		 * Instantiates a new file list.
+		 */
 		public FileList() {
 			super("fileUploads");
 			mongo.createIndex(Indexes.ascending(File.USER, File.SOURCE, File.TYPE, File.CREATED));
 		}
 
+		/**
+		 * Gets the list.
+		 *
+		 * @param user the user
+		 * @return the list
+		 */
 		@Override
 		public List<File> getList(User user) {
 			ArrayList<File> list = new ArrayList<>();
@@ -296,6 +589,13 @@ public class ListFunctions {
 			return list;
 		}
 		
+		/**
+		 * Delete.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean delete(User user, ObjectId id) {
 			if(app.file.deleteFile(user, get(user, id))) {
@@ -305,6 +605,12 @@ public class ListFunctions {
 			return false;
 		}
 
+		/**
+		 * Clear.
+		 *
+		 * @param user the user
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean clear(User user) {
 			boolean ok = true;
@@ -315,6 +621,13 @@ public class ListFunctions {
 			return ok;
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return the file
+		 */
 		@Override
 		public File get(User user, ObjectId id) {
 			Document doc = mongo.find(File.filter(user, id)).first();
@@ -322,6 +635,13 @@ public class ListFunctions {
 			return new File(doc);
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return the list
+		 */
 		@Override
 		public List<File> get(User user, Bson filter) {
 			return StreamSupport.stream(mongo.find(Filters.and(File.filter(user), filter)).spliterator(), false)
@@ -329,6 +649,13 @@ public class ListFunctions {
 					.collect(toList());
 		}
 
+		/**
+		 * Adds the.
+		 *
+		 * @param user the user
+		 * @param doc the doc
+		 * @return the file
+		 */
 		@Override
 		public File add(User user, Document doc) {
 			File file = new File(doc);
@@ -337,6 +664,14 @@ public class ListFunctions {
 			return file;
 		}
 
+		/**
+		 * Update.
+		 *
+		 * @param user the user
+		 * @param entry the entry
+		 * @param update the update
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean update(User user, File entry, Bson update) {
 			if(mongo.updateOne(entry.filter(), update).wasAcknowledged()) {
@@ -346,19 +681,38 @@ public class ListFunctions {
 			return false;
 		}
 
+		/**
+		 * Delete.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean delete(User user, Bson filter) {
 			throw new NotSupportedException();
 		}
 	};
 
+	/**
+	 * The Class StorageTaskList.
+	 */
 	private class StorageTaskList extends ListFunction<StorageTask> {
 		
+		/**
+		 * Instantiates a new storage task list.
+		 */
 		public StorageTaskList() {
 			super("storageTasks");
 			mongo.createIndex(Indexes.ascending(StorageTask.USER));
 		}
 
+		/**
+		 * Gets the list.
+		 *
+		 * @param user the user
+		 * @return the list
+		 */
 		@Override
 		public List<StorageTask> getList(User user) {
 			return StreamSupport.stream(mongo.find(StorageTask.filter(user)).spliterator(), false)
@@ -366,16 +720,36 @@ public class ListFunctions {
 					.collect(toList());
 		}
 
+		/**
+		 * Delete.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean delete(User user, ObjectId id) {
 			return mongo.deleteOne(StorageTask.filter(user, id)).wasAcknowledged();
 		}
 
+		/**
+		 * Clear.
+		 *
+		 * @param user the user
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean clear(User user) {
 			return mongo.deleteMany(StorageTask.filter(user)).wasAcknowledged();
 		}
 
+		/**
+		 * Adds the.
+		 *
+		 * @param user the user
+		 * @param doc the doc
+		 * @return the storage task
+		 */
 		@Override
 		public StorageTask add(User user, Document doc) {
 			StorageTask storageTask = new StorageTask(doc);
@@ -384,12 +758,26 @@ public class ListFunctions {
 			return storageTask;
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return the storage task
+		 */
 		@Override
 		public StorageTask get(User user, ObjectId id) {
 			Document doc = mongo.find(StorageTask.filter(user, id)).first();
 			return doc != null ? new StorageTask(doc) : StorageTask.getDefault(id, user);
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return the list
+		 */
 		@Override
 		public List<StorageTask> get(User user, Bson filter) {
 			return StreamSupport.stream(mongo.find(Filters.and(StorageTask.filter(user), filter)).spliterator(), false)
@@ -397,41 +785,92 @@ public class ListFunctions {
 					.collect(toList());
 		}
 
+		/**
+		 * Delete.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean delete(User user, Bson filter) {
 			return mongo.deleteMany(Filters.and(StorageTask.filter(user), filter)).wasAcknowledged();
 		}
 
+		/**
+		 * Update.
+		 *
+		 * @param user the user
+		 * @param entry the entry
+		 * @param update the update
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean update(User user, StorageTask entry, Bson update) {
 			return mongo.updateOne(entry.filter(), update).wasAcknowledged();
 		}
 
+		/**
+		 * Exists.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean exists(User user, Bson filter) {
 			return mongo.find(Filters.and(StorageTask.filter(user), filter)).iterator().hasNext();
 		}
 	};
 
+	/**
+	 * The Class Log.
+	 */
 	private class Log extends ListFunction<LogEntry> {
+		
+		/** The Constant LOGS. */
 		public static final String USER = "user", LOGS = "logs";
+		
+		/** The Constant MAX_SIZE. */
 		public static final int MAX_SIZE = 100;
 
+		/**
+		 * Instantiates a new log.
+		 */
 		public Log() {
 			super("logs");
 			mongo.createIndex(Indexes.ascending(Log.USER), new IndexOptions().unique(true));
 		}
 
+		/**
+		 * Filter.
+		 *
+		 * @param user the user
+		 * @return the bson
+		 */
 		private Bson filter(User user) {
 			return Filters.eq(USER, user.getName());
 		}
 
+		/**
+		 * Creates the.
+		 *
+		 * @param user the user
+		 * @param log the log
+		 * @return the document
+		 */
 		private Document create(User user, Document log) {
 			return new Document()
 					.append(USER, user.getName())
 					.append(LOGS, Collections.singletonList(log));
 		}
 
+		/**
+		 * Gets the list.
+		 *
+		 * @param user the user
+		 * @return the list
+		 */
 		@Override
 		public List<LogEntry> getList(User user) {
 			Document doc = mongo.find(filter(user)).first();
@@ -447,11 +886,24 @@ public class ListFunctions {
 				return Collections.emptyList();
 		}
 
+		/**
+		 * Clear.
+		 *
+		 * @param user the user
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean clear(User user) {
 			return mongo.deleteOne(filter(user)).wasAcknowledged();
 		}
 
+		/**
+		 * Adds the.
+		 *
+		 * @param user the user
+		 * @param doc the doc
+		 * @return the log entry
+		 */
 		@Override
 		public LogEntry add(User user, Document doc) {
 			LogEntry entry = new LogEntry(doc);
@@ -463,35 +915,76 @@ public class ListFunctions {
 			return entry;
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return the log entry
+		 */
 		@Override
 		public LogEntry get(User user, ObjectId id) {
 			throw new NotSupportedException();
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return the list
+		 */
 		@Override
 		public List<LogEntry> get(User user, Bson filter) {
 			throw new NotSupportedException();
 		}
 
+		/**
+		 * Delete.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean delete(User user, Bson filter) {
 			throw new NotSupportedException();
 		}
 
+		/**
+		 * Update.
+		 *
+		 * @param user the user
+		 * @param entry the entry
+		 * @param update the update
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean update(User user, LogEntry entry, Bson update) {
 			throw new NotSupportedException();
 		}
 	}
 
+	/**
+	 * The Class TypeList.
+	 */
 	public final class TypeList extends ListFunction<SDSDType> {
 		
+		/**
+		 * Instantiates a new type list.
+		 */
 		private TypeList() {
 			super("types");
 			mongo.createIndex(Indexes.ascending(SDSDType.URI), new IndexOptions().unique(true));
 			mongo.createIndex(Indexes.ascending(SDSDType.MIME, SDSDType.ARTYPE));
 		}
 
+		/**
+		 * Gets the list.
+		 *
+		 * @param user the user
+		 * @return the list
+		 */
 		@Override
 		public List<SDSDType> getList(@Nullable User user) {
 			return StreamSupport.stream((user != null ? mongo.find(SDSDType.filter(user)) : mongo.find()).spliterator(), false)
@@ -500,11 +993,24 @@ public class ListFunctions {
 					.collect(Collectors.toList());
 		}
 
+		/**
+		 * Clear.
+		 *
+		 * @param user the user
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean clear(User user) {
 			throw new NotSupportedException();
 		}
 		
+		/**
+		 * Exists.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean exists(@Nullable User user, String id) {
 			Bson filter = SDSDType.filter(id.startsWith(TripleFunctions.NS_WIKI) 
@@ -513,12 +1019,26 @@ public class ListFunctions {
 			return mongo.find(filter).iterator().hasNext();
 		}
 		
+		/**
+		 * Exists.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean exists(@Nullable User user, Bson filter) {
 			if(user != null) filter = Filters.and(filter, SDSDType.filter(user));
 			return mongo.find(filter).iterator().hasNext();
 		}
 		
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return the SDSD type
+		 */
 		@Override
 		public SDSDType get(@Nullable User user, String id) {
 			Resource res = id.startsWith(TripleFunctions.NS_WIKI) ? ResourceFactory.createResource(id) : new TripleFunctions.WikiFormat(id);
@@ -532,6 +1052,13 @@ public class ListFunctions {
 			}
 		}
 		
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return the list
+		 */
 		@Override
 		public List<SDSDType> get(@Nullable User user, Bson filter) {
 			if(user != null) filter = Filters.and(filter, SDSDType.filter(user));
@@ -541,6 +1068,13 @@ public class ListFunctions {
 			.collect(Collectors.toList());
 		}
 		
+		/**
+		 * Adds the.
+		 *
+		 * @param user the user
+		 * @param doc the doc
+		 * @return the SDSD type
+		 */
 		@Override
 		public SDSDType add(User user, Document doc) {
 			SDSDType type = new SDSDType(doc);
@@ -548,21 +1082,49 @@ public class ListFunctions {
 			return type;
 		}
 		
+		/**
+		 * Delete.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean delete(User user, Bson filter) {
 			return mongo.deleteMany(Filters.and(SDSDType.filter(user), filter)).wasAcknowledged();
 		}
 		
+		/**
+		 * Update.
+		 *
+		 * @param user the user
+		 * @param entry the entry
+		 * @param update the update
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean update(User user, SDSDType entry, Bson update) {
 			return mongo.updateOne(Filters.and(SDSDType.filter(user), entry.filter()), update).wasAcknowledged();
 		}
 		
+		/**
+		 * Sets the listener.
+		 *
+		 * @param user the user
+		 * @param listener the listener
+		 */
 		@Override
 		public void setListener(User user, SDSDListener<User, SDSDType> listener) {
 			throw new NotSupportedException();
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return the SDSD type
+		 */
 		@Override
 		public SDSDType get(User user, ObjectId id) {
 			throw new NotSupportedException();
@@ -570,13 +1132,25 @@ public class ListFunctions {
 		
 	}
 	
+	/**
+	 * The Class DraftFormatList.
+	 */
 	private class DraftFormatList extends ListFunction<DraftFormat> {
 		
+		/**
+		 * Instantiates a new draft format list.
+		 */
 		public DraftFormatList() {
 			super("draftFormats");
 			mongo.createIndex(Indexes.ascending(DraftFormat.USER, DraftFormat.CONTENT_IDENTIFIER), new IndexOptions().unique(true));
 		}
 
+		/**
+		 * Gets the list.
+		 *
+		 * @param user the user
+		 * @return the list
+		 */
 		@Override
 		public List<DraftFormat> getList(User user) {
 			return StreamSupport.stream(mongo.find(DraftFormat.filter(user)).spliterator(), false)
@@ -585,17 +1159,37 @@ public class ListFunctions {
 					.collect(Collectors.toList());
 		}
 
+		/**
+		 * Clear.
+		 *
+		 * @param user the user
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean clear(User user) {
 			return mongo.deleteMany(DraftFormat.filter(user)).wasAcknowledged();
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return the draft format
+		 */
 		@Override
 		public DraftFormat get(User user, ObjectId id) {
 			Document doc = mongo.find(DraftFormat.filter(user, id)).first();
 			return doc != null ? new DraftFormat(doc) : DraftFormat.getDefault(user, id);
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return the list
+		 */
 		@Override
 		public List<DraftFormat> get(User user, Bson filter) {
 			return StreamSupport.stream(mongo.find(Filters.and(DraftFormat.filter(user), filter)).spliterator(), false)
@@ -604,11 +1198,25 @@ public class ListFunctions {
 					.collect(Collectors.toList());
 		}
 
+		/**
+		 * Delete.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean delete(User user, Bson filter) {
 			return mongo.deleteMany(Filters.and(DraftFormat.filter(user), filter)).wasAcknowledged();
 		}
 
+		/**
+		 * Adds the.
+		 *
+		 * @param user the user
+		 * @param doc the doc
+		 * @return the draft format
+		 */
 		@Override
 		public DraftFormat add(User user, Document doc) {
 			DraftFormat obj = new DraftFormat(doc);
@@ -616,19 +1224,39 @@ public class ListFunctions {
 			return obj;
 		}
 
+		/**
+		 * Update.
+		 *
+		 * @param user the user
+		 * @param entry the entry
+		 * @param update the update
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean update(User user, DraftFormat entry, Bson update) {
 			return mongo.updateOne(entry.filter(), update).wasAcknowledged();
 		}
 	}
 	
+	/**
+	 * The Class DraftItemList.
+	 */
 	private class DraftItemList extends ListFunction<DraftItem> {
 		
+		/**
+		 * Instantiates a new draft item list.
+		 */
 		public DraftItemList() {
 			super("draftItems");
 			mongo.createIndex(Indexes.ascending(DraftItem.USER, DraftItem.FORMAT, DraftItem.CONTENT_IDENTIFIER), new IndexOptions().unique(true));
 		}
 
+		/**
+		 * Gets the list.
+		 *
+		 * @param user the user
+		 * @return the list
+		 */
 		@Override
 		public List<DraftItem> getList(User user) {
 			return StreamSupport.stream(mongo.find(DraftItem.filter(user)).spliterator(), false)
@@ -637,17 +1265,37 @@ public class ListFunctions {
 					.collect(Collectors.toList());
 		}
 
+		/**
+		 * Clear.
+		 *
+		 * @param user the user
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean clear(User user) {
 			return mongo.deleteMany(DraftItem.filter(user)).wasAcknowledged();
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param id the id
+		 * @return the draft item
+		 */
 		@Override
 		public DraftItem get(User user, ObjectId id) {
 			Document doc = mongo.find(DraftItem.filter(user, id)).first();
 			return doc != null ? new DraftItem(doc) : DraftItem.getDefault(user, id);
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return the list
+		 */
 		@Override
 		public List<DraftItem> get(User user, Bson filter) {
 			return StreamSupport.stream(mongo.find(Filters.and(DraftItem.filter(user), filter)).spliterator(), false)
@@ -656,11 +1304,25 @@ public class ListFunctions {
 					.collect(Collectors.toList());
 		}
 
+		/**
+		 * Delete.
+		 *
+		 * @param user the user
+		 * @param filter the filter
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean delete(User user, Bson filter) {
 			return mongo.deleteMany(Filters.and(DraftFormat.filter(user), filter)).wasAcknowledged();
 		}
 
+		/**
+		 * Adds the.
+		 *
+		 * @param user the user
+		 * @param doc the doc
+		 * @return the draft item
+		 */
 		@Override
 		public DraftItem add(User user, Document doc) {
 			DraftItem obj = new DraftItem(doc);
@@ -668,6 +1330,14 @@ public class ListFunctions {
 			return obj;
 		}
 
+		/**
+		 * Update.
+		 *
+		 * @param user the user
+		 * @param entry the entry
+		 * @param update the update
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean update(User user, DraftItem entry, Bson update) {
 			return mongo.updateOne(entry.filter(), update).wasAcknowledged();

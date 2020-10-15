@@ -33,57 +33,86 @@ import de.sdsd.projekt.api.ServiceAPI.JsonRpcException;
 /**
  * The Class WebsocketClient.
  *
- * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+ * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian
+ *         Klose</a>
  */
 @ClientEndpoint
 public class WebsocketClient extends Client {
+
+	/** The Constant SDSD_WS_LOCAL. */
 	private static final URI SDSD_WS = URI.create("wss://app.sdsd-projekt.de/websocket/sdsd"),
 			SDSD_WS_LOCAL = URI.create("ws://localhost:8081/websocket/sdsd");
-	
+
+	/** The clientsession. */
 	private Session clientsession = null;
+
+	/** The reopen. */
 	private URI reopen;
+
+	/** The requests. */
 	private final Map<String, CompletableFuture<JSONObject>> requests = new ConcurrentHashMap<>(3);
+
+	/** The event listener. */
 	private final Map<SDSDListenerKey, SDSDListener> eventListener = new ConcurrentHashMap<>();
-	
+
 	/**
 	 * Instantiates a new websocket client.
 	 *
 	 * @param local if the SDSD website is accessible on localhost
 	 * @throws DeploymentException the deployment exception
-	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws IOException         Signals that an I/O exception has occurred.
 	 */
 	public WebsocketClient(boolean local) throws DeploymentException, IOException {
 		reopen = local ? SDSD_WS_LOCAL : SDSD_WS;
 		open();
 	}
-	
+
+	/**
+	 * Open.
+	 *
+	 * @throws DeploymentException the deployment exception
+	 * @throws IOException         Signals that an I/O exception has occurred.
+	 */
 	private void open() throws DeploymentException, IOException {
-		if(reopen != null)
+		if (reopen != null)
 			ContainerProvider.getWebSocketContainer().connectToServer(this, reopen);
 	}
-	
+
+	/**
+	 * On open.
+	 *
+	 * @param session the session
+	 * @param config  the config
+	 */
 	@OnOpen
 	public void onOpen(Session session, EndpointConfig config) {
 		System.out.println("onOpen: " + session.getId());
-		if(clientsession != null && !clientsession.getId().equals(session.getId())) {
+		if (clientsession != null && !clientsession.getId().equals(session.getId())) {
 			try {
 				clientsession.close();
 			} catch (IOException e) {
-				
+
 			}
 		}
 		clientsession = session;
 	}
-	
+
+	/**
+	 * On close.
+	 *
+	 * @param session the session
+	 * @param reason  the reason
+	 */
 	@OnClose
 	public void onClose(Session session, CloseReason reason) {
-		System.out.format("onClose: %s with reason: %s(%d)\n", session.getId(), reason.getReasonPhrase(), reason.getCloseCode().getCode());
-		if(clientsession != null && clientsession.getId().equals(session.getId())) {
+		System.out.format("onClose: %s with reason: %s(%d)\n", session.getId(), reason.getReasonPhrase(),
+				reason.getCloseCode().getCode());
+		if (clientsession != null && clientsession.getId().equals(session.getId())) {
 			clientsession = null;
-			while(reopen != null) {
+			while (reopen != null) {
 				try {
 					open();
-					for(SDSDListener l : eventListener.values()) {
+					for (SDSDListener l : eventListener.values()) {
 						sendEventListener(l);
 					}
 					break;
@@ -98,40 +127,58 @@ public class WebsocketClient extends Client {
 			}
 		}
 	}
-	
+
+	/**
+	 * On error.
+	 *
+	 * @param session the session
+	 * @param error   the error
+	 */
 	@OnError
 	public void onError(Session session, Throwable error) {
 		error.printStackTrace();
 	}
-	
+
+	/**
+	 * On message.
+	 *
+	 * @param message the message
+	 * @param session the session
+	 */
 	@OnMessage
 	public void onMessage(String message, Session session) {
 		try {
 			JSONObject msg = new JSONObject(message);
-			if(msg.has("endpoint")) {
+			if (msg.has("endpoint")) {
 				SDSDListener listener = eventListener.get(new SDSDListenerKey(msg));
 				System.out.println("Call " + new SDSDListenerKey(msg) + ": " + (listener != null));
-				if(listener != null)
+				if (listener != null)
 					callListenerAsync(listener, msg.optJSONArray("params"));
-			}
-			else {
+			} else {
 				CompletableFuture<JSONObject> future = requests.get(msg.optString("id"));
-				if(future != null)
+				if (future != null)
 					future.complete(msg);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
+	/**
+	 * Call listener async.
+	 *
+	 * @param listener the listener
+	 * @param params   the params
+	 */
 	private void callListenerAsync(Consumer<JSONArray> listener, JSONArray params) {
 		new Thread() {
+			@Override
 			public void run() {
 				listener.accept(params);
 			}
 		}.start();
 	}
-	
+
 	/**
 	 * Send message.
 	 *
@@ -141,52 +188,61 @@ public class WebsocketClient extends Client {
 	public void sendMessage(String message) throws IOException {
 		clientsession.getBasicRemote().sendText(message);
 	}
-	
+
+	/**
+	 * Execute.
+	 *
+	 * @param endpoint   the endpoint
+	 * @param method     the method
+	 * @param token      the token
+	 * @param parameters the parameters
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	@Override
-	public JSONObject execute(String endpoint, String method, String token, Object... parameters) throws JsonRpcException {
+	public JSONObject execute(String endpoint, String method, String token, Object... parameters)
+			throws JsonRpcException {
 		String id = UUID.randomUUID().toString();
 		try {
-			JSONObject request = request(id, endpoint, method, parameters)
-					.put("token", token);
-			
+			JSONObject request = request(id, endpoint, method, parameters).put("token", token);
+
 			CompletableFuture<JSONObject> future = new CompletableFuture<>();
 			requests.put(id, future);
 			clientsession.getBasicRemote().sendText(request.toString());
 			JSONObject resp = future.get(10, TimeUnit.SECONDS);
-			
-			if(resp.has("error"))
+
+			if (resp.has("error"))
 				throw new JsonRpcException(resp.getJSONObject("error"));
 
-			if(resp.has("result"))
+			if (resp.has("result"))
 				return resp.getJSONObject("result");
-			
-			throw new JsonRpcException(new JSONObject()
-					.put("code", -32000)
-					.put("message", "Invalid Result"));
+
+			throw new JsonRpcException(new JSONObject().put("code", -32000).put("message", "Invalid Result"));
 		} catch (Throwable e) {
-			if(e instanceof JsonRpcException)
-				throw (JsonRpcException)e;
+			if (e instanceof JsonRpcException)
+				throw (JsonRpcException) e;
 			requests.remove(id);
-			throw new JsonRpcException(new JSONObject()
-					.put("code", -32603)
-					.put("message", e.getMessage()));
+			throw new JsonRpcException(new JSONObject().put("code", -32603).put("message", e.getMessage()));
 		}
 	}
-	
+
 	/**
 	 * Class for unique identifiable listener.
 	 *
-	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian
+	 *         Klose</a>
 	 */
 	private static class SDSDListenerKey {
+
+		/** The identifier. */
 		final String endpoint, name, token, identifier;
-		
+
 		/**
 		 * Instantiates a new SDSD listener key.
 		 *
-		 * @param endpoint the endpoint
-		 * @param name the name
-		 * @param token the token
+		 * @param endpoint   the endpoint
+		 * @param name       the name
+		 * @param token      the token
 		 * @param identifier the identifier
 		 */
 		public SDSDListenerKey(String endpoint, String name, @Nullable String token, @Nullable String identifier) {
@@ -195,7 +251,7 @@ public class WebsocketClient extends Client {
 			this.token = token != null ? token : "";
 			this.identifier = identifier != null ? identifier : "";
 		}
-		
+
 		/**
 		 * Instantiates a new SDSD listener key.
 		 *
@@ -207,17 +263,33 @@ public class WebsocketClient extends Client {
 			this.token = msg.optString("token");
 			this.identifier = msg.optString("identifier");
 		}
-		
+
+		/**
+		 * To string.
+		 *
+		 * @return the string
+		 */
 		@Override
 		public String toString() {
 			return String.format("SDSDListener(%s, %s, %s, %s)", endpoint, name, token, identifier);
 		}
 
+		/**
+		 * Hash code.
+		 *
+		 * @return the int
+		 */
 		@Override
 		public int hashCode() {
 			return Objects.hash(endpoint, identifier, name, token);
 		}
 
+		/**
+		 * Equals.
+		 *
+		 * @param obj the obj
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -229,31 +301,39 @@ public class WebsocketClient extends Client {
 					&& Objects.equals(name, other.name) && Objects.equals(token, other.token);
 		}
 	}
-	
+
 	/**
 	 * Base class for SDSD listener.
 	 *
-	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian
+	 *         Klose</a>
 	 */
 	public static abstract class SDSDListener extends SDSDListenerKey implements Consumer<JSONArray> {
-		
+
 		/**
 		 * Instantiates a new SDSD listener.
 		 *
-		 * @param endpoint the endpoint
-		 * @param name the name
-		 * @param token the token
+		 * @param endpoint   the endpoint
+		 * @param name       the name
+		 * @param token      the token
 		 * @param identifier the identifier
 		 */
 		public SDSDListener(String endpoint, String name, @Nullable String token, String identifier) {
 			super(endpoint, name, token, identifier);
 		}
 	}
-	
+
+	/**
+	 * Send event listener.
+	 *
+	 * @param listener the listener
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	private void sendEventListener(SDSDListener listener) throws JsonRpcException {
-		execute(listener.endpoint, "set" + StringUtils.capitalize(listener.name) + "Listener", listener.token, listener.identifier);
+		execute(listener.endpoint, "set" + StringUtils.capitalize(listener.name) + "Listener", listener.token,
+				listener.identifier);
 	}
-	
+
 	/**
 	 * Sets the event listener.
 	 *
@@ -265,44 +345,51 @@ public class WebsocketClient extends Client {
 		sendEventListener(listener);
 		eventListener.put(listener, listener);
 	}
-	
+
 	/**
 	 * Unset event listener.
 	 *
-	 * @param endpoint the endpoint
-	 * @param name the name
-	 * @param token the token
+	 * @param endpoint   the endpoint
+	 * @param name       the name
+	 * @param token      the token
 	 * @param identifier the identifier
 	 * @throws JsonRpcException the json rpc exception
 	 */
-	public void unsetEventListener(String endpoint, String name, @Nullable String token, @Nullable String identifier) throws JsonRpcException {
+	public void unsetEventListener(String endpoint, String name, @Nullable String token, @Nullable String identifier)
+			throws JsonRpcException {
 		System.out.println("UnSet " + new SDSDListenerKey(endpoint, name, token, identifier));
 		eventListener.remove(new SDSDListenerKey(endpoint, name, token, identifier));
 		execute(endpoint, "unset" + StringUtils.capitalize(name) + "Listener", token, identifier);
 	}
-	
+
 	/**
 	 * Clear event listeners.
 	 *
 	 * @param token the token
 	 */
 	public void clearEventListeners(@Nullable String token) {
-		if(token == null) eventListener.clear();
+		if (token == null)
+			eventListener.clear();
 		else {
 			Iterator<SDSDListenerKey> it = eventListener.keySet().iterator();
-			while(it.hasNext()) {
-				if(token.equals(it.next().token))
+			while (it.hasNext()) {
+				if (token.equals(it.next().token))
 					it.remove();
 			}
 		}
 	}
 
+	/**
+	 * Close.
+	 *
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	@Override
 	public void close() throws IOException {
 		reopen = null;
 		eventListener.clear();
-		if(clientsession != null) 
+		if (clientsession != null)
 			clientsession.close();
 	}
-	
+
 }

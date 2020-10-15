@@ -20,11 +20,13 @@ import org.json.JSONObject;
 
 import agrirouter.request.payload.endpoint.Capabilities.CapabilitySpecification.PushNotification;
 import de.sdsd.projekt.agrirouter.request.ARCapability;
+import de.sdsd.projekt.agrirouter.request.feed.ARPushNotificationReceiver;
 
 /**
- * Contains all necessary configuration for the agrirouter library to work. 
+ * Contains all necessary configuration for the agrirouter library to work.
  * 
- * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+ * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian
+ *         Klose</a>
  */
 public class ARConfig {
 	/**
@@ -40,14 +42,16 @@ public class ARConfig {
 	 */
 	public static final boolean NATIVE_PROTOBUF_REST = true;
 	/**
-	 * Set to true to use the native protobuf interface of the MQTT interface (currently not supported by the agrirouter).
+	 * Set to true to use the native protobuf interface of the MQTT interface
+	 * (currently not supported by the agrirouter).
 	 */
 	public static final boolean NATIVE_PROTOBUF_MQTT = false;
 	/**
-	 * Set to true to use Base64 encoding for sending and receiving non telemetry messages.
+	 * Set to true to use Base64 encoding for sending and receiving non telemetry
+	 * messages.
 	 */
 	public static final boolean USE_BASE64 = true;
-	
+
 	/**
 	 * Redirection URL for secure onboarding.
 	 */
@@ -88,38 +92,35 @@ public class ARConfig {
 	 * Public RSA key of the agrirouter. Use for verifying signed messages.
 	 */
 	private final PublicKey arPublicKey;
-	
+
 	/**
 	 * Private constructor for builder pattern.
 	 * 
 	 * @param builder config builder
-	 * @throws URISyntaxException if the given URLs aren't valid URIs.
-	 * @throws JSONException if the given request template is no valid json object.
+	 * @throws URISyntaxException       if the given URLs aren't valid URIs.
+	 * @throws JSONException            if the given request template is no valid
+	 *                                  json object.
 	 * @throws NoSuchAlgorithmException if this java runtime doesn't know RSA.
-	 * @throws IllegalArgumentException if one of the given keys is not valid Base64.
-	 * @throws InvalidKeySpecException if one of the given keys is not valid.
+	 * @throws IllegalArgumentException if one of the given keys is not valid
+	 *                                  Base64.
+	 * @throws InvalidKeySpecException  if one of the given keys is not valid.
 	 */
-	private ARConfig(ARConfigBuilder builder) throws URISyntaxException, JSONException, 
-			NoSuchAlgorithmException, IllegalArgumentException, InvalidKeySpecException {
-		
+	private ARConfig(ARConfigBuilder builder) throws URISyntaxException, JSONException, NoSuchAlgorithmException,
+			IllegalArgumentException, InvalidKeySpecException {
+
 		this.redirectUrl = new URIBuilder(builder.agrirouterHost)
-				.setPath("/application/" + builder.applicationId + "/authorize")
-				.build();
+				.setPath("/application/" + builder.applicationId + "/authorize").build();
 		this.onboardingUrl = new URI(builder.onboardingUrl);
-		
+
 		this.applicationId = builder.applicationId;
 		this.versionId = builder.versionId;
 		this.gateway = builder.gateway;
 		this.pushNotifications = builder.pushNotifications;
-		
-		this.requestTemplate = new JSONObject()
-				.put("id", builder.endpointIdPrefix)
-				.put("applicationId", builder.applicationId)
-				.put("certificationVersionId", builder.versionId)
-				.put("gatewayId", builder.gateway.value)
-				.put("certificateType", "P12")
-				.toString();
-		
+
+		this.requestTemplate = new JSONObject().put("id", builder.endpointIdPrefix)
+				.put("applicationId", builder.applicationId).put("certificationVersionId", builder.versionId)
+				.put("gatewayId", builder.gateway.value).put("certificateType", "P12").toString();
+
 		this.capabilities = Collections.unmodifiableSet(builder.capabilities);
 
 		KeyFactory kf = KeyFactory.getInstance("RSA");
@@ -128,49 +129,49 @@ public class ARConfig {
 		key = Base64.getDecoder().decode(builder.arPublicKey);
 		this.arPublicKey = kf.generatePublic(new X509EncodedKeySpec(key));
 	}
-	
+
 	/**
 	 * @return Redirection URL for secure onboarding
 	 */
 	public URI getRedirectUrl() {
 		return redirectUrl;
 	}
-	
+
 	/**
 	 * @return URL to the agrirouter onboarding service for CUs
 	 */
 	public URI getCUOnboardUrl() {
 		return onboardingUrl;
 	}
-	
+
 	/**
 	 * @return URL to the agrirouter revoke onboarding service
 	 */
 	public URI getRevokeUrl() {
 		return URI.create(onboardingUrl + "/revoke");
 	}
-	
+
 	/**
 	 * @return URL to the agrirouter verify onboarding service
 	 */
 	public URI getVerifyUrl() {
 		return URI.create(onboardingUrl + "/verify");
 	}
-	
+
 	/**
 	 * @return URL to the agrirouter onboard service
 	 */
 	public URI getOnboardUrl() {
 		return URI.create(onboardingUrl + "/request");
 	}
-	
+
 	/**
 	 * @return Agrirouter identification of the application
 	 */
 	public String getApplicationId() {
 		return applicationId;
 	}
-	
+
 	/**
 	 * @return Agrirouter identification of the certified version
 	 */
@@ -193,7 +194,8 @@ public class ARConfig {
 	}
 
 	/**
-	 * @return Template for the JSON onboarding request payload (safe to be manipulated)
+	 * @return Template for the JSON onboarding request payload (safe to be
+	 *         manipulated)
 	 */
 	public JSONObject getRequest() {
 		return new JSONObject(requestTemplate);
@@ -219,7 +221,7 @@ public class ARConfig {
 	public PublicKey getArPublicKey() {
 		return arPublicKey;
 	}
-	
+
 	/**
 	 * @return New builder for an agrirouter configuration
 	 */
@@ -230,7 +232,8 @@ public class ARConfig {
 	/**
 	 * Builder for an agrirouter configuration.
 	 * 
-	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian
+	 *         Klose</a>
 	 */
 	public static class ARConfigBuilder {
 		private String agrirouterHost;
@@ -259,14 +262,14 @@ public class ARConfig {
 			this.agrirouterHost = agrirouterHost;
 			return this;
 		}
-		
+
 		/**
 		 * @return URL to the agrirouter onboarding service
 		 */
 		public String getOnboardingUrl() {
 			return onboardingUrl;
 		}
-	
+
 		/**
 		 * @param onboardingUrl URL to the agrirouter onboarding service
 		 * @return this object for method chaining
@@ -275,14 +278,14 @@ public class ARConfig {
 			this.onboardingUrl = onboardingUrl;
 			return this;
 		}
-	
+
 		/**
 		 * @return the prefix for IDs of new onboarded endpoints
 		 */
 		public String getEndpointIdPrefix() {
 			return endpointIdPrefix;
 		}
-	
+
 		/**
 		 * @param endpointIdPrefix the prefix for IDs of new onboarded endpoints
 		 * @return this object for method chaining
@@ -291,14 +294,14 @@ public class ARConfig {
 			this.endpointIdPrefix = endpointIdPrefix;
 			return this;
 		}
-	
+
 		/**
 		 * @return Agrirouter identification of the application
 		 */
 		public String getApplicationId() {
 			return applicationId;
 		}
-	
+
 		/**
 		 * @param applicationId Agrirouter identification of the application
 		 * @return this object for method chaining
@@ -307,7 +310,7 @@ public class ARConfig {
 			this.applicationId = applicationId;
 			return this;
 		}
-	
+
 		/**
 		 * @return Agrirouter identification of the application version
 		 */
@@ -323,8 +326,7 @@ public class ARConfig {
 			this.versionId = versionId;
 			return this;
 		}
-		
-		
+
 		/**
 		 * @return Agrirouter connection gateway type
 		 */
@@ -368,12 +370,14 @@ public class ARConfig {
 			this.capabilities.add(cap);
 			return this;
 		}
-		
+
 		/**
 		 * Add a capability to the list.
 		 * 
-		 * @param technicalMessageType agrirouter message type, see {@link ARMessageType#technicalMessageType()}
-		 * @param direction numeric agrirouter directioni, see {@link ARMessageType.ARDirection#number()}
+		 * @param technicalMessageType agrirouter message type, see
+		 *                             {@link ARMessageType#technicalMessageType()}
+		 * @param direction            numeric agrirouter directioni, see
+		 *                             {@link ARMessageType.ARDirection#number()}
 		 * @return this object for method chaining
 		 */
 		public ARConfigBuilder addCapability(String technicalMessageType, int direction) {
@@ -387,7 +391,7 @@ public class ARConfig {
 		public String getAppPrivateKey() {
 			return appPrivateKey;
 		}
-	
+
 		/**
 		 * @param appPrivateKey Base64 private RSA key of the application
 		 * @return this object for method chaining
@@ -396,14 +400,14 @@ public class ARConfig {
 			this.appPrivateKey = appPrivateKey;
 			return this;
 		}
-	
+
 		/**
 		 * @return Base64 public RSA key of the agrirouter
 		 */
 		public String getArPublicKey() {
 			return arPublicKey;
 		}
-	
+
 		/**
 		 * @param arPublicKey Base64 public RSA key of the agrirouter
 		 * @return this object for method chaining
@@ -412,31 +416,36 @@ public class ARConfig {
 			this.arPublicKey = arPublicKey;
 			return this;
 		}
-		
+
 		/**
 		 * Build the agrirouter configuration.
 		 * 
 		 * @return immutable agrirouter configuration
-		 * @throws URISyntaxException if the given URLs aren't valid URIs.
-		 * @throws JSONException if the given request template is no valid json object.
+		 * @throws URISyntaxException       if the given URLs aren't valid URIs.
+		 * @throws JSONException            if the given request template is no valid
+		 *                                  json object.
 		 * @throws NoSuchAlgorithmException if this java runtime doesn't know RSA.
-		 * @throws IllegalArgumentException if one of the given keys is not valid Base64.
-		 * @throws InvalidKeySpecException if one of the given keys is not valid.
+		 * @throws IllegalArgumentException if one of the given keys is not valid
+		 *                                  Base64.
+		 * @throws InvalidKeySpecException  if one of the given keys is not valid.
 		 */
-		public ARConfig build() 
-				throws URISyntaxException, JSONException, NoSuchAlgorithmException, IllegalArgumentException, InvalidKeySpecException {
+		public ARConfig build() throws URISyntaxException, JSONException, NoSuchAlgorithmException,
+				IllegalArgumentException, InvalidKeySpecException {
 			return new ARConfig(this);
 		}
 	}
-	
+
 	/**
 	 * Type of agrirouter connection gateway.
-	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+	 * 
+	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian
+	 *         Klose</a>
 	 */
 	public static enum ARGateway {
 		REST("3"), MQTT("2");
-		
+
 		public final String value;
+
 		private ARGateway(String value) {
 			this.value = value;
 		}

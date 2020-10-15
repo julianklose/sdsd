@@ -58,105 +58,131 @@ import org.apache.http.util.EntityUtils;
 
 /**
  * Embedded HTTP/1.1 file server based on a classic (blocking) I/O model.
+ * 
+ * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian
+ *         Klose</a>
+ * 
  */
 public abstract class HttpFileServer {
 
-    public static HttpServer create(String docRoot, int port) {
-        SocketConfig socketConfig = SocketConfig.custom()
-                .setSoTimeout(15000)
-                .setTcpNoDelay(true)
-                .build();
+	/**
+	 * Creates the.
+	 *
+	 * @param docRoot the doc root
+	 * @param port    the port
+	 * @return the http server
+	 */
+	public static HttpServer create(String docRoot, int port) {
+		SocketConfig socketConfig = SocketConfig.custom().setSoTimeout(15000).setTcpNoDelay(true).build();
 
-        final HttpServer server = ServerBootstrap.bootstrap()
-                .setListenerPort(port)
-                .setServerInfo("Test/1.1")
-                .setSocketConfig(socketConfig)
-                .setSslContext(null)
-                .setExceptionLogger(new StdErrorExceptionLogger())
-                .registerHandler("*", new HttpFileHandler(docRoot))
-                .create();
+		final HttpServer server = ServerBootstrap.bootstrap().setListenerPort(port).setServerInfo("Test/1.1")
+				.setSocketConfig(socketConfig).setSslContext(null).setExceptionLogger(new StdErrorExceptionLogger())
+				.registerHandler("*", new HttpFileHandler(docRoot)).create();
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                server.shutdown(5, TimeUnit.SECONDS);
-            }
-        });
-        
-        return server;
-    }
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				server.shutdown(5, TimeUnit.SECONDS);
+			}
+		});
 
-    static class StdErrorExceptionLogger implements ExceptionLogger {
+		return server;
+	}
 
-        @Override
-        public void log(final Exception ex) {
-            if (ex instanceof SocketTimeoutException) {
-                System.err.println("Connection timed out");
-            } else if (ex instanceof ConnectionClosedException) {
-                System.err.println(ex.getMessage());
-            } else {
-                ex.printStackTrace();
-            }
-        }
+	/**
+	 * The Class StdErrorExceptionLogger.
+	 */
+	static class StdErrorExceptionLogger implements ExceptionLogger {
 
-    }
+		/**
+		 * Log.
+		 *
+		 * @param ex the ex
+		 */
+		@Override
+		public void log(final Exception ex) {
+			if (ex instanceof SocketTimeoutException) {
+				System.err.println("Connection timed out");
+			} else if (ex instanceof ConnectionClosedException) {
+				System.err.println(ex.getMessage());
+			} else {
+				ex.printStackTrace();
+			}
+		}
 
-    static class HttpFileHandler implements HttpRequestHandler  {
+	}
 
-        private final String docRoot;
+	/**
+	 * The Class HttpFileHandler.
+	 */
+	static class HttpFileHandler implements HttpRequestHandler {
 
-        public HttpFileHandler(final String docRoot) {
-            super();
-            this.docRoot = docRoot;
-        }
+		/** The doc root. */
+		private final String docRoot;
 
-        public void handle(
-                final HttpRequest request,
-                final HttpResponse response,
-                final HttpContext context) throws HttpException, IOException {
+		/**
+		 * Instantiates a new http file handler.
+		 *
+		 * @param docRoot the doc root
+		 */
+		public HttpFileHandler(final String docRoot) {
+			super();
+			this.docRoot = docRoot;
+		}
 
-            String method = request.getRequestLine().getMethod().toUpperCase(Locale.ROOT);
-            if (!method.equals("GET") && !method.equals("HEAD") && !method.equals("POST")) {
-                throw new MethodNotSupportedException(method + " method not supported");
-            }
-            String target = request.getRequestLine().getUri();
+		/**
+		 * Handle.
+		 *
+		 * @param request  the request
+		 * @param response the response
+		 * @param context  the context
+		 * @throws HttpException the http exception
+		 * @throws IOException   Signals that an I/O exception has occurred.
+		 */
+		@Override
+		public void handle(final HttpRequest request, final HttpResponse response, final HttpContext context)
+				throws HttpException, IOException {
 
-            if (request instanceof HttpEntityEnclosingRequest) {
-                HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
-                byte[] entityContent = EntityUtils.toByteArray(entity);
-                System.out.println("Incoming entity content (bytes): " + entityContent.length);
-            }
+			String method = request.getRequestLine().getMethod().toUpperCase(Locale.ROOT);
+			if (!method.equals("GET") && !method.equals("HEAD") && !method.equals("POST")) {
+				throw new MethodNotSupportedException(method + " method not supported");
+			}
+			String target = request.getRequestLine().getUri();
 
-            final File file = new File(this.docRoot, URLDecoder.decode(target, "UTF-8"));
-            if (!file.exists()) {
+			if (request instanceof HttpEntityEnclosingRequest) {
+				HttpEntity entity = ((HttpEntityEnclosingRequest) request).getEntity();
+				byte[] entityContent = EntityUtils.toByteArray(entity);
+				System.out.println("Incoming entity content (bytes): " + entityContent.length);
+			}
 
-                response.setStatusCode(HttpStatus.SC_NOT_FOUND);
-                StringEntity entity = new StringEntity(
-                        "<html><body><h1>File" + file.getPath() +
-                        " not found</h1></body></html>",
-                        ContentType.create("text/html", "UTF-8"));
-                response.setEntity(entity);
-                System.out.println("File " + file.getPath() + " not found");
+			final File file = new File(this.docRoot, URLDecoder.decode(target, "UTF-8"));
+			if (!file.exists()) {
 
-            } else if (!file.canRead() || file.isDirectory()) {
+				response.setStatusCode(HttpStatus.SC_NOT_FOUND);
+				StringEntity entity = new StringEntity(
+						"<html><body><h1>File" + file.getPath() + " not found</h1></body></html>",
+						ContentType.create("text/html", "UTF-8"));
+				response.setEntity(entity);
+				System.out.println("File " + file.getPath() + " not found");
 
-                response.setStatusCode(HttpStatus.SC_FORBIDDEN);
-                StringEntity entity = new StringEntity(
-                        "<html><body><h1>Access denied</h1></body></html>",
-                        ContentType.create("text/html", "UTF-8"));
-                response.setEntity(entity);
-                System.out.println("Cannot read file " + file.getPath());
+			} else if (!file.canRead() || file.isDirectory()) {
 
-            } else {
-                HttpCoreContext coreContext = HttpCoreContext.adapt(context);
-                HttpConnection conn = coreContext.getConnection(HttpConnection.class);
-                response.setStatusCode(HttpStatus.SC_OK);
-                FileEntity body = new FileEntity(file, ContentType.create("text/html", (Charset) null));
-                response.setEntity(body);
-                System.out.println(conn + ": serving file " + file.getPath());
-            }
-        }
+				response.setStatusCode(HttpStatus.SC_FORBIDDEN);
+				StringEntity entity = new StringEntity("<html><body><h1>Access denied</h1></body></html>",
+						ContentType.create("text/html", "UTF-8"));
+				response.setEntity(entity);
+				System.out.println("Cannot read file " + file.getPath());
 
-    }
+			} else {
+				HttpCoreContext coreContext = HttpCoreContext.adapt(context);
+				HttpConnection conn = coreContext.getConnection(HttpConnection.class);
+				response.setStatusCode(HttpStatus.SC_OK);
+				FileEntity body = new FileEntity(file, ContentType.create("text/html", (Charset) null));
+				response.setEntity(body);
+				System.out.println(conn + ": serving file " + file.getPath());
+			}
+		}
+
+	}
 
 }

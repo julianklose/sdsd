@@ -13,8 +13,13 @@ import de.sdsd.projekt.agrirouter.ARMessageType.ARDirection;
  */
 public class ARCapability implements Serializable, Comparable<ARCapability> {
 	
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 2534369026520830841L;
+	
+	/** The type. */
 	private final ARMessageType type;
+	
+	/** The direction. */
 	private final ARDirection direction;
 	
 	/**
@@ -58,6 +63,8 @@ public class ARCapability implements Serializable, Comparable<ARCapability> {
 	}
 	
 	/**
+	 * Checks if is receive.
+	 *
 	 * @return whether this capabilities direction is receive or send/receive
 	 */
 	public boolean isReceive() {
@@ -65,6 +72,8 @@ public class ARCapability implements Serializable, Comparable<ARCapability> {
 	}
 	
 	/**
+	 * Checks if is send.
+	 *
 	 * @return whether this capabilities direction is send or send/receive
 	 */
 	public boolean isSend() {
@@ -82,6 +91,11 @@ public class ARCapability implements Serializable, Comparable<ARCapability> {
 				.build();
 	}
 	
+	/**
+	 * Hash code.
+	 *
+	 * @return the int
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -91,6 +105,12 @@ public class ARCapability implements Serializable, Comparable<ARCapability> {
 		return result;
 	}
 
+	/**
+	 * Equals.
+	 *
+	 * @param obj the obj
+	 * @return true, if successful
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -107,6 +127,11 @@ public class ARCapability implements Serializable, Comparable<ARCapability> {
 		return true;
 	}
 
+	/**
+	 * To string.
+	 *
+	 * @return the string
+	 */
 	@Override
 	public String toString() {
 		return new StringBuilder("Type: ")
@@ -116,6 +141,12 @@ public class ARCapability implements Serializable, Comparable<ARCapability> {
 				.toString();
 	}
 
+	/**
+	 * Compare to.
+	 *
+	 * @param o the o
+	 * @return the int
+	 */
 	@Override
 	public int compareTo(ARCapability o) {
 		return type.compareTo(o.type);

@@ -53,16 +53,38 @@ import de.sdsd.projekt.prototype.data.WikiInstance;
  */
 public class WikinormiaFunctions {
 	
+	/** The app. */
 	private final ApplicationLogic app;
 
+	/**
+	 * Instantiates a new wikinormia functions.
+	 *
+	 * @param app the app
+	 */
 	public WikinormiaFunctions(ApplicationLogic app) {
 		this.app = app;
 	}
 
+	/**
+	 * Gets the.
+	 *
+	 * @param res the res
+	 * @param inheritance the inheritance
+	 * @return the wiki entry
+	 * @throws NoSuchElementException the no such element exception
+	 */
 	public WikiEntry get(WikiRes res, boolean inheritance) throws NoSuchElementException {
 		return res instanceof WikiInst ? getInstance((WikiInst) res, inheritance) : getClass(res, inheritance);
 	}
 	
+	/**
+	 * Gets the class.
+	 *
+	 * @param res the res
+	 * @param inheritance the inheritance
+	 * @return the class
+	 * @throws NoSuchElementException the no such element exception
+	 */
 	public WikiClass getClass(WikiRes res, boolean inheritance) throws NoSuchElementException {
 		Var P=Var.alloc("p"), O=Var.alloc("o"),
 				PARENT=Var.alloc("parent"), PIDENT=Var.alloc("pIdent"), PLABEL=Var.alloc("pLabel"),
@@ -126,6 +148,14 @@ public class WikinormiaFunctions {
 		}
 	}
 	
+	/**
+	 * Gets the single instance of WikinormiaFunctions.
+	 *
+	 * @param res the res
+	 * @param inheritance the inheritance
+	 * @return single instance of WikinormiaFunctions
+	 * @throws NoSuchElementException the no such element exception
+	 */
 	public WikiInstance getInstance(WikiInst res, boolean inheritance) throws NoSuchElementException {
 		Var TYPE=Var.alloc("type"), P=Var.alloc("p"), O=Var.alloc("o"),
 				PARENT=Var.alloc("parent"), PIDENT=Var.alloc("pIdent"), PLABEL=Var.alloc("pLabel"),
@@ -182,9 +212,20 @@ public class WikinormiaFunctions {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class WikiInstanceCount {
+		
+		/** The type identifier. */
 		public final String typeLabel, typeIdentifier;
+		
+		/** The instances. */
 		public final int instances;
 		
+		/**
+		 * Instantiates a new wiki instance count.
+		 *
+		 * @param typeLabel the type label
+		 * @param typeIdentifier the type identifier
+		 * @param instances the instances
+		 */
 		public WikiInstanceCount(String typeLabel, String typeIdentifier, int instances) {
 			this.typeLabel = typeLabel;
 			this.typeIdentifier = typeIdentifier;
@@ -192,6 +233,14 @@ public class WikinormiaFunctions {
 		}
 	}
 	
+	/**
+	 * Count instances.
+	 *
+	 * @param res the res
+	 * @param includeSubtypes the include subtypes
+	 * @return the wiki instance count
+	 * @throws NoSuchElementException the no such element exception
+	 */
 	public WikiInstanceCount countInstances(Resource res, boolean includeSubtypes) throws NoSuchElementException {
 		Var TLABEL=Var.alloc("tLabel"), TIDENT=Var.alloc("tIdent"), URI=Var.alloc("res"), CNT=Var.alloc("count");
 		Query query = new SelectBuilder()
@@ -214,9 +263,26 @@ public class WikinormiaFunctions {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static enum Sorting {
-		NONE, IDENTIFIER, LABEL
+		
+		/** The none. */
+		NONE, 
+ /** The identifier. */
+ IDENTIFIER, 
+ /** The label. */
+ LABEL
 	}
 	
+	/**
+	 * Gets the instances.
+	 *
+	 * @param res the res
+	 * @param includeSubtypes the include subtypes
+	 * @param sort the sort
+	 * @param offset the offset
+	 * @param limit the limit
+	 * @return the instances
+	 * @throws NoSuchElementException the no such element exception
+	 */
 	public List<WikiEntry> getInstances(Resource res, boolean includeSubtypes, Sorting sort, int offset, int limit) throws NoSuchElementException {
 		Var INST=Var.alloc("instance"), IIDENT=Var.alloc("iIdent"), ILABEL=Var.alloc("iLabel");
 		ExprFactory ex = new ExprFactory();
@@ -249,12 +315,26 @@ public class WikinormiaFunctions {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private static class WikiRefMap extends HashMap<ObjectId, WikiClass> {
+		
+		/** The Constant serialVersionUID. */
 		private static final long serialVersionUID = -8012125406740493140L;
 
+		/**
+		 * Instantiates a new wiki ref map.
+		 *
+		 * @param initialCapacity the initial capacity
+		 */
 		public WikiRefMap(int initialCapacity) {
 			super(initialCapacity);
 		}
 		
+		/**
+		 * Deref.
+		 *
+		 * @param ref the ref
+		 * @return the wiki entry
+		 * @throws SDSDException the SDSD exception
+		 */
 		public WikiEntry deref(DraftItem.Ref ref) throws SDSDException {
 			if(ref.isDraft()) {
 				WikiClass cls = get(ref.asObjectId());
@@ -266,6 +346,15 @@ public class WikinormiaFunctions {
 		}
 	}
 	
+	/**
+	 * Publish draft.
+	 *
+	 * @param user the user
+	 * @param format the format
+	 * @return true, if successful
+	 * @throws SDSDException the SDSD exception
+	 * @throws ARException the AR exception
+	 */
 	public boolean publishDraft(User user, DraftFormat format) throws SDSDException, ARException {
 		if(format.getIdentifier() == null || format.getIdentifier().isBlank())
 			throw new SDSDException("Format must have an identifier");

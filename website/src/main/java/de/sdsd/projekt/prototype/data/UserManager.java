@@ -35,12 +35,28 @@ import de.sdsd.projekt.prototype.applogic.ApplicationLogic;
  */
 public class UserManager implements AutoCloseable {
 	
+	/** The app. */
 	private final ApplicationLogic app;
+	
+	/** The executor. */
 	private final ScheduledExecutorService executor;
+	
+	/** The users. */
 	private LinkedHashMap<String, User> users;
+	
+	/** The connections. */
 	private final ConcurrentHashMap<String, ARConnection> connections = new ConcurrentHashMap<>();
+	
+	/** The conn checker. */
 	private final ScheduledFuture<?> connChecker;
 	
+	/**
+	 * Instantiates a new user manager.
+	 *
+	 * @param app the app
+	 * @param executor the executor
+	 * @param users the users
+	 */
 	public UserManager(ApplicationLogic app, ScheduledExecutorService executor, Iterable<Document> users) {
 		this.app = app;
 		this.executor = executor;
@@ -49,6 +65,11 @@ public class UserManager implements AutoCloseable {
 		updateList(users);
 	}
 	
+	/**
+	 * Update list.
+	 *
+	 * @param users the users
+	 */
 	public void updateList(Iterable<Document> users) {
 		LinkedHashMap<String, User> map = new LinkedHashMap<>();
 		for(Document doc : users) {
@@ -58,19 +79,47 @@ public class UserManager implements AutoCloseable {
 		this.users = map;
 	}
 	
+	/**
+	 * Update user.
+	 *
+	 * @param user the user
+	 * @param userDoc the user doc
+	 */
 	public void updateUser(User user, Document userDoc) {
 		user.updateFromDB(userDoc);
 	}
 	
+	/**
+	 * Gets the user.
+	 *
+	 * @param username the username
+	 * @return the user
+	 */
 	@CheckForNull
 	public User getUser(String username) {
 		return users.get(username);
 	}
 	
+	/**
+	 * Gets the all.
+	 *
+	 * @return the all
+	 */
 	public Collection<User> getAll() {
 		return Collections.unmodifiableCollection(users.values());
 	}
 	
+	/**
+	 * Gets the AR connection.
+	 *
+	 * @param user the user
+	 * @param onboardingInfo the onboarding info
+	 * @return the AR connection
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws JSONException the JSON exception
+	 * @throws GeneralSecurityException the general security exception
+	 * @throws MqttException the mqtt exception
+	 */
 	ARConnection getARConnection(User user, JSONObject onboardingInfo) 
 			throws IOException, JSONException, GeneralSecurityException, MqttException {
 		ARConnection conn = connections.get(user.getName());
@@ -81,6 +130,17 @@ public class UserManager implements AutoCloseable {
 		return conn;
 	}
 	
+	/**
+	 * Inits the AR connection.
+	 *
+	 * @param user the user
+	 * @param onboardingInfo the onboarding info
+	 * @return the AR connection
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws JSONException the JSON exception
+	 * @throws GeneralSecurityException the general security exception
+	 * @throws MqttException the mqtt exception
+	 */
 	ARConnection initARConnection(User user, JSONObject onboardingInfo) 
 			throws IOException, JSONException, GeneralSecurityException, MqttException {
 		closeARConnection(user);
@@ -90,6 +150,11 @@ public class UserManager implements AutoCloseable {
 		return conn;
 	}
 	
+	/**
+	 * Close AR connection.
+	 *
+	 * @param user the user
+	 */
 	public void closeARConnection(User user) {
 		ARConnection conn = connections.get(user.getName());
 		if(conn != null) {
@@ -102,6 +167,9 @@ public class UserManager implements AutoCloseable {
 		}
 	}
 	
+	/**
+	 * Connect all mqtt.
+	 */
 	public void connectAllMqtt() {
 		for(User user : users.values()) {
 			ARConn arconn = user.agrirouter();
@@ -116,6 +184,9 @@ public class UserManager implements AutoCloseable {
 		}
 	}
 	
+	/**
+	 * Disconnect all mqtt.
+	 */
 	public void disconnectAllMqtt() {
 		Iterator<ARConnection> it = connections.values().iterator();
 		while(it.hasNext()) {
@@ -137,24 +208,46 @@ public class UserManager implements AutoCloseable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private class PushNotificationCallback extends ARPushNotificationReceiver {
+		
+		/** The user. */
 		private final User user;
 		
+		/**
+		 * Instantiates a new push notification callback.
+		 *
+		 * @param user the user
+		 */
 		public PushNotificationCallback(User user) {
 			this.user = user;
 			System.out.println(user.getName() + ": set PushNotificationReceiver");
 		}
 
+		/**
+		 * On receive.
+		 *
+		 * @param msg the msg
+		 */
 		@Override
 		public void onReceive(ARMsg msg) {
 			app.agrirouter.onPushNotificationMsg(user, msg);
 		}
 
+		/**
+		 * On error.
+		 *
+		 * @param e the e
+		 */
 		@Override
 		public void onError(Exception e) {
 			app.agrirouter.onPushNotificationError(user, e);
 		}
 	}
 	
+	/**
+	 * Close.
+	 *
+	 * @throws Exception the exception
+	 */
 	@Override
 	public void close() throws Exception {
 		connChecker.cancel(false);
@@ -172,6 +265,9 @@ public class UserManager implements AutoCloseable {
 	 */
 	private class ConnectionChecker implements Runnable {
 
+		/**
+		 * Run.
+		 */
 		@Override
 		public void run() {
 			long now = System.currentTimeMillis();

@@ -24,10 +24,16 @@ import de.sdsd.projekt.agrirouter.ARRequest.ARSingleRequest;
  */
 public class ARListEndpointsRequest extends ARSingleRequest<List<AREndpoint>> {
 
+	/** The Constant TYPE_UNFILTERED. */
 	private static final String TYPE_UNFILTERED = "dke:list_endpoints_unfiltered";
+	
+	/** The Constant TYPE_FILTERED. */
 	private static final String TYPE_FILTERED = "dke:list_endpoints";
 
+	/** The m payload. */
 	private final ListEndpointsQuery.Builder mPayload;
+	
+	/** The consider routes. */
 	private boolean considerRoutes = false;
 
 	/**
@@ -85,11 +91,24 @@ public class ARListEndpointsRequest extends ARSingleRequest<List<AREndpoint>> {
 		return this;
 	}
 
+	/**
+	 * Gets the params.
+	 *
+	 * @return the params
+	 */
 	@Override
 	protected Message getParams() {
 		return mPayload.build();
 	}
 
+	/**
+	 * Parses the response.
+	 *
+	 * @param header the header
+	 * @param payload the payload
+	 * @return the list
+	 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+	 */
 	@Override
 	protected List<AREndpoint> parseResponse(ResponseEnvelope header, Any payload) throws InvalidProtocolBufferException {
 		ListEndpointsResponse response = payload.unpack(ListEndpointsResponse.class);

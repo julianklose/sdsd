@@ -8,22 +8,47 @@ package de.sdsd.projekt.parser.wrapper;
  *
  */
 public class Id {
+	
+	/** The clazz. */
 	private Class<?> clazz;
+	
+	/** The id. */
 	private Long id;
 
+	/**
+	 * Instantiates a new id.
+	 *
+	 * @param clazz the clazz
+	 * @param id the id
+	 */
 	public Id(Class<?> clazz, Long id) {
 		this.clazz = clazz;
 		this.id = id;
 	}
 
+	/**
+	 * Gets the clazz.
+	 *
+	 * @return the clazz
+	 */
 	public Class<?> getClazz() {
 		return clazz;
 	}
 
+	/**
+	 * Gets the id.
+	 *
+	 * @return the id
+	 */
 	public Long getId() {
 		return id;
 	}
 
+	/**
+	 * Hash code.
+	 *
+	 * @return the int
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -33,6 +58,12 @@ public class Id {
 		return result;
 	}
 
+	/**
+	 * Equals.
+	 *
+	 * @param obj the obj
+	 * @return true, if successful
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -55,6 +86,11 @@ public class Id {
 		return true;
 	}
 
+	/**
+	 * To string.
+	 *
+	 * @return the string
+	 */
 	@Override
 	public String toString() {
 		return "RowId [clazz=" + clazz + ", id=" + id + "]";

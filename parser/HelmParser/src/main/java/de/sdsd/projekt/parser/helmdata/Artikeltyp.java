@@ -14,18 +14,32 @@ import de.sdsd.projekt.parser.interfaces.Identifiable;
  *
  */
 public class Artikeltyp implements Identifiable {
+	
+	/** The artikel typ id. */
 	@CsvBindByName
 	@HelmTransient
 	private Long artikelTypId;
+	
+	/** The artikel typ name. */
 	@CsvBindByName
 	@HelmLabel
 	private String artikelTypName;
 
+	/**
+	 * Gets the id.
+	 *
+	 * @return the id
+	 */
 	@Override
 	public Long getId() {
 		return artikelTypId;
 	}
 
+	/**
+	 * To string.
+	 *
+	 * @return the string
+	 */
 	@Override
 	public String toString() {
 		return "Artikeltyp [artikelTypId=" + artikelTypId + ", artikelTypName=" + artikelTypName + "]";

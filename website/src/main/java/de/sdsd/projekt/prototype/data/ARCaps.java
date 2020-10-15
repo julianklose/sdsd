@@ -27,16 +27,36 @@ import de.sdsd.projekt.agrirouter.request.ARCapability;
  * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
  */
 public class ARCaps {
+	
+	/** The Constant PUSH. */
 	public static final String USER = "user", CAPS = "caps", PUSH = "push";
 	
+	/**
+	 * Filter.
+	 *
+	 * @param user the user
+	 * @return the bson
+	 */
 	public static Bson filter(String user) {
 		return Filters.eq(USER, user);
 	}
 	
+	/**
+	 * Filter.
+	 *
+	 * @param user the user
+	 * @return the bson
+	 */
 	public static Bson filter(User user) {
 		return Filters.eq(USER, user.getName());
 	}
 	
+	/**
+	 * Caps to doc.
+	 *
+	 * @param caps the caps
+	 * @return the document
+	 */
 	private static Document capsToDoc(Map<ARMessageType, ARDirection> caps) {
 		Document doc = new Document();
 		for(Entry<ARMessageType, ARDirection> cap : caps.entrySet()) {
@@ -45,6 +65,14 @@ public class ARCaps {
 		return doc;
 	}
 	
+	/**
+	 * Creates the.
+	 *
+	 * @param user the user
+	 * @param capabilities the capabilities
+	 * @param pushNotifications the push notifications
+	 * @return the document
+	 */
 	public static Document create(User user, Map<ARMessageType, ARDirection> capabilities, PushNotification pushNotifications) {
 		return new Document()
 				.append(USER, user.getName())
@@ -52,14 +80,31 @@ public class ARCaps {
 				.append(PUSH, pushNotifications.getNumber());
 	}
 	
+	/**
+	 * Gets the default.
+	 *
+	 * @param user the user
+	 * @param config the config
+	 * @return the default
+	 */
 	public static ARCaps getDefault(User user, ARConfig config) {
 		return new ARCaps(user, config);
 	}
 	
+	/** The user. */
 	private final String user;
+	
+	/** The capabilities. */
 	private Map<ARMessageType, ARDirection> capabilities;
+	
+	/** The push notification. */
 	private PushNotification pushNotification;
 	
+	/**
+	 * Instantiates a new AR caps.
+	 *
+	 * @param doc the doc
+	 */
 	public ARCaps(Document doc) {
 		this.user = doc.getString(USER);
 		Document caps = doc.get(CAPS, Document.class);
@@ -71,6 +116,12 @@ public class ARCaps {
 		this.pushNotification = PushNotification.forNumber(doc.getInteger(PUSH));
 	}
 	
+	/**
+	 * Instantiates a new AR caps.
+	 *
+	 * @param user the user
+	 * @param config the config
+	 */
 	protected ARCaps(User user, ARConfig config) {
 		this.user = user.getName();
 		this.capabilities = new HashMap<>();
@@ -80,19 +131,40 @@ public class ARCaps {
 		this.pushNotification = config.getPushNotifications();
 	}
 	
+	/**
+	 * Filter.
+	 *
+	 * @return the bson
+	 */
 	public Bson filter() {
 		return Filters.eq(USER, user);
 	}
 	
+	/**
+	 * Gets the user.
+	 *
+	 * @return the user
+	 */
 	public String getUser() {
 		return user;
 	}
 	
+	/**
+	 * Gets the capability.
+	 *
+	 * @param type the type
+	 * @return the capability
+	 */
 	@CheckForNull
 	public ARDirection getCapability(ARMessageType type) {
 		return capabilities.get(type);
 	}
 	
+	/**
+	 * Gets the capabilities.
+	 *
+	 * @return the capabilities
+	 */
 	public List<ARCapability> getCapabilities() {
 		List<ARCapability> out = new ArrayList<>(capabilities.size());
 		for(Entry<ARMessageType, ARDirection> e : capabilities.entrySet()) {
@@ -101,24 +173,52 @@ public class ARCaps {
 		return out;
 	}
 	
+	/**
+	 * Gets the capabilitie map.
+	 *
+	 * @return the capabilitie map
+	 */
 	public Map<ARMessageType, ARDirection> getCapabilitieMap() {
 		return capabilities;
 	}
 	
+	/**
+	 * Sets the capabilities.
+	 *
+	 * @param capabilities the capabilities
+	 * @return the bson
+	 */
 	public Bson setCapabilities(Map<ARMessageType, ARDirection> capabilities) {
 		this.capabilities = capabilities;
 		return Updates.set(CAPS, capsToDoc(capabilities));
 	}
 
+	/**
+	 * Gets the push notification.
+	 *
+	 * @return the push notification
+	 */
 	public PushNotification getPushNotification() {
 		return pushNotification;
 	}
 
+	/**
+	 * Sets the push notification.
+	 *
+	 * @param pushNotification the push notification
+	 * @return the bson
+	 */
 	public Bson setPushNotification(PushNotification pushNotification) {
 		this.pushNotification = pushNotification;
 		return Updates.set(PUSH, pushNotification.getNumber());
 	}
 	
+	/**
+	 * To AR capabilities.
+	 *
+	 * @param config the config
+	 * @return the AR capabilities
+	 */
 	public ARCapabilities toARCapabilities(ARConfig config) {
 		ARCapabilities ar = new ARCapabilities(config.getApplicationId(), config.getVersionId());
 		ar.setPushNotifications(pushNotification);

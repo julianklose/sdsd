@@ -22,6 +22,7 @@ import de.sdsd.projekt.agrirouter.ARRequest.ARSingleRequest;
  */
 public class ARSubscription extends ARSingleRequest<Boolean> {
 
+	/** The m payload. */
 	private final Subscription.Builder mPayload;
 
 	/**
@@ -68,12 +69,24 @@ public class ARSubscription extends ARSingleRequest<Boolean> {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private static class SubscriptionItemIterable implements Iterable<MessageTypeSubscriptionItem> {
+		
+		/** The types. */
 		private final Iterable<ARMessageType> types;
 		
+		/**
+		 * Instantiates a new subscription item iterable.
+		 *
+		 * @param types the types
+		 */
 		public SubscriptionItemIterable(Iterable<ARMessageType> types) {
 			this.types = types;
 		}
 		
+		/**
+		 * Iterator.
+		 *
+		 * @return the iterator
+		 */
 		@Override
 		public Iterator<MessageTypeSubscriptionItem> iterator() {
 			return new Iterator<MessageTypeSubscriptionItem>() {
@@ -124,11 +137,24 @@ public class ARSubscription extends ARSingleRequest<Boolean> {
 		return this;
 	}
 
+	/**
+	 * Gets the params.
+	 *
+	 * @return the params
+	 */
 	@Override
 	protected Message getParams() {
 		return mPayload.build();
 	}
 
+	/**
+	 * Parses the response.
+	 *
+	 * @param header the header
+	 * @param payload the payload
+	 * @return the boolean
+	 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+	 */
 	@Override
 	protected Boolean parseResponse(ResponseEnvelope header, Any payload) throws InvalidProtocolBufferException {
 		return header.getType() == ResponseBodyType.ACK;

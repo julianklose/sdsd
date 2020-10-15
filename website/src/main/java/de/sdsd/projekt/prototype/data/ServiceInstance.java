@@ -21,44 +21,91 @@ import de.sdsd.projekt.prototype.applogic.ApplicationLogic;
 
 /**
  * Represents a service instance, stored in MongoDB.
- * 
- * @see Service
+ *
  * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+ * @see Service
  */
 public class ServiceInstance implements Comparable<ServiceInstance> {
+	
+	/** The Constant MISSING_BOTH_ERROR. */
 	public static final String MISSING_PARAMETER_ERROR = "Missing parameter",
 			MISSING_PERMISSION_ERROR = "Missing permission",
 			MISSING_BOTH_ERROR = "Missing parameter and permission";
 	
+	/** The Constant ERROR. */
 	public static final String ID = "_id", TOKEN = "token", SERVICE = "service", SERVICENAME = "servicename", 
 			USER = "user", ACTIVATED = "activated", COMPLETED = "completed", PERM = "hasPermissions", 
 			PERM_FROM = "permFrom", PERM_UNTIL = "permUntil",
 			PARAMETER = "parameter", RESULT = "result", ERROR = "error";
 
+	/**
+	 * Filter.
+	 *
+	 * @param user the user
+	 * @return the bson
+	 */
 	public static Bson filter(User user) {
 		return Filters.eq(USER, user.getName());
 	}
 
+	/**
+	 * Filter.
+	 *
+	 * @param user the user
+	 * @param id the id
+	 * @return the bson
+	 */
 	public static Bson filter(User user, ObjectId id) {
 		return Filters.and(filter(user), Filters.eq(id));
 	}
 	
+	/**
+	 * Filter service.
+	 *
+	 * @param service the service
+	 * @return the bson
+	 */
 	public static Bson filterService(Service service) {
 		return Filters.eq(SERVICE, service.getId());
 	}
 	
+	/**
+	 * Filter token.
+	 *
+	 * @param token the token
+	 * @return the bson
+	 */
 	public static Bson filterToken(String token) {
 		return Filters.eq(TOKEN, token);
 	}
 	
+	/**
+	 * Filter completed.
+	 *
+	 * @param completed the completed
+	 * @return the bson
+	 */
 	public static Bson filterCompleted(boolean completed) {
 		return Filters.exists(COMPLETED, completed);
 	}
 	
+	/**
+	 * Filter ready.
+	 *
+	 * @param service the service
+	 * @return the bson
+	 */
 	public static Bson filterReady(Service service) {
 		return Filters.and(filterService(service), filterCompleted(false), Filters.exists(PARAMETER), Filters.eq(PERM, true));
 	}
 
+	/**
+	 * Creates the.
+	 *
+	 * @param user the user
+	 * @param service the service
+	 * @return the document
+	 */
 	public static Document create(User user, Service service) {
 		Document doc = new Document()
 				.append(ID, new ObjectId())
@@ -82,22 +129,55 @@ public class ServiceInstance implements Comparable<ServiceInstance> {
 		return doc;
 	}
 	
+	/**
+	 * Gets the default.
+	 *
+	 * @param user the user
+	 * @param id the id
+	 * @return the default
+	 */
 	public static ServiceInstance getDefault(User user, ObjectId id) {
 		return new ServiceInstance(id, user);
 	}
 
+	/** The id. */
 	private final ObjectId id;
+	
+	/** The token. */
 	private final String token;
+	
+	/** The service id. */
 	private final ObjectId serviceId;
+	
+	/** The service name. */
 	private final String serviceName;
+	
+	/** The user. */
 	private final String user;
+	
+	/** The activated. */
 	private final Instant activated;
+	
+	/** The completed. */
 	private Instant completed;
+	
+	/** The parameter. */
 	private JSONObject parameter;
+	
+	/** The has permissions. */
 	private boolean hasPermissions;
+	
+	/** The permission until. */
 	private Instant permissionFrom, permissionUntil;
+	
+	/** The result. */
 	private String error, result;
 
+	/**
+	 * Instantiates a new service instance.
+	 *
+	 * @param doc the doc
+	 */
 	public ServiceInstance(Document doc) {
 		this.id = doc.getObjectId(ID);
 		this.token = doc.getString(TOKEN);
@@ -118,6 +198,12 @@ public class ServiceInstance implements Comparable<ServiceInstance> {
 		this.result = doc.getString(RESULT);
 	}
 	
+	/**
+	 * Instantiates a new service instance.
+	 *
+	 * @param id the id
+	 * @param user the user
+	 */
 	protected ServiceInstance(ObjectId id, User user) {
 		this.id = id;
 		this.token = "";
@@ -134,39 +220,85 @@ public class ServiceInstance implements Comparable<ServiceInstance> {
 		this.result = null;
 	}
 	
+	/**
+	 * Filter.
+	 *
+	 * @return the bson
+	 */
 	public Bson filter() {
 		return Filters.eq(id);
 	}
 
+	/**
+	 * Gets the id.
+	 *
+	 * @return the id
+	 */
 	public ObjectId getId() {
 		return id;
 	}
 	
+	/**
+	 * Gets the token.
+	 *
+	 * @return the token
+	 */
 	public String getToken() {
 		return token;
 	}
 
+	/**
+	 * Gets the service id.
+	 *
+	 * @return the service id
+	 */
 	public ObjectId getServiceId() {
 		return serviceId;
 	}
 	
+	/**
+	 * Gets the service name.
+	 *
+	 * @return the service name
+	 */
 	public String getServiceName() {
 		return serviceName;
 	}
 	
+	/**
+	 * Gets the user.
+	 *
+	 * @return the user
+	 */
 	public String getUser() {
 		return user;
 	}
 	
+	/**
+	 * Gets the activated.
+	 *
+	 * @return the activated
+	 */
 	public Instant getActivated() {
 		return activated;
 	}
 
+	/**
+	 * Gets the completed.
+	 *
+	 * @return the completed
+	 */
 	@CheckForNull
 	public Instant getCompleted() {
 		return completed;
 	}
 
+	/**
+	 * Sets the completed.
+	 *
+	 * @param result the result
+	 * @return the bson
+	 */
 	public Bson setCompleted(String result) {
 		this.completed = Instant.now();
 		this.result = result;
@@ -175,11 +307,22 @@ public class ServiceInstance implements Comparable<ServiceInstance> {
 				Updates.set(RESULT, result));
 	}
 	
+	/**
+	 * Gets the parameter.
+	 *
+	 * @return the parameter
+	 */
 	@CheckForNull
 	public JSONObject getParameter() {
 		return parameter;
 	}
 	
+	/**
+	 * Sets the parameter.
+	 *
+	 * @param parameter the parameter
+	 * @return the bson
+	 */
 	public Bson setParameter(JSONObject parameter) {
 		this.parameter = parameter;
 		Bson set = Updates.set(PARAMETER, parameter.toString());
@@ -187,10 +330,21 @@ public class ServiceInstance implements Comparable<ServiceInstance> {
 		return Updates.combine(set, err);
 	}
 	
+	/**
+	 * Checks for permissions.
+	 *
+	 * @return true, if successful
+	 */
 	public boolean hasPermissions() {
 		return hasPermissions;
 	}
 	
+	/**
+	 * Sets the has permissions.
+	 *
+	 * @param hasPermissions the has permissions
+	 * @return the bson
+	 */
 	public Bson setHasPermissions(boolean hasPermissions) {
 		this.hasPermissions = hasPermissions;
 		Bson set = Updates.set(PERM, hasPermissions);
@@ -198,24 +352,51 @@ public class ServiceInstance implements Comparable<ServiceInstance> {
 		return Updates.combine(set, err);
 	}
 	
+	/**
+	 * Checks if is ready to start.
+	 *
+	 * @return true, if is ready to start
+	 */
 	public boolean isReadyToStart() {
 		return parameter != null && hasPermissions;
 	}
 	
+	/**
+	 * Checks for time permission.
+	 *
+	 * @return true, if successful
+	 */
 	public boolean hasTimePermission() {
 		return permissionFrom != null || permissionUntil != null;
 	}
 	
+	/**
+	 * Gets the permission from.
+	 *
+	 * @return the permission from
+	 */
 	@CheckForNull
 	public Instant getPermissionFrom() {
 		return permissionFrom;
 	}
 	
+	/**
+	 * Gets the permission until.
+	 *
+	 * @return the permission until
+	 */
 	@CheckForNull
 	public Instant getPermissionUntil() {
 		return permissionUntil;
 	}
 	
+	/**
+	 * Sets the time permission.
+	 *
+	 * @param from the from
+	 * @param until the until
+	 * @return the bson
+	 */
 	public Bson setTimePermission(@Nullable Instant from, @Nullable Instant until) {
 		List<Bson> updates = new ArrayList<>(3);
 		updates.add(setHasPermissions(true));
@@ -224,26 +405,54 @@ public class ServiceInstance implements Comparable<ServiceInstance> {
 		return Updates.combine(updates);
 	}
 	
+	/**
+	 * Gets the permissions.
+	 *
+	 * @param app the app
+	 * @return the permissions
+	 */
 	public Permissions getPermissions(ApplicationLogic app) {
 		return new Permissions(app, this);
 	}
 
+	/**
+	 * Gets the error.
+	 *
+	 * @return the error
+	 */
 	@CheckForNull
 	public String getError() {
 		return error;
 	}
 
+	/**
+	 * Sets the error.
+	 *
+	 * @param error the error
+	 * @return the bson
+	 */
 	public Bson setError(@Nullable String error) {
 		if(error != null && error.isEmpty()) error = null;
 		this.error = error;
 		return error != null ? Updates.set(ERROR, error) : Updates.unset(ERROR);
 	}
 
+	/**
+	 * Gets the result.
+	 *
+	 * @return the result
+	 */
 	@CheckForNull
 	public String getResult() {
 		return result;
 	}
 
+	/**
+	 * Compare to.
+	 *
+	 * @param o the o
+	 * @return the int
+	 */
 	@Override
 	public int compareTo(ServiceInstance o) {
 		if(completed != null)
@@ -252,11 +461,22 @@ public class ServiceInstance implements Comparable<ServiceInstance> {
 			return -activated.compareTo(o.activated);
 	}
 
+	/**
+	 * Hash code.
+	 *
+	 * @return the int
+	 */
 	@Override
 	public int hashCode() {
 		return Objects.hash(id);
 	}
 
+	/**
+	 * Equals.
+	 *
+	 * @param obj the obj
+	 * @return true, if successful
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

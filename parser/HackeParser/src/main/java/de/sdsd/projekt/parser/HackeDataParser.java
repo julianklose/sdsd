@@ -14,6 +14,8 @@ import com.opencsv.bean.CsvToBeanBuilder;
  *
  */
 public class HackeDataParser {
+	
+	/** The data. */
 	List<HackeData> data;
 
 	/**
@@ -27,10 +29,20 @@ public class HackeDataParser {
 				.withType(HackeData.class).build().parse();
 	}
 
+	/**
+	 * Gets the data.
+	 *
+	 * @return the data
+	 */
 	public List<HackeData> getData() {
 		return data;
 	}
 
+	/**
+	 * Sets the data.
+	 *
+	 * @param data the new data
+	 */
 	public void setData(List<HackeData> data) {
 		this.data = data;
 	}

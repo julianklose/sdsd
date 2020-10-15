@@ -47,15 +47,26 @@ import de.sdsd.projekt.prototype.applogic.TripleFunctions.UtilQuerySolution;
  */
 public class Permissions {
 	
+	/** The Constant ACCESS_DENIED. */
 	public static final SDSDException ACCESS_DENIED = new SDSDException("Access denied");
 	
+	/** The Constant RPermission. */
 	//classes
 	public static final Resource RPermission = TripleFunctions.createInternResource("Permission");
+	
+	/** The Constant RServiceInstance. */
 	public static final Resource RServiceInstance = TripleFunctions.createInternResource("ServiceInstance");
 	
+	/** The Constant Pperm. */
 	public static final Property Pperm = TripleFunctions.createInternProperty("hasPermission");
+	
+	/** The Constant Pabout. */
 	public static final Property Pabout = TripleFunctions.createInternProperty("about");
+	
+	/** The Constant Pallow. */
 	public static final Property Pallow = TripleFunctions.createInternProperty("allow");
+	
+	/** The Constant Pobject. */
 	public static final Property Pobject = TripleFunctions.createInternProperty("object");
 	
 	/**
@@ -64,8 +75,18 @@ public class Permissions {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class Permission {
+		
+		/** The Constant OBJ. */
 		private static final Var ID=Var.alloc("per"), TYPE=Var.alloc("type"), NAME=Var.alloc("name"), DESC=Var.alloc("desc"), 
 				ALLOW=Var.alloc("allow"), OBJLST=Var.alloc("objlist"), OBJ=Var.alloc("object");
+		
+		/**
+		 * Creates the query.
+		 *
+		 * @param userGraphUri the user graph uri
+		 * @param instance the instance
+		 * @return the query
+		 */
 		static Query createQuery(String userGraphUri, Resource instance) {
 			
 			return new SelectBuilder()
@@ -83,6 +104,14 @@ public class Permissions {
 					.build();
 		}
 		
+		/**
+		 * Creates the object query.
+		 *
+		 * @param userGraphUri the user graph uri
+		 * @param instance the instance
+		 * @param type the type
+		 * @return the query
+		 */
 		static Query createObjectQuery(String userGraphUri, Resource instance, String type) {
 			Node uri = NodeFactory.createURI(type);
 			return new SelectBuilder()
@@ -93,17 +122,36 @@ public class Permissions {
 					.addWhere(ID, Pobject, OBJ)
 					.build();
 		}
+		
+		/**
+		 * Read objects.
+		 *
+		 * @param stream the stream
+		 * @return the sets the
+		 */
 		static Set<Resource> readObjects(Stream<UtilQuerySolution> stream) {
 			return stream
 					.map(qs -> qs.getResource(OBJ))
 					.collect(Collectors.toSet());
 		}
 		
+		/** The id. */
 		private final String id;
+		
+		/** The description. */
 		private final String type, name, description;
+		
+		/** The allowed. */
 		private final boolean allowed;
+		
+		/** The objs. */
 		private final String[] objs;
 		
+		/**
+		 * Instantiates a new permission.
+		 *
+		 * @param qs the qs
+		 */
 		Permission(UtilQuerySolution qs) {
 			this.id = qs.getResource(ID).getURI();
 			this.type = qs.getResource(TYPE).getURI();
@@ -115,47 +163,107 @@ public class Permissions {
 			this.objs = objlst.isEmpty() ? new String[0] : objlst.split(",");
 		}
 		
+		/**
+		 * Can read.
+		 *
+		 * @param qs the qs
+		 * @return true, if successful
+		 */
 		static boolean canRead(UtilQuerySolution qs) {
 			return qs.contains(ID);
 		}
 
+		/**
+		 * Gets the id.
+		 *
+		 * @return the id
+		 */
 		public String getId() {
 			return id;
 		}
 		
+		/**
+		 * Gets the type.
+		 *
+		 * @return the type
+		 */
 		public String getType() {
 			return type;
 		}
 		
+		/**
+		 * Checks if is type GPS.
+		 *
+		 * @return true, if is type GPS
+		 */
 		public boolean isTypeGPS() {
 			return GPS.equals(type);
 		}
+		
+		/**
+		 * Checks if is type file.
+		 *
+		 * @return true, if is type file
+		 */
 		public boolean isTypeFile() {
 			return FILE.equals(type);
 		}
 
+		/**
+		 * Gets the name.
+		 *
+		 * @return the name
+		 */
 		public String getName() {
 			return name;
 		}
 
+		/**
+		 * Gets the description.
+		 *
+		 * @return the description
+		 */
 		public String getDescription() {
 			return description;
 		}
 
+		/**
+		 * Checks if is allowed.
+		 *
+		 * @return true, if is allowed
+		 */
 		public boolean isAllowed() {
 			return allowed;
 		}
 
+		/**
+		 * Gets the objects.
+		 *
+		 * @return the objects
+		 */
 		public String[] getObjects() {
 			return objs;
 		}
 	}
 	
+	/** The app. */
 	private final ApplicationLogic app;
+	
+	/** The instance. */
 	private final ServiceInstance instance;
+	
+	/** The instance res. */
 	private final Resource instanceRes;
+	
+	/** The user. */
 	private final User user;
 	
+	/**
+	 * Instantiates a new permissions.
+	 *
+	 * @param app the app
+	 * @param instance the instance
+	 */
 	public Permissions(ApplicationLogic app, ServiceInstance instance) {
 		this.app = app;
 		this.instance = instance;
@@ -163,6 +271,11 @@ public class Permissions {
 		this.user = app.user.getUser(instance.getUser());
 	}
 	
+	/**
+	 * Creates the new.
+	 *
+	 * @param accessUris the access uris
+	 */
 	public void createNew(Set<String> accessUris) {
 		//create model
 		Model model = ModelFactory.createDefaultModel();
@@ -184,6 +297,9 @@ public class Permissions {
 		app.triple.insertData(model, user.getGraphUri());
 	}
 	
+	/**
+	 * Delete instance.
+	 */
 	public void deleteInstance() {
 		ParameterizedSparqlString pss = new ParameterizedSparqlString(
 				"WITH ?user " + 
@@ -202,6 +318,11 @@ public class Permissions {
 		app.triple.update(pss.asUpdate());
 	}
 	
+	/**
+	 * Gets the permissions.
+	 *
+	 * @return the permissions
+	 */
 	public List<Permission> getPermissions() {
 		try(QueryResult qr = app.triple.query(Permission.createQuery(user.getGraphUri(), instanceRes))) {
 			return qr.stream()
@@ -211,6 +332,12 @@ public class Permissions {
 		}
 	}
 	
+	/**
+	 * Gets the permission objects.
+	 *
+	 * @param accessTypeUri the access type uri
+	 * @return the permission objects
+	 */
 	public Set<Resource> getPermissionObjects(String accessTypeUri) {
 		Query query = Permission.createObjectQuery(user.getGraphUri(), instanceRes, accessTypeUri);
 		try(QueryResult qr = app.triple.query(query)) {
@@ -218,6 +345,13 @@ public class Permissions {
 		}
 	}
 	
+	/**
+	 * Gets the files.
+	 *
+	 * @param filter the filter
+	 * @return the files
+	 * @throws SDSDException the SDSD exception
+	 */
 	public List<File> getFiles(@Nullable Bson filter) throws SDSDException {
 		List<File> files = filter == null ? app.list.files.getList(user) : app.list.files.get(user, filter);
 		if(files.isEmpty()) return files;
@@ -239,14 +373,34 @@ public class Permissions {
 		return files;
 	}
 	
+	/**
+	 * Gets the files.
+	 *
+	 * @return the files
+	 * @throws SDSDException the SDSD exception
+	 */
 	public List<File> getFiles() throws SDSDException {
 		return getFiles((Bson)null);
 	}
 	
+	/**
+	 * Gets the files.
+	 *
+	 * @param fileUri the file uri
+	 * @return the files
+	 * @throws SDSDException the SDSD exception
+	 */
 	public List<File> getFiles(@Nullable String fileUri) throws SDSDException {
 		return getFiles(fileUri != null ? Filters.eq(File.toID(fileUri)) : null);
 	}
 	
+	/**
+	 * Gets the file graphs.
+	 *
+	 * @param fileUri the file uri
+	 * @return the file graphs
+	 * @throws SDSDException the SDSD exception
+	 */
 	public List<String> getFileGraphs(@Nullable String fileUri) throws SDSDException {
 		List<File> files = getFiles(fileUri);
 		List<String> graphs = new ArrayList<>(files.size());
@@ -256,6 +410,13 @@ public class Permissions {
 		return graphs;
 	}
 	
+	/**
+	 * Gets the graphs.
+	 *
+	 * @param fileUri the file uri
+	 * @return the graphs
+	 * @throws SDSDException the SDSD exception
+	 */
 	public List<String> getGraphs(@Nullable String fileUri) throws SDSDException {
 		List<File> files = getFiles(fileUri);
 		List<String> graphs = new ArrayList<>(files.size() + 2);
@@ -267,8 +428,19 @@ public class Permissions {
 		return graphs;
 	}
 	
+	/** The Constant Vobj. */
 	private static final Var Vs = Var.alloc("s"), Vperm = Var.alloc("perm"), Vtype = Var.alloc("type"), Vallow = Var.alloc("allow"), Vobj = Var.alloc("obj");
+	
+	/** The Constant EXPR. */
 	private static final ExprFactory EXPR = new ExprFactory();
+	
+	/**
+	 * Filter allowed.
+	 *
+	 * @param graphs the graphs
+	 * @param accessUri the access uri
+	 * @return the sets the
+	 */
 	public Set<Node> filterAllowed(List<String> graphs, Node... accessUri) {
 		if(accessUri.length == 0) return Collections.emptySet();
 		Query query = new SelectBuilder()
@@ -292,10 +464,23 @@ public class Permissions {
 		return allowed;
 	}
 	
+	/**
+	 * Filter allowed.
+	 *
+	 * @param graphs the graphs
+	 * @param accessUris the access uris
+	 * @return the sets the
+	 */
 	public Set<Node> filterAllowed(List<String> graphs, Collection<Node> accessUris) {
 		return filterAllowed(graphs, accessUris.toArray(new Node[accessUris.size()]));
 	}
 	
+	/**
+	 * Checks if is allowed.
+	 *
+	 * @param accessTypeUri the access type uri
+	 * @return true, if is allowed
+	 */
 	public boolean isAllowed(String accessTypeUri) {
 		Query query = new AskBuilder()
 				.from(user.getGraphUri())
@@ -309,15 +494,32 @@ public class Permissions {
 		}
 	}
 	
+	/** The Constant FILE. */
 	public static final String GPS = TripleFunctions.NS_WIKI + "DdiGroupGPSGeoPosition", FILE = TripleFunctions.NS_WIKI + "file";
+	
+	/**
+	 * Checks if is GPS allowed.
+	 *
+	 * @return true, if is GPS allowed
+	 */
 	public boolean isGPSAllowed() {
 		return isAllowed(GPS);
 	}
 	
+	/**
+	 * Checks if is file allowed.
+	 *
+	 * @return true, if is file allowed
+	 */
 	public boolean isFileAllowed() {
 		return isAllowed(FILE);
 	}
 	
+	/**
+	 * Sets the all permissions.
+	 *
+	 * @param allow the new all permissions
+	 */
 	public void setAllPermissions(boolean allow) {
 		ParameterizedSparqlString pss = new ParameterizedSparqlString(
 				"WITH ?user " + 
@@ -333,6 +535,13 @@ public class Permissions {
 		app.triple.update(pss.asUpdate());
 	}
 	
+	/**
+	 * Sets the permission.
+	 *
+	 * @param permissionId the permission id
+	 * @param allow the allow
+	 * @param objects the objects
+	 */
 	public void setPermission(String permissionId, boolean allow, Collection<String> objects) {
 		ParameterizedSparqlString pss = new ParameterizedSparqlString(
 				"WITH ?user " + 

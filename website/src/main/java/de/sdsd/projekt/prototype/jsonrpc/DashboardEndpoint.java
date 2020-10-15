@@ -50,10 +50,22 @@ import de.sdsd.projekt.prototype.data.Util;
  */
 public class DashboardEndpoint extends JsonRpcEndpoint {
 
+	/**
+	 * Instantiates a new dashboard endpoint.
+	 *
+	 * @param application the application
+	 */
 	public DashboardEndpoint(ApplicationLogic application) {
 		super(application);
 	}
 	
+	/**
+	 * Gets the all fields.
+	 *
+	 * @param req the req
+	 * @return the all fields
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getAllFields(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -103,6 +115,13 @@ public class DashboardEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the all machines.
+	 *
+	 * @param req the req
+	 * @return the all machines
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getAllMachines(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -142,6 +161,13 @@ public class DashboardEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Read machine type.
+	 *
+	 * @param clientname the clientname
+	 * @param res the res
+	 * @param out the out
+	 */
 	private void readMachineType(byte[] clientname, Map<Resource, Res> res, JSONObject out) {
 		int group = (clientname[0] >>> 4) & 0x7;
 		int system = clientname[1] >>> 1;
@@ -161,6 +187,12 @@ public class DashboardEndpoint extends JsonRpcEndpoint {
 		out.put("function", jr);
 	}
 	
+	/**
+	 * Gets the resource labels.
+	 *
+	 * @param res the res
+	 * @return the resource labels
+	 */
 	private void getResourceLabels(Map<Resource, Res> res) {
 		if(res.isEmpty()) return;
 		Var LABEL = Var.alloc("label"), VAL = Var.alloc("val");
@@ -177,6 +209,14 @@ public class DashboardEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the machine type.
+	 *
+	 * @param req the req
+	 * @param clientname the clientname
+	 * @return the machine type
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getMachineType(HttpServletRequest req, String clientname) throws JsonRpcException {
 		User user = null;
 		try {
@@ -224,6 +264,14 @@ public class DashboardEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the machine types.
+	 *
+	 * @param req the req
+	 * @param uris the uris
+	 * @return the machine types
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getMachineTypes(HttpServletRequest req, Collection<String> uris) throws JsonRpcException {
 		User user = null;
 		try {

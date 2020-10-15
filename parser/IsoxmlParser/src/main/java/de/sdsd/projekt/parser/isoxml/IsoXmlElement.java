@@ -22,6 +22,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import de.sdsd.projekt.api.ParserAPI.Validation;
 import de.sdsd.projekt.api.Util;
 import de.sdsd.projekt.parser.isoxml.Attribute.IDAttr;
 import de.sdsd.projekt.parser.isoxml.Attribute.OIDAttr;
@@ -33,28 +34,66 @@ import de.sdsd.projekt.parser.isoxml.Attribute.UnknownAttr;
  * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
  */
 public class IsoXmlElement {
+	
+	/** The format. */
 	private final JSONObject format;
+	
+	/** The root. */
 	private final ISOXMLParser root;
+	
+	/** The tag. */
 	public final String tag;
+	
+	/** The name. */
 	public final String name;
+	
+	/** The uri. */
 	public final String uri;
+	
+	/** The label. */
 	@CheckForNull
 	private String label;
+	
+	/** The id. */
 	@CheckForNull
 	public final IDAttr id;
+	
+	/** The oid. */
 	@CheckForNull
 	public final OIDAttr oid;
+	
+	/** The parent. */
 	@CheckForNull
 	private IsoXmlElement parent;
+	
+	/** The prefix. */
 	private final String prefix;
+	
+	/** The attributes. */
 	private final Map<String, Attribute<?>> attributes;
+	
+	/** The children. */
 	private final List<IsoXmlElement> children = new ArrayList<>();
+	
+	/** The oidref. */
 	@CheckForNull
 	private Map<Integer, IsoXmlElement> oidref = null;
-	private final List<String> contenterrors = new ArrayList<>();
+	
+	/** The contenterrors. */
+	private final Validation contenterrors = new Validation();
+	
+	/** The links. */
 	private List<? extends Link> links;
 	
 
+	/**
+	 * Instantiates a new iso xml element.
+	 *
+	 * @param root the root
+	 * @param formats the formats
+	 * @param parent the parent
+	 * @param element the element
+	 */
 	public IsoXmlElement(ISOXMLParser root, JSONObject formats, @Nullable IsoXmlElement parent, Element element) {
 		this.root = root;
 		this.tag = element.getTagName();
@@ -148,6 +187,9 @@ public class IsoXmlElement {
 		checkContent();
 	}
 
+	/**
+	 * Removes the from parent.
+	 */
 	public void removeFromParent() {
 		if(parent == null) return;
 		if(oid != null && parent.oidref != null)
@@ -157,6 +199,12 @@ public class IsoXmlElement {
 		parent = null;
 	}
 
+	/**
+	 * Adds the children.
+	 *
+	 * @param childs the childs
+	 * @throws IllegalArgumentException the illegal argument exception
+	 */
 	public void addChildren(List<IsoXmlElement> childs) throws IllegalArgumentException {
 		for (IsoXmlElement child : childs) {
 			if(child.root != root) 
@@ -171,6 +219,9 @@ public class IsoXmlElement {
 		checkContent();
 	}
 
+	/**
+	 * Check content.
+	 */
 	private void checkContent() {
 		contenterrors.clear();
 		if(format != null && format.has("content")) {
@@ -186,52 +237,94 @@ public class IsoXmlElement {
 				if(min > 0) {
 					MutableInt count = tagCount.get(k);
 					if(count == null || count.intValue() < min)
-						contenterrors.add(String.format("Contains less than %d elements of %s", min, k));
+						contenterrors.warn(String.format("Contains less than %d elements of %s", min, k));
 				}
 			}
 			for (Entry<String, MutableInt> entry : tagCount.entrySet()) {
 				JSONObject f = content.optJSONObject(entry.getKey());
-				if(f == null) contenterrors.add("Unknown element: " + entry.getKey());
+				if(f == null) contenterrors.warn("Unknown element: " + entry.getKey());
 				else if(entry.getValue().intValue() > f.optInt("max", Integer.MAX_VALUE))
-					contenterrors.add(String.format("Must not contain more than %d elements of %s", f.getInt("max"), entry.getKey()));
+					contenterrors.warn(String.format("Must not contain more than %d elements of %s", f.getInt("max"), entry.getKey()));
 			}
 		}
 	}
 
+	/**
+	 * Gets the root.
+	 *
+	 * @return the root
+	 */
 	@Nonnull
 	public ISOXMLParser getRoot() {
 		return root;
 	}
 
+	/**
+	 * Gets the tag.
+	 *
+	 * @return the tag
+	 */
 	@Nonnull
 	public String getTag() {
 		return tag;
 	}
 
+	/**
+	 * Gets the name.
+	 *
+	 * @return the name
+	 */
 	@Nonnull
 	public String getName() {
 		return name;
 	}
 	
+	/**
+	 * Gets the label.
+	 *
+	 * @return the label
+	 */
 	@CheckForNull
 	public String getLabel() {
 		return label;
 	}
+	
+	/**
+	 * Sets the label.
+	 *
+	 * @param label the label
+	 * @return the iso xml element
+	 */
 	public IsoXmlElement setLabel(String label) {
 		this.label = label;
 		return this;
 	}
 
+	/**
+	 * Gets the id.
+	 *
+	 * @return the id
+	 */
 	@CheckForNull
 	public IDAttr getId() {
 		return id;
 	}
 
+	/**
+	 * Gets the oid.
+	 *
+	 * @return the oid
+	 */
 	@CheckForNull
 	public OIDAttr getOid() {
 		return oid;
 	}
 
+	/**
+	 * Gets the parent.
+	 *
+	 * @return the parent
+	 */
 	@CheckForNull
 	public IsoXmlElement getParent() {
 		return parent;
@@ -242,6 +335,12 @@ public class IsoXmlElement {
 	//	return model.createResource(uri);
 	//}
 	
+	/**
+	 * To resources.
+	 *
+	 * @param model the model
+	 * @return the list
+	 */
 	public List<Resource> toResources(Model model) {
 		List<Resource> resources = new ArrayList<>();
 		for(String uri : getUris()) {
@@ -250,6 +349,11 @@ public class IsoXmlElement {
 		return resources;
 	}
 	
+	/**
+	 * Gets the uris.
+	 *
+	 * @return the uris
+	 */
 	public List<String> getUris() {
 		//no links so we use our generated uri
 		if(links == null || links.isEmpty()) {
@@ -262,17 +366,36 @@ public class IsoXmlElement {
 		return resources;
 	}
 
+	/**
+	 * Gets the attributes.
+	 *
+	 * @return the attributes
+	 */
 	@Nonnull
 	public Map<String, Attribute<?>> getAttributes() {
 		return Collections.unmodifiableMap(attributes);
 	}
 
+	/**
+	 * Gets the attribute.
+	 *
+	 * @param name the name
+	 * @return the attribute
+	 */
 	@Nonnull
 	public Attribute<?> getAttribute(String name) {
 		Attribute<?> attr = attributes.get(name);
 		return attr != null ? attr : new UnknownAttr(this, name, null, null);
 	}
 
+	/**
+	 * Gets the attribute.
+	 *
+	 * @param <T> the generic type
+	 * @param name the name
+	 * @param cls the cls
+	 * @return the attribute
+	 */
 	@Nonnull
 	public <T extends Attribute<?>> T getAttribute(String name, Class<T> cls) {
 		try {
@@ -284,11 +407,22 @@ public class IsoXmlElement {
 		}
 	}
 
+	/**
+	 * Gets the children.
+	 *
+	 * @return the children
+	 */
 	@Nonnull
 	public List<IsoXmlElement> getChildren() {
 		return Collections.unmodifiableList(children);
 	}
 
+	/**
+	 * Find children.
+	 *
+	 * @param tag the tag
+	 * @return the list
+	 */
 	@Nonnull
 	public List<IsoXmlElement> findChildren(String tag) {
 		ArrayList<IsoXmlElement> out = new ArrayList<>();
@@ -299,6 +433,12 @@ public class IsoXmlElement {
 		return out;
 	}
 
+	/**
+	 * Find child.
+	 *
+	 * @param tag the tag
+	 * @return the iso xml element
+	 */
 	@CheckForNull
 	public IsoXmlElement findChild(String tag) {
 		for (IsoXmlElement child : children) {
@@ -308,21 +448,44 @@ public class IsoXmlElement {
 		return null;
 	}
 
+	/**
+	 * Gets the node by O id.
+	 *
+	 * @param oid the oid
+	 * @return the node by O id
+	 */
 	@CheckForNull
 	public IsoXmlElement getNodeByOId(Integer oid) {
 		return oidref != null ? oidref.get(oid) : null;
 	}
 
+	/**
+	 * Prefix end.
+	 *
+	 * @param msg the msg
+	 * @return the string
+	 */
 	@Nonnull
 	public String prefixEnd(String msg) {
 		return prefix + ": " + msg;
 	}
 
+	/**
+	 * Prefix mid.
+	 *
+	 * @param msg the msg
+	 * @return the string
+	 */
 	@Nonnull
 	public String prefixMid(String msg) {
 		return prefix + '.' + msg;
 	}
 
+	/**
+	 * Checks for errors.
+	 *
+	 * @return true, if successful
+	 */
 	@Nonnull
 	public boolean hasErrors() {
 		if(format == null) return true;
@@ -334,6 +497,11 @@ public class IsoXmlElement {
 		return false;
 	}
 
+	/**
+	 * Checks for errors all.
+	 *
+	 * @return true, if successful
+	 */
 	@Nonnull
 	public boolean hasErrorsAll() {
 		if(hasErrors()) return true;
@@ -343,37 +511,52 @@ public class IsoXmlElement {
 		return false;
 	}
 
+	/**
+	 * Gets the errors.
+	 *
+	 * @return the errors
+	 */
 	@Nonnull
-	public List<String> getErrors() {
-		List<String> out = new ArrayList<>();
+	public Validation getErrors() {
+		Validation out = new Validation();
 		if(format == null) 
-			out.add(prefixEnd("Unknown element"));
+			out.warn(prefixEnd("Unknown element"));
 		for(Attribute<?> attr : attributes.values()) {
 			if(attr.hasError())
-				out.add(prefixMid(attr.getError()));
+				out.error(prefixMid(attr.getError()));
+			if(attr.hasWarning())
+				out.warn(prefixMid(attr.getWarning()));
 			if(attr.hasValue() && attr instanceof RefAttr) {
 				RefAttr ref = (RefAttr) attr;
 				if(!ref.tryDeRef()) {
 					String refError = ref.getRefError();
-					if(refError != null) out.add(prefixMid(refError));
+					if(refError != null) out.error(prefixMid(refError));
 				}
 			}
 		}
-		contenterrors.stream()
-		.map(this::prefixEnd)
-		.forEachOrdered(out::add);
+		out.addAll(contenterrors, prefix + ": ");
 		return out;
 	}
 
+	/**
+	 * Gets the all errors.
+	 *
+	 * @return the all errors
+	 */
 	@Nonnull
-	public List<String> getAllErrors() {
-		List<String> out = getErrors();
+	public Validation getAllErrors() {
+		Validation out = getErrors();
 		children.stream()
-		.map(IsoXmlElement::getErrors)
-		.forEachOrdered(out::addAll);
+				.map(IsoXmlElement::getErrors)
+				.forEachOrdered(out::addAll);
 		return out;
 	}
 
+	/**
+	 * Sets the links.
+	 *
+	 * @param links the new links
+	 */
 	public void setLinks(List<? extends Link> links) {
 		this.links = links;
 	}

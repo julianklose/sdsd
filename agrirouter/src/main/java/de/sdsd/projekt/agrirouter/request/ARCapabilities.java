@@ -21,6 +21,7 @@ import de.sdsd.projekt.agrirouter.request.feed.ARPushNotificationReceiver;
  */
 public class ARCapabilities extends ARSingleRequest<Boolean> {
 
+	/** The m payload. */
 	private final CapabilitySpecification.Builder mPayload;
 
 	/**
@@ -61,11 +62,24 @@ public class ARCapabilities extends ARSingleRequest<Boolean> {
 		return this;
 	}
 
+	/**
+	 * Gets the params.
+	 *
+	 * @return the params
+	 */
 	@Override
 	protected Message getParams() {
 		return mPayload.build();
 	}
 
+	/**
+	 * Parses the response.
+	 *
+	 * @param header the header
+	 * @param payload the payload
+	 * @return the boolean
+	 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+	 */
 	@Override
 	protected Boolean parseResponse(ResponseEnvelope header, Any payload) throws InvalidProtocolBufferException {
 		return header.getResponseCode() == 201;

@@ -37,12 +37,25 @@ import de.sdsd.projekt.prototype.data.User;
  * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
  */
 public class DuplicateFinderFunctions {
+	
+	/** The app. */
 	private final ApplicationLogic app;
 	
+	/**
+	 * Instantiates a new duplicate finder functions.
+	 *
+	 * @param app the app
+	 */
 	DuplicateFinderFunctions(ApplicationLogic app) {
 		this.app = app;
 	}
 	
+	/**
+	 * Delete file relations.
+	 *
+	 * @param user the user
+	 * @param fileUri the file uri
+	 */
 	public void deleteFileRelations(User user, String fileUri) {
 		ParameterizedSparqlString pss = new ParameterizedSparqlString(
 				"DELETE { " + 
@@ -62,6 +75,12 @@ public class DuplicateFinderFunctions {
 		app.triple.update(pss.asUpdate());
 	}
 	
+	/**
+	 * Find duplicates.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 */
 	public void findDuplicates(User user, File file) {
 		try {
 			Model model = ModelFactory.createDefaultModel();
@@ -75,8 +94,19 @@ public class DuplicateFinderFunctions {
 		}
 	}
 
+	/** The Constant BOUNDARY_FILTER. */
 	private static final Bson BOUNDARY_FILTER = GeoElement.filterType(GeoElement.ElementType.Field);
+	
+	/** The Constant DUP. */
 	private static final Var DUP=Var.alloc("dup");
+	
+	/**
+	 * Fields.
+	 *
+	 * @param model the model
+	 * @param user the user
+	 * @param file the file
+	 */
 	protected void fields(Model model, User user, File file) {
 		for(GeoElement geo : app.geo.find(user, Filters.and(GeoElement.filterFile(file.getId()), BOUNDARY_FILTER))) {
 			Resource field = ResourceFactory.createResource(geo.getUri());
@@ -122,7 +152,16 @@ public class DuplicateFinderFunctions {
 		}
 	}
 	
+	/** The Constant TLG_FILTER. */
 	private static final Bson TLG_FILTER = GeoElement.filterType(GeoElement.ElementType.TimeLog);
+	
+	/**
+	 * Timelogs.
+	 *
+	 * @param model the model
+	 * @param user the user
+	 * @param file the file
+	 */
 	protected void timelogs(Model model, User user, File file) {
 		for(GeoElement geo : app.geo.find(user, Filters.and(GeoElement.filterFile(file.getId())))) {
 			if(geo.getType() == ElementType.TimeLog) {
@@ -157,6 +196,13 @@ public class DuplicateFinderFunctions {
 		}
 	}
 	
+	/**
+	 * Machines.
+	 *
+	 * @param model the model
+	 * @param user the user
+	 * @param file the file
+	 */
 	protected void machines(Model model, User user, File file) {
 		Var MACHINE=Var.alloc("m"), CLIENTNAME=Var.alloc("c"), STRLABEL=Var.alloc("s"), LOCLABEL=Var.alloc("l"), 
 				GRAPH=Var.alloc("g"), DUPMACHINE=Var.alloc("dm");

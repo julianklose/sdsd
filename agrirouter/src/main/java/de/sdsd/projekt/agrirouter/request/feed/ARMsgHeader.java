@@ -25,14 +25,32 @@ import de.sdsd.projekt.agrirouter.ARMessageType;
  * @see ARQueryMessageHeaders
  */
 public class ARMsgHeader {
+	
+	/** The chunk context id. */
 	private final String chunkContextId;
+	
+	/** The chunk length. */
 	private final int chunkLength;
+	
+	/** The msgids. */
 	private final HashSet<String> msgids;
+	
+	/** The receiver. */
 	private String sender = null, receiver = null;
+	
+	/** The type. */
 	private ARMessageType type = null;
+	
+	/** The team set context id. */
 	private String teamSetContextId = null;
+	
+	/** The sent time. */
 	private Instant sentTime = null;
+	
+	/** The content size. */
 	private final int contentSize;
+	
+	/** The meta. */
 	@CheckForNull
 	private Metadata meta = null;
 	
@@ -251,7 +269,12 @@ public class ARMsgHeader {
 //		return sb.toString();
 //	}
 
-	@Override
+	/**
+ * Hash code.
+ *
+ * @return the int
+ */
+@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -262,6 +285,12 @@ public class ARMsgHeader {
 		return result;
 	}
 
+	/**
+	 * Equals.
+	 *
+	 * @param obj the obj
+	 * @return true, if successful
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -283,12 +312,25 @@ public class ARMsgHeader {
 		return true;
 	}
 	
+	/**
+	 * The Class ARMsgHeaderResult.
+	 */
 	public static class ARMsgHeaderResult extends ArrayList<ARMsgHeader> {
+		
+		/** The Constant serialVersionUID. */
 		private static final long serialVersionUID = 8935412756454473233L;
 		
+		/** The total messages in query. */
 		private int totalMessagesInQuery = 0;
+		
+		/** The pending message ids. */
 		private final List<String> pendingMessageIds = new ArrayList<>();
 		
+		/**
+		 * Gets the single message count.
+		 *
+		 * @return the single message count
+		 */
 		public int getSingleMessageCount() {
 			return this.stream()
 					.map(ARMsgHeader::getIds)
@@ -296,18 +338,38 @@ public class ARMsgHeader {
 					.sum();
 		}
 
+		/**
+		 * Gets the total messages in query.
+		 *
+		 * @return the total messages in query
+		 */
 		public int getTotalMessagesInQuery() {
 			return totalMessagesInQuery;
 		}
 
+		/**
+		 * Sets the total messages in query.
+		 *
+		 * @param totalMessagesInQuery the new total messages in query
+		 */
 		public void setTotalMessagesInQuery(int totalMessagesInQuery) {
 			this.totalMessagesInQuery = totalMessagesInQuery;
 		}
 
+		/**
+		 * Gets the pending message ids.
+		 *
+		 * @return the pending message ids
+		 */
 		public List<String> getPendingMessageIds() {
 			return pendingMessageIds;
 		}
 
+		/**
+		 * Adds the pending message ids.
+		 *
+		 * @param pendingMessageIds the pending message ids
+		 */
 		public void addPendingMessageIds(List<String> pendingMessageIds) {
 			this.pendingMessageIds.addAll(pendingMessageIds);
 		}

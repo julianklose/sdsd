@@ -46,7 +46,10 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
 
+import com.mongodb.client.model.Updates;
+
 import de.sdsd.projekt.agrirouter.ARMessageType;
+import de.sdsd.projekt.api.ParserAPI.Validation;
 import de.sdsd.projekt.prototype.applogic.TableFunctions.ElementKey;
 import de.sdsd.projekt.prototype.applogic.TableFunctions.FileKey;
 import de.sdsd.projekt.prototype.applogic.TableFunctions.GridBatch;
@@ -69,15 +72,33 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
  */
 public class ParserFunctions {
+	
+	/** The app. */
 	private final ApplicationLogic app;
 	
+	/**
+	 * Instantiates a new parser functions.
+	 *
+	 * @param app the app
+	 */
 	ParserFunctions(ApplicationLogic app) {
 		this.app = app;
 	}
 	
+	/** The Constant TYPE_UNKNOWN. */
 	public static final String TYPE_UNKNOWN = "https://app.sdsd-projekt.de/wikinormia.html?page=unknown";
+	
+	/** The Constant TYPE_SERVICE_RESULT. */
 	public static final String TYPE_SERVICE_RESULT = "https://app.sdsd-projekt.de/wikinormia.html?page=serviceresult";
 	
+	/**
+	 * Determine type.
+	 *
+	 * @param content the content
+	 * @param filename the filename
+	 * @param artype the artype
+	 * @return the SDSD type
+	 */
 	public SDSDType determineType(final byte[] content, String filename, @Nullable ARMessageType artype) {
 		String mimetype = new Tika().detect(content, filename);
 		List<SDSDType> possible = app.list.types.get(null, SDSDType.filter(mimetype, artype));
@@ -94,6 +115,13 @@ public class ParserFunctions {
 		return app.list.types.get(null, TYPE_UNKNOWN);
 	}
 	
+	/**
+	 * Test type.
+	 *
+	 * @param type the type
+	 * @param content the content
+	 * @return true, if successful
+	 */
 	private boolean testType(SDSDType type, byte[] content) {
 		if(type.getTestCommand().isPresent()) {
 			System.out.println("testing for " + type.getName());
@@ -127,19 +155,40 @@ public class ParserFunctions {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private static class Job extends CompletableFuture<Boolean> {
+		
+		/** The user. */
 		public final User user;
+		
+		/** The log. */
 		public final boolean log;
+		
+		/** The started. */
 		private long started;
 		
+		/**
+		 * Instantiates a new job.
+		 *
+		 * @param user the user
+		 * @param log the log
+		 */
 		public Job(User user, boolean log) {
 			super();
 			this.user = user;
 			this.log = log;
 		}
 
+		/**
+		 * Started.
+		 */
 		public void started() {
 			started = System.nanoTime();
 		}
+		
+		/**
+		 * Gets the started.
+		 *
+		 * @return the started
+		 */
 		public long getStarted() {
 			return started;
 		}
@@ -151,9 +200,21 @@ public class ParserFunctions {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private static class Parsing extends Job {
+		
+		/** The file. */
 		public final File file;
+		
+		/** The content. */
 		public final byte[] content;
 		
+		/**
+		 * Instantiates a new parsing.
+		 *
+		 * @param user the user
+		 * @param file the file
+		 * @param content the content
+		 * @param log the log
+		 */
 		public Parsing(User user, File file, byte[] content, boolean log) {
 			super(user, log);
 			this.file = file;
@@ -167,8 +228,17 @@ public class ParserFunctions {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private static class Deleting extends Job {
+		
+		/** The fileid. */
 		public final String fileid;
 		
+		/**
+		 * Instantiates a new deleting.
+		 *
+		 * @param user the user
+		 * @param fileid the fileid
+		 * @param log the log
+		 */
 		public Deleting(User user, String fileid, boolean log) {
 			super(user, log);
 			this.fileid = fileid;
@@ -181,9 +251,19 @@ public class ParserFunctions {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private class JobQueue implements Runnable {
+		
+		/** The queue. */
 		private final Queue<Job> queue = new LinkedList<>();
+		
+		/** The job executor. */
 		private Future<?> jobExecutor = null;
 		
+		/**
+		 * Offer.
+		 *
+		 * @param job the job
+		 * @return true, if successful
+		 */
 		public synchronized boolean offer(Job job) {
 			boolean ok = queue.offer(job);
 			if(ok && jobExecutor == null)
@@ -191,6 +271,11 @@ public class ParserFunctions {
 			return ok;
 		}
 		
+		/**
+		 * Poll.
+		 *
+		 * @return the job
+		 */
 		protected synchronized Job poll() {
 			Job job = queue.poll();
 			if(job == null)
@@ -198,6 +283,9 @@ public class ParserFunctions {
 			return job;
 		}
 
+		/**
+		 * Run.
+		 */
 		@Override
 		public void run() {
 			Job job;
@@ -210,26 +298,60 @@ public class ParserFunctions {
 			}
 		}
 	}
+	
+	/** The job queue. */
 	private final JobQueue jobQueue = new JobQueue();
 	
 	
+	/**
+	 * Parses the file async.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @param content the content
+	 * @param log the log
+	 * @return the completable future
+	 */
 	public CompletableFuture<Boolean> parseFileAsync(User user, File file, byte[] content, boolean log) {
 		Parsing parse = new Parsing(user, file, content, log);
 		jobQueue.offer(parse);
 		return parse;
 	}
 	
+	/**
+	 * Removes the file data async.
+	 *
+	 * @param user the user
+	 * @param fileid the fileid
+	 * @param log the log
+	 * @return the completable future
+	 */
 	public CompletableFuture<Boolean> removeFileDataAsync(User user, String fileid, boolean log) {
 		Deleting delete = new Deleting(user, fileid, log);
 		jobQueue.offer(delete);
 		return delete;
 	}
 	
+	/**
+	 * Delete and parse file async.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @param content the content
+	 * @param log the log
+	 * @return the completable future
+	 */
 	public CompletableFuture<Boolean> deleteAndParseFileAsync(final User user, final File file, final byte[] content, boolean log) {
 		removeFileDataAsync(user, file.getId().toHexString(), false);
 		return parseFileAsync(user, file, content, log);
 	}
 	
+	/**
+	 * Parses the file.
+	 *
+	 * @param job the job
+	 * @return true, if successful
+	 */
 	private boolean parseFile(Parsing job) {
 		app.triple.updateFile(job.user, job.file);
 		SDSDType type = app.list.types.get(null, job.file.getType());
@@ -258,6 +380,13 @@ public class ParserFunctions {
 		return false;
 	}
 	
+	/**
+	 * Read parser result.
+	 *
+	 * @param job the job
+	 * @param parserResultStream the parser result stream
+	 * @return true, if successful
+	 */
 	private boolean readParserResult(Parsing job, InputStream parserResultStream) {
 		try {
 			Map<String, byte[]> result = new HashMap<>();
@@ -280,13 +409,22 @@ public class ParserFunctions {
 				System.out.format("%s: %s: Parsed in %dms\n", 
 						job.file.getUser(), job.file.getFilename(), meta.getInt("parseTime"));
 			
-			JSONArray errors = meta.optJSONArray("errors");
+			JSONObject errors = meta.optJSONObject("errors");
+			File.Validation vali;
 			if(errors != null) {
-				for(int i = 0; i < errors.length(); ++i) {
+				Validation val = Validation.fromJson(errors);
+				if(val.hasFatals()) vali = File.Validation.FATAL_ERRORS;
+				else if(val.hasErrors()) vali = File.Validation.ERRORS;
+				else if(val.hasWarnings()) vali = File.Validation.WARNINGS;
+				else vali = File.Validation.NO_ERROR;
+				
+				for(String err : val.fatals()) {
 					System.err.format("%s: %s: %s\n", 
-							job.file.getUser(), job.file.getFilename(), errors.getString(i));
+							job.file.getUser(), job.file.getFilename(), err);
 				}
 			}
+			else
+				vali = File.Validation.NO_ERROR;
 	
 			Future<?> tripleInserter = null, geoInserter = null, tlgInserter = null;
 			
@@ -368,7 +506,7 @@ public class ParserFunctions {
 			System.out.format("%s: %s: File leverage completed in %d+%dms\n", job.user.getName(), job.file.getFilename(), (t2-t1)/1000000, (t3-t2)/1000000);
 			if(job.log)
 				app.logInfo(job.user, "File processing completed: %s", job.file.getFilename());
-			app.list.files.update(job.user, job.file, job.file.setLeveraged(Instant.now()));
+			app.list.files.update(job.user, job.file, Updates.combine(job.file.setValidation(vali), job.file.setLeveraged(Instant.now())));
 			app.file.parserFinished.trigger(job.user, job.file);
 			return true;
 		} catch(Throwable e) {
@@ -380,6 +518,12 @@ public class ParserFunctions {
 		}
 	}
 	
+	/**
+	 * Insert triples.
+	 *
+	 * @param job the job
+	 * @param content the content
+	 */
 	private void insertTriples(Parsing job, byte[] content) {
 		try {
 			long t1 = System.nanoTime();
@@ -398,6 +542,12 @@ public class ParserFunctions {
 		}
 	}
 	
+	/**
+	 * Insert geo.
+	 *
+	 * @param job the job
+	 * @param content the content
+	 */
 	private void insertGeo(Parsing job, byte[] content) {
 		try {
 			JSONObject collection = new JSONObject(new String(content, StandardCharsets.UTF_8));
@@ -440,6 +590,14 @@ public class ParserFunctions {
 		}
 	}
 	
+	/**
+	 * Insert geo feature.
+	 *
+	 * @param job the job
+	 * @param feature the feature
+	 * @param valueRanges the value ranges
+	 * @return true, if successful
+	 */
 	private boolean insertGeoFeature(Parsing job, JSONObject feature, Map<String, MinMax> valueRanges) {
 		Object uri = feature.remove("id");
 		Object label = feature.remove("label");
@@ -487,7 +645,16 @@ public class ParserFunctions {
 		}
 	}
 	
+	/** The Constant CSV_SEPARATOR. */
 	private static final String CSV_SEPARATOR = ";";
+	
+	/**
+	 * Insert timelog.
+	 *
+	 * @param job the job
+	 * @param name the name
+	 * @param content the content
+	 */
 	@SuppressFBWarnings(value="NP_DEREFERENCE_OF_READLINE_VALUE", justification="checked beforehand")
 	private void insertTimelog(Parsing job, String name, byte[] content) {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(content), StandardCharsets.UTF_8))) {
@@ -599,6 +766,13 @@ public class ParserFunctions {
 		}
 	}
 	
+	/**
+	 * Insert grid.
+	 *
+	 * @param job the job
+	 * @param name the name
+	 * @param content the content
+	 */
 	private void insertGrid(Parsing job, String name, byte[] content) {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(content), StandardCharsets.UTF_8))) {
 			String line = reader.readLine();
@@ -653,6 +827,12 @@ public class ParserFunctions {
 		}
 	}
 	
+	/**
+	 * Unleverage file.
+	 *
+	 * @param job the job
+	 * @return true, if successful
+	 */
 	private boolean unleverageFile(Deleting job) {
 		try {
 			job.started();

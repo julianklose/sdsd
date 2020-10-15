@@ -7,10 +7,21 @@ import de.sdsd.projekt.api.ServiceAPI.ApiInstance;
 import de.sdsd.projekt.api.ServiceAPI.JsonRpcException;
 
 
+/**
+ * The Class ExampleService.
+ */
 public class ExampleService implements AutoCloseable {
 
+	/** The api. */
 	private final ServiceAPI api;
 	
+	/**
+	 * Instantiates a new example service.
+	 *
+	 * @param serviceToken the service token
+	 * @param local the local
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public ExampleService(String serviceToken, boolean local) throws IOException {
 		this.api = new ServiceAPI(local);
 		try {
@@ -23,11 +34,21 @@ public class ExampleService implements AutoCloseable {
 		}
 	}
 	
+	/**
+	 * Close.
+	 *
+	 * @throws Exception the exception
+	 */
 	@Override
 	public void close() throws Exception {
 		api.close();
 	}
 	
+	/**
+	 * Run task for instance.
+	 *
+	 * @param inst the inst
+	 */
 	private void runTaskForInstance(ApiInstance inst) {
 		System.out.format("Found instance: activated(%s)\n", inst.activated);
 

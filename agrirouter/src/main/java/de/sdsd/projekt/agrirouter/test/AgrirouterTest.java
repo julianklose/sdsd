@@ -51,7 +51,16 @@ import efdi.GrpcEfdi;
  */
 public class AgrirouterTest {
 
+	/** The Constant RANDOM. */
 	private static final Random RANDOM = new Random();
+	
+	/**
+	 * Creates the AR config.
+	 *
+	 * @param ar the ar
+	 * @return the AR config
+	 * @throws Exception the exception
+	 */
 	public static ARConfig createARConfig(JSONObject ar) throws Exception {
 		ARConfigBuilder config = new ARConfigBuilder()
 				.setAgrirouterHost(ar.getString("host"))
@@ -71,6 +80,14 @@ public class AgrirouterTest {
 		return config.build();
 	}
 	
+	/**
+	 * Gets the saved connection.
+	 *
+	 * @param executor the executor
+	 * @param connfile the connfile
+	 * @return the saved connection
+	 * @throws Exception the exception
+	 */
 	public static ARConnection getSavedConnection(ScheduledExecutorService executor, String connfile) throws Exception {
 		File file = new File(connfile);
 		if(!file.canRead()) throw new IOException("Can't read file " + connfile);
@@ -78,12 +95,31 @@ public class AgrirouterTest {
 		return ARConnection.create(json, executor);
 	}
 	
+	/**
+	 * Save connection.
+	 *
+	 * @param onboardingResponse the onboarding response
+	 * @param connfile the connfile
+	 * @throws Exception the exception
+	 */
 	public static void saveConnection(JSONObject onboardingResponse, String connfile) throws Exception {
 		File file = new File(connfile);
 		if(!file.canWrite()) throw new IOException("Can't write to file " + connfile);
 		FileUtils.writeStringToFile(file, onboardingResponse.toString(), "UTF-8");
 	}
 	
+	/**
+	 * Gets the endpoints.
+	 *
+	 * @param conn the conn
+	 * @param considerRoutes the consider routes
+	 * @param direction the direction
+	 * @param messagetype the messagetype
+	 * @return the endpoints
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException the interrupted exception
+	 * @throws ARException the AR exception
+	 */
 	public static void getEndpoints(ARConnection conn, boolean considerRoutes, ARDirection direction, ARMessageType messagetype) 
 			throws IOException, InterruptedException, ARException {
 		System.out.println("Get Endpoints...");
@@ -96,12 +132,32 @@ public class AgrirouterTest {
 		
 	}
 
+	/**
+	 * Creates the payload.
+	 *
+	 * @param length the length
+	 * @return the byte[]
+	 */
 	public static byte[] createPayload(int length) {
 		byte[] out = new byte[length];
 		RANDOM.nextBytes(out);
 		return out;
 	}
 	
+	/**
+	 * Send message.
+	 *
+	 * @param conn the conn
+	 * @param type the type
+	 * @param filename the filename
+	 * @param payload the payload
+	 * @param publish the publish
+	 * @param receiver the receiver
+	 * @return true, if successful
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException the interrupted exception
+	 * @throws ARException the AR exception
+	 */
 	public static boolean sendMessage(ARConnection conn, ARMessageType type, 
 			String filename, byte[] payload, boolean publish, String receiver) 
 			throws IOException, InterruptedException, ARException {
@@ -121,6 +177,20 @@ public class AgrirouterTest {
 		return msg.send(conn, 10, TimeUnit.SECONDS);
 	}
 	
+	/**
+	 * Send message.
+	 *
+	 * @param conn the conn
+	 * @param type the type
+	 * @param filename the filename
+	 * @param payload the payload
+	 * @param publish the publish
+	 * @param receiver the receiver
+	 * @return true, if successful
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException the interrupted exception
+	 * @throws ARException the AR exception
+	 */
 	public static boolean sendMessage(ARConnection conn, ARMessageType type, 
 			String filename, Message payload, boolean publish, String receiver) 
 			throws IOException, InterruptedException, ARException {
@@ -140,6 +210,15 @@ public class AgrirouterTest {
 		return msg.send(conn, 10, TimeUnit.SECONDS);
 	}
 	
+	/**
+	 * Receive headers.
+	 *
+	 * @param conn the conn
+	 * @return the AR msg header result
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException the interrupted exception
+	 * @throws ARException the AR exception
+	 */
 	public static ARMsgHeaderResult receiveHeaders(ARConnection conn) 
 			throws IOException, InterruptedException, ARException {
 		System.out.println("Receiving messages...");
@@ -150,6 +229,15 @@ public class AgrirouterTest {
 		return headers;
 	}
 	
+	/**
+	 * Confirm pending messages.
+	 *
+	 * @param conn the conn
+	 * @param headers the headers
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException the interrupted exception
+	 * @throws ARException the AR exception
+	 */
 	public static void confirmPendingMessages(ARConnection conn, ARMsgHeaderResult headers) 
 			throws IOException, InterruptedException, ARException {
 		if(!headers.getPendingMessageIds().isEmpty()) {
@@ -160,6 +248,16 @@ public class AgrirouterTest {
 		}
 	}
 	
+	/**
+	 * Receive messages.
+	 *
+	 * @param conn the conn
+	 * @param headers the headers
+	 * @return the list
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException the interrupted exception
+	 * @throws ARException the AR exception
+	 */
 	public static List<ARMsg> receiveMessages(ARConnection conn, List<ARMsgHeader> headers) 
 			throws IOException, InterruptedException, ARException {
 		List<ARMsgHeader> completeHeaders = headers.stream()
@@ -172,6 +270,14 @@ public class AgrirouterTest {
 		return msgs;
 	}
 	
+	/**
+	 * Clear message queue.
+	 *
+	 * @param conn the conn
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException the interrupted exception
+	 * @throws ARException the AR exception
+	 */
 	public static void clearMessageQueue(ARConnection conn) 
 			throws IOException, InterruptedException, ARException {
 		System.out.println("Deleting messages...");
@@ -188,6 +294,15 @@ public class AgrirouterTest {
 				.count() + " messages deleted!");
 	}
 	
+	/**
+	 * Send subscriptions.
+	 *
+	 * @param conn the conn
+	 * @param types the types
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException the interrupted exception
+	 * @throws ARException the AR exception
+	 */
 	public static void sendSubscriptions(ARConnection conn, ARMessageType ...types) 
 			throws IOException, InterruptedException, ARException {
 		System.out.print("Send subscriptions: (" + 
@@ -199,6 +314,11 @@ public class AgrirouterTest {
 		System.out.println(ok ? "OK" : "FAILURE");
 	}
 	
+	/**
+	 * The main method.
+	 *
+	 * @param args the arguments
+	 */
 	public static void main(String[] args) {
 		try {
 			System.out.println("Agrirouter Test");

@@ -1,5 +1,14 @@
 package de.sdsd.projekt.prototype;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.Map.Entry;
+
+import org.apache.commons.io.FileUtils;
+import org.jabsorb.JSONRPCBridge;
+import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import de.sdsd.projekt.prototype.applogic.ApplicationLogic;
@@ -21,19 +30,13 @@ import de.sdsd.projekt.prototype.jsonrpc.ValidatorEndpoint;
 import de.sdsd.projekt.prototype.jsonrpc.WikinormiaEndpoint;
 import de.sdsd.projekt.prototype.util.ServerManager;
 import de.sdsd.projekt.prototype.websocket.WebsocketEndpoint;
-import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.util.Map.Entry;
-import org.apache.commons.io.FileUtils;
-import org.jabsorb.JSONRPCBridge;
-import org.json.JSONObject;
-import org.slf4j.LoggerFactory;
 
 /**
  * Startup of the SDSD webserver.
  *
  * @author Markus Schr&ouml;der
- * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+ * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian
+ *         Klose</a>
  */
 public class Main {
 
@@ -44,9 +47,9 @@ public class Main {
 
 	/**
 	 * Start the SDSD webserver.
-	 * 
-	 * @param args
-	 * @throws Exception
+	 *
+	 * @param args the arguments
+	 * @throws Exception the exception
 	 */
 	public static void main(String[] args) throws Exception {
 

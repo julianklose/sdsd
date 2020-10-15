@@ -67,17 +67,28 @@ import de.sdsd.projekt.prototype.data.SDSDException;
 import de.sdsd.projekt.prototype.data.User;
 import efdi.GrpcEfdi;
 
-/**
+/** 
  * Provides all agrirouter functions.
  * 
  * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
  */
 public class AgrirouterFunctions {
+	
+	/** The Constant TIMEOUT_SECONDS. */
 	public static final int TIMEOUT_SECONDS = 9;
 	
+	/** The app. */
 	private final ApplicationLogic app;
+	
+	/** The onboarding mqtt QA. */
 	private final AROnboarding onboardingRest, onboardingRestQA, onboardingMqtt, onboardingMqttQA;
 	
+	/**
+	 * Instantiates a new agrirouter functions.
+	 *
+	 * @param app the app
+	 * @throws Exception the exception
+	 */
 	AgrirouterFunctions(ApplicationLogic app) throws Exception {
 		this.app = app;
 		this.onboardingRest = createArOnboarding(app.settings.getJSONObject("agrirouter"), ARGateway.REST);
@@ -86,6 +97,13 @@ public class AgrirouterFunctions {
 		this.onboardingMqttQA = createArOnboarding(app.settings.getJSONObject("agrirouter-qa"), ARGateway.MQTT);
 	}
 	
+	/**
+	 * Gets the onboarding.
+	 *
+	 * @param user the user
+	 * @return the onboarding
+	 * @throws SDSDException the SDSD exception
+	 */
 	public AROnboarding getOnboarding(User user) throws SDSDException {
 		final ARConn ar = user.agrirouter();
 		if(ar == null)
@@ -94,6 +112,14 @@ public class AgrirouterFunctions {
 		else return ar.isQA() ? onboardingRestQA : onboardingRest;
 	}
 	
+	/**
+	 * Creates the ar onboarding.
+	 *
+	 * @param cfg the cfg
+	 * @param gateway the gateway
+	 * @return the AR onboarding
+	 * @throws Exception the exception
+	 */
 	private AROnboarding createArOnboarding(JSONObject cfg, ARGateway gateway) throws Exception {
 		ARConfigBuilder config = new ARConfigBuilder()
 				.setAgrirouterHost(cfg.getString("host"))
@@ -114,10 +140,28 @@ public class AgrirouterFunctions {
 		return new AROnboarding(config.build());
 	}
 	
+	/**
+	 * Check state signature.
+	 *
+	 * @param state the state
+	 * @param signature the signature
+	 * @return true, if successful
+	 * @throws GeneralSecurityException the general security exception
+	 */
 	public boolean checkStateSignature(String state, String signature) throws GeneralSecurityException {
 		return DigestUtils.md5Hex(onboardingRest.signSHA256RSA(state)).equalsIgnoreCase(signature);
 	}
 	
+	/**
+	 * Start secure onboarding.
+	 *
+	 * @param user the user
+	 * @param qa the qa
+	 * @param mqtt the mqtt
+	 * @return the uri
+	 * @throws URISyntaxException the URI syntax exception
+	 * @throws GeneralSecurityException the general security exception
+	 */
 	public URI startSecureOnboarding(User user, boolean qa, boolean mqtt) throws URISyntaxException, GeneralSecurityException {
 		AROnboarding onboarding;
 		if(mqtt) onboarding = qa ? onboardingMqttQA : onboardingMqtt;
@@ -140,6 +184,13 @@ public class AgrirouterFunctions {
 		return verifyUrl;
 	}
 	
+	/**
+	 * Reconnect.
+	 *
+	 * @param user the user
+	 * @throws MqttException the mqtt exception
+	 * @throws SDSDException the SDSD exception
+	 */
 	public void reconnect(User user) throws MqttException, SDSDException {
 		final ARConn ar = user.agrirouter();
 		if(ar == null)
@@ -148,6 +199,15 @@ public class AgrirouterFunctions {
 		ar.conn();
 	}
 	
+	/**
+	 * Reonboard.
+	 *
+	 * @param user the user
+	 * @return the uri
+	 * @throws URISyntaxException the URI syntax exception
+	 * @throws GeneralSecurityException the general security exception
+	 * @throws SDSDException the SDSD exception
+	 */
 	public URI reonboard(User user) throws URISyntaxException, GeneralSecurityException, SDSDException {
 		if(user.agrirouter() == null)
 			throw new SDSDException("Not onboarded");
@@ -162,6 +222,17 @@ public class AgrirouterFunctions {
 		return verifyUrl;
 	}
 	
+	/**
+	 * Secure onboard.
+	 *
+	 * @param user the user
+	 * @return true, if successful
+	 * @throws JSONException the JSON exception
+	 * @throws GeneralSecurityException the general security exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws ARException the AR exception
+	 * @throws MqttException the mqtt exception
+	 */
 	public boolean secureOnboard(User user) 
 			throws JSONException, GeneralSecurityException, IOException, ARException, MqttException {
 		SecureOnboardingContext soc = user.getSecureOnboardingContext();
@@ -196,6 +267,15 @@ public class AgrirouterFunctions {
 		else return false;
 	}
 	
+	/**
+	 * Send capabilities.
+	 *
+	 * @param user the user
+	 * @return true, if successful
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException the interrupted exception
+	 * @throws ARException the AR exception
+	 */
 	protected boolean sendCapabilities(User user) throws IOException, InterruptedException, ARException {
 		final ARConn ar = user.agrirouter();
 		if(ar == null)
@@ -212,6 +292,16 @@ public class AgrirouterFunctions {
 		}
 	}
 	
+	/**
+	 * Send capabilities.
+	 *
+	 * @param user the user
+	 * @param caps the caps
+	 * @return true, if successful
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException the interrupted exception
+	 * @throws ARException the AR exception
+	 */
 	protected boolean sendCapabilities(User user, ARCaps caps) throws IOException, InterruptedException, ARException {
 		final ARConn ar = user.agrirouter();
 		if(ar == null)
@@ -220,6 +310,8 @@ public class AgrirouterFunctions {
 			ARConfig config = getOnboarding(user).getConfig();
 			ARCapabilities request = new ARCapabilities(config.getApplicationId(), config.getVersionId());
 			caps.getCapabilities().forEach(request::addCapability);
+			if(!ar.isMQTT() && caps.getPushNotification() != PushNotification.DISABLED)
+				throw new ARException("Only MQTT agrirouter connections support push notifications");
 			request.setPushNotifications(caps.getPushNotification());
 			return ar.conn().sendRequest(request, TIMEOUT_SECONDS, TimeUnit.SECONDS);
 		} catch (SDSDException e) {
@@ -227,6 +319,18 @@ public class AgrirouterFunctions {
 		}
 	}
 	
+	/**
+	 * Secure onboard.
+	 *
+	 * @param user the user
+	 * @param state the state
+	 * @param token the token
+	 * @param signature the signature
+	 * @throws ARException the AR exception
+	 * @throws GeneralSecurityException the general security exception
+	 * @throws JSONException the JSON exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public void secureOnboard(User user, String state, String token, String signature) 
 			throws ARException, GeneralSecurityException, JSONException, IOException {
 		SecureOnboardingContext soc = user.getSecureOnboardingContext();
@@ -236,6 +340,13 @@ public class AgrirouterFunctions {
 			throw new ARException("No onboarding request sent.");
 	}
 	
+	/**
+	 * Offboard.
+	 *
+	 * @param user the user
+	 * @return true, if successful
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public boolean offboard(User user) throws IOException {
 		final ARConn ar = user.agrirouter();
 		if(ar != null) {
@@ -252,10 +363,24 @@ public class AgrirouterFunctions {
 		return app.user.updateUser(user, user.clearAgrirouterConn());
 	}
 	
+	/**
+	 * Gets the cached endpoints.
+	 *
+	 * @param user the user
+	 * @return the cached endpoints
+	 */
 	public List<AREndpoint> getCachedEndpoints(User user) {
 		return app.list.endpoints.getList(user);
 	}
 	
+	/**
+	 * Read endpoints.
+	 *
+	 * @param user the user
+	 * @return the completable future
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws ARException the AR exception
+	 */
 	public CompletableFuture<List<AREndpoint>> readEndpoints(User user) throws IOException, ARException {
 		final ARConn ar = user.agrirouter();
 		if (ar == null)
@@ -280,6 +405,14 @@ public class AgrirouterFunctions {
 		}
 	}
 	
+	/**
+	 * Process endpoints.
+	 *
+	 * @param user the user
+	 * @param list the list
+	 * @param routes the routes
+	 * @return the list
+	 */
 	private List<AREndpoint> processEndpoints(User user, List<AREndpoint> list, CompletableFuture<List<AREndpoint>> routes) {
 		Map<String, AREndpoint> ep = new HashMap<>();
 		for(AREndpoint e : list) {
@@ -296,6 +429,18 @@ public class AgrirouterFunctions {
 		return ep.values().stream().sorted().collect(toList());
 	}
 	
+	/**
+	 * Send file.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 * @param publish the publish
+	 * @param targets the targets
+	 * @return the completable future
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws ARException the AR exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public CompletableFuture<Boolean> sendFile(User user, File file, boolean publish, List<String> targets) 
 			throws FileNotFoundException, ARException, IOException {
 		final ARConn ar = user.agrirouter();
@@ -315,6 +460,16 @@ public class AgrirouterFunctions {
 				.sendAsync(ar.conn(), (file.getSize() / ARSendMessage.MAX_MESSAGE_SIZE + 1) * TIMEOUT_SECONDS , TimeUnit.SECONDS);
 	}
 	
+	/**
+	 * Send device description.
+	 *
+	 * @param user the user
+	 * @param deviceDescription the device description
+	 * @param contextId the context id
+	 * @return the completable future
+	 * @throws ARException the AR exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public CompletableFuture<Boolean> sendDeviceDescription(User user, GrpcEfdi.ISO11783_TaskData deviceDescription, String contextId) 
 			throws ARException, IOException {
 		final ARConn ar = user.agrirouter();
@@ -328,6 +483,16 @@ public class AgrirouterFunctions {
 				.sendAsync(ar.conn(), TIMEOUT_SECONDS , TimeUnit.SECONDS);
 	}
 	
+	/**
+	 * Send timelog.
+	 *
+	 * @param user the user
+	 * @param timelog the timelog
+	 * @param contextId the context id
+	 * @return the completable future
+	 * @throws ARException the AR exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public CompletableFuture<Boolean> sendTimelog(User user, GrpcEfdi.TimeLog timelog, String contextId) 
 			throws ARException, IOException {
 		final ARConn ar = user.agrirouter();
@@ -341,6 +506,14 @@ public class AgrirouterFunctions {
 				.sendAsync(ar.conn(), timelog.getTimeCount() > 20 ? 6 * TIMEOUT_SECONDS : TIMEOUT_SECONDS , TimeUnit.SECONDS);
 	}
 	
+	/**
+	 * Read all message headers.
+	 *
+	 * @param user the user
+	 * @return the completable future
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws ARException the AR exception
+	 */
 	public CompletableFuture<ARMsgHeaderResult> readAllMessageHeaders(User user) throws IOException, ARException {
 		final ARConn ar = user.agrirouter();
 		if(ar == null)
@@ -350,6 +523,16 @@ public class AgrirouterFunctions {
 				.sendAsync(ar.conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
 	}
 	
+	/**
+	 * Read message headers.
+	 *
+	 * @param user the user
+	 * @param from the from
+	 * @param until the until
+	 * @return the completable future
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws ARException the AR exception
+	 */
 	public CompletableFuture<ARMsgHeaderResult> readMessageHeaders(User user, Instant from, Instant until) throws IOException, ARException {
 		final ARConn ar = user.agrirouter();
 		if(ar == null)
@@ -359,6 +542,15 @@ public class AgrirouterFunctions {
 				.sendAsync(ar.conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
 	}
 	
+	/**
+	 * Read message headers.
+	 *
+	 * @param user the user
+	 * @param sender the sender
+	 * @return the completable future
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws ARException the AR exception
+	 */
 	public CompletableFuture<ARMsgHeaderResult> readMessageHeaders(User user, AREndpoint sender) throws IOException, ARException {
 		final ARConn ar = user.agrirouter();
 		if(ar == null)
@@ -368,6 +560,17 @@ public class AgrirouterFunctions {
 				.sendAsync(ar.conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
 	}
 	
+	/**
+	 * Read message headers.
+	 *
+	 * @param user the user
+	 * @param sender the sender
+	 * @param from the from
+	 * @param until the until
+	 * @return the completable future
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws ARException the AR exception
+	 */
 	public CompletableFuture<ARMsgHeaderResult> readMessageHeaders(User user, AREndpoint sender, Instant from, Instant until) throws IOException, ARException {
 		final ARConn ar = user.agrirouter();
 		if(ar == null)
@@ -378,6 +581,15 @@ public class AgrirouterFunctions {
 				.sendAsync(ar.conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
 	}
 	
+	/**
+	 * Delete messages.
+	 *
+	 * @param user the user
+	 * @param headers the headers
+	 * @return the completable future
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws ARException the AR exception
+	 */
 	public CompletableFuture<Messages> deleteMessages(final User user, List<ARMsgHeader> headers) throws IOException, ARException {
 		final ARConn ar = user.agrirouter();
 		if(headers.isEmpty() || ar == null) 
@@ -387,6 +599,14 @@ public class AgrirouterFunctions {
 				.sendAsync(ar.conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
 	}
 	
+	/**
+	 * Clear feed.
+	 *
+	 * @param user the user
+	 * @return the completable future
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws ARException the AR exception
+	 */
 	public CompletableFuture<Messages> clearFeed(User user) throws IOException, ARException {
 		final ARConn ar = user.agrirouter();
 		if(ar == null) 
@@ -396,7 +616,18 @@ public class AgrirouterFunctions {
 				.sendAsync(ar.conn(), TIMEOUT_SECONDS, TimeUnit.SECONDS);
 	}
 	
+	/** The Constant ISODATE_REGEX. */
 	private static final Pattern ISODATE_REGEX = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z_?");
+	
+	/**
+	 * Receive messages.
+	 *
+	 * @param user the user
+	 * @param headers the headers
+	 * @return the completable future
+	 * @throws ARException the AR exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public CompletableFuture<List<ReceivedMessageResult>> receiveMessages(final User user, List<ARMsgHeader> headers) 
 			throws ARException, IOException {
 		final ARConn ar = user.agrirouter();
@@ -412,6 +643,12 @@ public class AgrirouterFunctions {
 				.thenApply(msgs -> msgs.stream().map(msg -> handleReceivedMessage(user, msg)).collect(toList()));
 	}
 	
+	/**
+	 * On push notification msg.
+	 *
+	 * @param user the user
+	 * @param msg the msg
+	 */
 	public void onPushNotificationMsg(User user, ARMsg msg) {
 		ReceivedMessageResult res = handleReceivedMessage(user, msg);
 		if(res.isSaved()) {
@@ -427,6 +664,12 @@ public class AgrirouterFunctions {
 		}
 	}
 	
+	/**
+	 * On push notification error.
+	 *
+	 * @param user the user
+	 * @param error the error
+	 */
 	public void onPushNotificationError(User user, Throwable error) {
 		System.err.println(user.getName() + ": PushNotificationError: " + error.getMessage());
 		error.printStackTrace();
@@ -439,38 +682,92 @@ public class AgrirouterFunctions {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class ReceivedMessageResult {
+		
+		/** The name. */
 		protected final String name;
+		
+		/** The is new. */
 		protected final boolean isNew;
+		
+		/** The error. */
 		protected final Throwable error;
 		
+		/**
+		 * Instantiates a new received message result.
+		 *
+		 * @param name the name
+		 * @param isNew the is new
+		 */
 		public ReceivedMessageResult(@Nullable String name, boolean isNew) {
 			this.name = name;
 			this.isNew = isNew;
 			this.error = null;
 		}
+		
+		/**
+		 * Instantiates a new received message result.
+		 *
+		 * @param error the error
+		 */
 		public ReceivedMessageResult(@Nullable Throwable error) {
 			this.name = null;
 			this.isNew = false;
 			this.error = error;
 		}
 		
+		/**
+		 * Checks if is saved.
+		 *
+		 * @return true, if is saved
+		 */
 		public boolean isSaved() {
 			return name != null;
 		}
+		
+		/**
+		 * Checks if is error.
+		 *
+		 * @return true, if is error
+		 */
 		public boolean isError() {
 			return error != null;
 		}
+		
+		/**
+		 * Checks if is new.
+		 *
+		 * @return true, if is new
+		 */
 		public boolean isNew() {
 			return isNew;
 		}
+		
+		/**
+		 * Gets the name.
+		 *
+		 * @return the name
+		 */
 		public String getName() {
 			return name != null ? name : "";
 		}
+		
+		/**
+		 * Gets the error.
+		 *
+		 * @return the error
+		 */
 		public Throwable getError() {
 			return error != null ? error : new Exception();
 		}
 	}
 	
+	/**
+	 * Handle received message.
+	 *
+	 * @param user the user
+	 * @param msg the msg
+	 * @return the received message result
+	 */
 	private ReceivedMessageResult handleReceivedMessage(User user, ARMsg msg) {
 		try {
 			if(msg.header.getType() == ARMessageType.DEVICE_DESCRIPTION) {
@@ -523,6 +820,16 @@ public class AgrirouterFunctions {
 		} 
 	}
 	
+	/**
+	 * Sets the subscriptions.
+	 *
+	 * @param user the user
+	 * @param technicalMessageTypes the technical message types
+	 * @return true, if successful
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException the interrupted exception
+	 * @throws ARException the AR exception
+	 */
 	public boolean setSubscriptions(User user, String[] technicalMessageTypes) 
 			throws IOException, InterruptedException, ARException {
 		Set<ARMessageType> types = Stream.of(technicalMessageTypes)
@@ -535,6 +842,18 @@ public class AgrirouterFunctions {
 			return false;
 	}
 	
+	/**
+	 * Sets the capabilities.
+	 *
+	 * @param user the user
+	 * @param capabilities the capabilities
+	 * @param pushNotifications the push notifications
+	 * @return true, if successful
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException the interrupted exception
+	 * @throws ARException the AR exception
+	 * @throws SDSDException the SDSD exception
+	 */
 	public boolean setCapabilities(User user, Map<ARMessageType, ARDirection> capabilities, PushNotification pushNotifications) 
 			throws IOException, InterruptedException, ARException, SDSDException {
 		List<ARCaps> list = app.list.capabilities.getList(user);
@@ -560,6 +879,14 @@ public class AgrirouterFunctions {
 		}
 	}
 	
+	/**
+	 * Cap equals.
+	 *
+	 * @param config the config
+	 * @param capabilities the capabilities
+	 * @param pushNotifications the push notifications
+	 * @return true, if successful
+	 */
 	private boolean capEquals(ARConfig config, Map<ARMessageType, ARDirection> capabilities, PushNotification pushNotifications) {
 		if(config.getPushNotifications() != pushNotifications) return false;
 		if(config.getCapabilities().size() != capabilities.size()) return false;

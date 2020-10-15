@@ -42,7 +42,10 @@ import de.sdsd.projekt.agrirouter.ARRequest;
  */
 public class ARQueryMessages extends ARRequest<List<ARMsg>> {
 	
+	/** The Constant TYPE_CONFIRM. */
 	private static final String TYPE_QUERY = "dke:feed_message_query", TYPE_CONFIRM = "dke:feed_confirm";
+	
+	/** The header. */
 	private List<ARMsgHeader> header = new ArrayList<>();
 
 	/**
@@ -69,8 +72,8 @@ public class ARQueryMessages extends ARRequest<List<ARMsg>> {
 	 * Add messages to obtain.
 	 * Check {@link ARMsgHeader#isComplete()} to see if every part of a chunked message is ready to obtain.
 	 * Don't use for incomplete messages.
-	 * 
-	 * @param head message header from {@link ARQueryMessageHeaders}
+	 *
+	 * @param header the header
 	 * @return this object for method chaining
 	 */
 	public ARQueryMessages addMessageFilter(Collection<ARMsgHeader> header) {
@@ -95,16 +98,23 @@ public class ARQueryMessages extends ARRequest<List<ARMsg>> {
 	 */
 	private static class QueryMessageInstance extends RequestInstance<List<ARMsg>> {
 
+		/** The results. */
 		private final Map<String, ARMsg> results;
+		
+		/** The query. */
 		private final MessageQuery.Builder query;
+		
+		/** The confirm. */
 		private final MessageConfirm.Builder confirm;
+		
+		/** The total pages. */
 		private int receivedPages = 0, totalPages = 1;
 		
 		/**
 		 * Constructs a one time use independent message query request.
-		 * 
+		 *
 		 * @param req request header
-		 * @param head message header to retrieve (should be {@link ARMsgHeader#isComplete() complete})
+		 * @param header the header
 		 */
 		public QueryMessageInstance(RequestEnvelope req, List<ARMsgHeader> header) {
 			super(req);
@@ -120,11 +130,21 @@ public class ARQueryMessages extends ARRequest<List<ARMsg>> {
 			query.addAllMessageIds(results.keySet());
 		}
 
+		/**
+		 * Checks for next.
+		 *
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean hasNext() {
 			return receivedPages <= totalPages;
 		}
 
+		/**
+		 * Next.
+		 *
+		 * @return the AR message
+		 */
 		@Override
 		public ARMessage next() {
 			if(receivedPages < totalPages) {
@@ -139,6 +159,11 @@ public class ARQueryMessages extends ARRequest<List<ARMsg>> {
 				return null;
 		}
 		
+		/**
+		 * Gets the response.
+		 *
+		 * @return the response
+		 */
 		@Override
 		public List<ARMsg> getResponse() {
 			return results.values().stream()
@@ -153,7 +178,16 @@ public class ARQueryMessages extends ARRequest<List<ARMsg>> {
 		 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 		 */
 		private static class OrderedDistinct implements Predicate<Object> {
+			
+			/** The last. */
 			private Object last = this;
+			
+			/**
+			 * Test.
+			 *
+			 * @param t the t
+			 * @return true, if successful
+			 */
 			@Override
 			public boolean test(Object t) {
 				boolean ok = t != last;
@@ -162,8 +196,18 @@ public class ARQueryMessages extends ARRequest<List<ARMsg>> {
 			}
 		}
 		
+		/** The error. */
 		private ARException error = null;
 
+		/**
+		 * Read response.
+		 *
+		 * @param header the header
+		 * @param params the params
+		 * @return true, if successful
+		 * @throws InvalidProtocolBufferException the invalid protocol buffer exception
+		 * @throws ARException the AR exception
+		 */
 		@Override
 		protected synchronized boolean readResponse(ResponseEnvelope header, Any params)
 				throws InvalidProtocolBufferException, ARException {
@@ -214,6 +258,11 @@ public class ARQueryMessages extends ARRequest<List<ARMsg>> {
 		
 	}
 	
+	/**
+	 * Builds the.
+	 *
+	 * @return the request instance
+	 */
 	@Override
 	public RequestInstance<List<ARMsg>> build() {
 		return new QueryMessageInstance(req.build(), header);

@@ -25,8 +25,17 @@ import de.sdsd.projekt.agrirouter.request.ARCapabilities;
  * @see ARConnection#setPushNotificationReceiver(ARPushNotificationReceiver)
  */
 public abstract class ARPushNotificationReceiver {
+	
+	/** The chunks. */
 	private ConcurrentHashMap<String, ARMsg> chunks = new ConcurrentHashMap<>();
 	
+	/**
+	 * Read response.
+	 *
+	 * @param header the header
+	 * @param params the params
+	 * @return the AR confirm message
+	 */
 	public final ARConfirmMessage readResponse(ResponseEnvelope header, Any params) {
 		ARConfirmMessage confirm = new ARConfirmMessage();
 		try {
@@ -69,6 +78,17 @@ public abstract class ARPushNotificationReceiver {
 		return confirm;
 	}
 	
+	/**
+	 * On receive.
+	 *
+	 * @param msg the msg
+	 */
 	public abstract void onReceive(ARMsg msg);
+	
+	/**
+	 * On error.
+	 *
+	 * @param e the e
+	 */
 	public abstract void onError(Exception e);
 }

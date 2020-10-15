@@ -81,6 +81,7 @@
 								<tr data-ng-repeat="f in filelist | search:searchFile:'filename'" style="white-space: nowrap;" title="
 Id: {{f.id}}
 Source: {{f.source}}
+Valid: {{f.validation}}
 Created: {{f.created | date:'medium'}}
 Last Modified: {{f.lastmodified | date:'medium'}}
 Leveraged: {{f.leveraged | date:'medium'}}
@@ -481,12 +482,14 @@ Expires: {{f.expires | date:'mediumDate'}}
 						</tbody>
 					</table>
 					
-					<h4>Push Notifications</h4>
-					<select class="form-control" data-ng-model="caps.pushNotifications">
-						<option data-ng-value="0">DISABLED</option>
-						<option data-ng-value="1">ENABLED</option>
-						<option data-ng-value="2">ENABLED_HIGH_FREQUENCY</option>
-					</select>
+					<div data-ng-show="mqtt">
+						<h4>Push Notifications</h4>
+						<select class="form-control" data-ng-model="caps.pushNotifications">
+							<option data-ng-value="0">DISABLED</option>
+							<option data-ng-value="1">ENABLED</option>
+							<option data-ng-value="2">ENABLED_HIGH_FREQUENCY</option>
+						</select>
+					</div>
 					
 					<button class="btn btn-primary mt-2" data-ng-click="sendCapabilities()" data-ng-disabled="!onboarded || sendCapLoading">
 						Send <i class="fas fa-spinner fa-spin" data-ng-show="sendCapLoading"></i>

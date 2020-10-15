@@ -20,10 +20,25 @@ import de.sdsd.projekt.prototype.websocket.WebsocketConnection;
  */
 public class UserEndpoint extends JsonRpcEndpoint {
 
+	/**
+	 * Instantiates a new user endpoint.
+	 *
+	 * @param application the application
+	 */
 	public UserEndpoint(ApplicationLogic application) {
 		super(application);
 	}
 
+	/**
+	 * @deprecated
+	 * Reg.
+	 *
+	 * @param req the current request
+	 * @param res the res
+	 * @param regForm the reg form
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject reg(HttpServletRequest req, HttpServletResponse res, JSONObject regForm) throws JsonRpcException {
 		User user = null;
 		try {
@@ -37,10 +52,23 @@ public class UserEndpoint extends JsonRpcEndpoint {
 		}
 	}
 
+	/**
+	 * Creates a JSON object with the users name as an attribute and returns it.
+	 *
+	 * @param user the user
+	 * @return JSON object with the current user status
+	 */
 	private JSONObject createStatus(User user) {
 		return new JSONObject().put("username", user.getName());
 	}
 	
+	/**
+	 * If there is a user associated with the session id a JSON object with the users name is returned, else an empty JSON Object is returned. 
+	 *
+	 * @param req the current request
+	 * @return JSON object with the current user status
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject status(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -52,6 +80,16 @@ public class UserEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * User login. Starts the users session and returns a JSON object with the current user status.
+	 *
+	 * @param req http servlet request including userdata
+	 * @param res http servlet response
+	 * @param username the users name
+	 * @param password the users password
+	 * @return the JSON object with the current user status
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject login(HttpServletRequest req, HttpServletResponse res, String username, String password) throws JsonRpcException {
 		User user = null;
 		try {
@@ -65,6 +103,14 @@ public class UserEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * User logout. Ends the users session and returns a JSON object with the current user status.
+	 *
+	 * @param req http servlet request including userdata
+	 * @param res http servlet response
+	 * @return the JSON object with success attribute
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject logout(HttpServletRequest req, HttpServletResponse res) throws JsonRpcException {
 		User user = null;
 		try {
@@ -82,6 +128,15 @@ public class UserEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Change the users password.
+	 *
+	 * @param req http servlet request including userdata
+	 * @param oldpw the users current password
+	 * @param newpw the users new password
+	 * @return the JSON object with success attribute
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject changePassword(HttpServletRequest req, String oldpw, String newpw) throws JsonRpcException {
 		User user = null;
 		try {
@@ -101,6 +156,14 @@ public class UserEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Unregisters the user associated with the current session id.
+	 *
+	 * @param req http servlet request including userdata
+	 * @param res http servlet response
+	 * @return the JSON object with success attribute
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject unregister(HttpServletRequest req, HttpServletResponse res) throws JsonRpcException {
 		User user = null;
 		try {
@@ -116,6 +179,12 @@ public class UserEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * creates a JSON Obect from a LogEntry and returns it. Includes the time, type and text of the entry.
+	 *
+	 * @param log the log which data is saved as a JSON object
+	 * @return the JSON object with the log data
+	 */
 	private static JSONObject printLog(LogEntry log) {
 		return new JSONObject()
 				.put("time", isoUTC(log.getTime()))
@@ -123,6 +192,13 @@ public class UserEndpoint extends JsonRpcEndpoint {
 				.put("text", log.getText());
 	}
 	
+	/**
+	 * Returns a list of the users logs.
+	 *
+	 * @param req http servlet request including userdata
+	 * @return the JSON object including the users log data
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listLogs(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -142,6 +218,15 @@ public class UserEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets a listener that triggers when new logs are added
+	 *
+	 * @param req http servlet request including userdata
+	 * @param conn websocket connnection
+	 * @param identifier the identifier
+	 * @return the JSON object including a success attribute
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setLogListener(HttpServletRequest req, WebsocketConnection conn, String identifier) throws JsonRpcException {
 		User user = null;
 		try {
@@ -159,6 +244,13 @@ public class UserEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Deletes the users logs.
+	 *
+	 * @param req http servlet request including userdata
+	 * @return the JSON object including a success attribute
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject clearLogs(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {

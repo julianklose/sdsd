@@ -15,6 +15,7 @@ import org.apache.commons.io.FileUtils;
  *
  */
 public class MainParser {
+	
 	/**
 	 * Reads the contents of the file pointed to by {@code args[1]} into an
 	 * {@code InputStream}. If no input file is specified, {@code stdin} is used.
@@ -28,12 +29,11 @@ public class MainParser {
 	 * {@link #test(InputStream, OutputStream)}, the parser tests whether the
 	 * provided input can most likely be parsed or not. This check should always be
 	 * implemented in a very efficient way.
-	 * 
+	 *
 	 * @param args Array of provided command line arguments.
-	 * 
+	 * @throws IOException Signals that an I/O exception has occurred.
 	 * @see #parse(InputStream, OutputStream)
 	 * @see #test(InputStream, OutputStream)
-	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
 		if (args.length > 0) {
@@ -55,10 +55,23 @@ public class MainParser {
 			System.err.println("USAGE: java -jar parser.jar parse|validate|test output");
 	}
 
+	/**
+	 * Parses the.
+	 *
+	 * @param input the input
+	 * @param output the output
+	 */
 	private static void parse(InputStream input, OutputStream output) {
 		HelmParser.parse(input, output);
 	}
 
+	/**
+	 * Test.
+	 *
+	 * @param input the input
+	 * @param output the output
+	 * @return true, if successful
+	 */
 	private static boolean test(InputStream input, OutputStream output) {
 		return HelmParser.test(input, output);
 	}

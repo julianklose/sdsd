@@ -26,8 +26,18 @@ import de.sdsd.projekt.prototype.Main;
  * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
  */
 public class ARConn {
+	
+	/** The Constant EXP. */
 	public static final String ACC_ID = "accountId", CONN = "connection", SUBS = "subscriptions", EXP = "expire";
 	
+	/**
+	 * Creates the.
+	 *
+	 * @param accountId the account id
+	 * @param onboardingResponse the onboarding response
+	 * @param arconn the arconn
+	 * @return the document
+	 */
 	public static Document create(String accountId, String onboardingResponse, ARConnection arconn) {
 		return new Document()
 			.append(ACC_ID, accountId)
@@ -35,12 +45,27 @@ public class ARConn {
 			.append(EXP, Date.from(arconn.getExpirationDate()));
 	}
 	
+	/** The user. */
 	private final User user;
+	
+	/** The account id. */
 	private final String accountId;
+	
+	/** The onboarding info. */
 	private final JSONObject onboardingInfo;
+	
+	/** The subscriptions. */
 	private Set<ARMessageType> subscriptions;
+	
+	/** The expiration date. */
 	private final Instant expirationDate;
 	
+	/**
+	 * Instantiates a new AR conn.
+	 *
+	 * @param doc the doc
+	 * @param user the user
+	 */
 	public ARConn(Document doc, User user) {
 		this.user = user;
 		this.accountId = doc.getString(ACC_ID);
@@ -53,18 +78,38 @@ public class ARConn {
 		this.expirationDate = date != null ? date.toInstant() : Instant.now();
 	}
 	
+	/**
+	 * Gets the account id.
+	 *
+	 * @return the account id
+	 */
 	public String getAccountId() {
 		return accountId;
 	}
 	
+	/**
+	 * Gets the own endpoint id.
+	 *
+	 * @return the own endpoint id
+	 */
 	public String getOwnEndpointId() {
 		return onboardingInfo.getString("sensorAlternateId");
 	}
 	
+	/**
+	 * Gets the onboarding info.
+	 *
+	 * @return the onboarding info
+	 */
 	public String getOnboardingInfo() {
 		return onboardingInfo.toString();
 	}
 	
+	/**
+	 * Conn.
+	 *
+	 * @return the AR connection
+	 */
 	public ARConnection conn() {
 		if(Main.DEBUG_MODE && isMQTT())
 			throw new RuntimeException("No MQTT connections in DEBUG Mode!");
@@ -75,10 +120,21 @@ public class ARConn {
 		}
 	}
 	
+	/**
+	 * Gets the subscriptions.
+	 *
+	 * @return the subscriptions
+	 */
 	public Set<ARMessageType> getSubscriptions() {
 		return subscriptions;
 	}
 
+	/**
+	 * Sets the subscriptions.
+	 *
+	 * @param types the types
+	 * @return the bson
+	 */
 	public Bson setSubscriptions(Set<ARMessageType> types) {
 		this.subscriptions = Collections.unmodifiableSet(types);
 		return Updates.set(User.AR + "." + SUBS, types.stream()
@@ -86,16 +142,31 @@ public class ARConn {
 				.collect(Util.asMongoStringList()));
 	}
 	
+	/**
+	 * Gets the expiration date.
+	 *
+	 * @return the expiration date
+	 */
 	public Instant getExpirationDate() {
 		return expirationDate;
 	}
 	
+	/**
+	 * Checks if is qa.
+	 *
+	 * @return true, if is qa
+	 */
 	public boolean isQA() {
 		JSONObject c = onboardingInfo.getJSONObject("connectionCriteria");
 		return c.has("host") ? c.getString("host").contains("dke-qa.")
 				: c.getString("measures").startsWith("https://dke-qa.");
 	}
 	
+	/**
+	 * Checks if is mqtt.
+	 *
+	 * @return true, if is mqtt
+	 */
 	public boolean isMQTT() {
 		return onboardingInfo.getJSONObject("connectionCriteria").has("port");
 	}

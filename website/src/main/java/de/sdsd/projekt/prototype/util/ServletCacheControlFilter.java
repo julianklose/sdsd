@@ -9,8 +9,20 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * The Class ServletCacheControlFilter.
+ */
 public class ServletCacheControlFilter implements Filter {
 
+    /**
+     * Do filter.
+     *
+     * @param request the request
+     * @param response the response
+     * @param chain the chain
+     * @throws IOException Signals that an I/O exception has occurred.
+     * @throws ServletException the servlet exception
+     */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
@@ -22,10 +34,19 @@ public class ServletCacheControlFilter implements Filter {
         chain.doFilter(request, response);
     }
 
+    /**
+     * Destroy.
+     */
     @Override
     public void destroy() {
     }
 
+    /**
+     * Inits the.
+     *
+     * @param arg0 the arg 0
+     * @throws ServletException the servlet exception
+     */
     @Override
     public void init(FilterConfig arg0) throws ServletException {
     }

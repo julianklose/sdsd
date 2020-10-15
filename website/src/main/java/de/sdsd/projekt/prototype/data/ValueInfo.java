@@ -23,14 +23,24 @@ import de.sdsd.projekt.prototype.applogic.TripleFunctions.UtilQuerySolution;
 
 /**
  * Represents a presentation information for a timelog value from the triplestore.
- * 
- * @see Timelog
+ *
  * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+ * @see Timelog
  */
 public class ValueInfo {
+	
+	/** The Constant UNIT. */
 	private static final Var VURI = Var.alloc("vuri"), DESIG = Var.alloc("desig"), 
 			OFFSET = Var.alloc("offset"), SCALE = Var.alloc("scale"), NOD = Var.alloc("nod"), UNIT = Var.alloc("unit");
 	
+	/**
+	 * Gets the value infos.
+	 *
+	 * @param app the app
+	 * @param fileUri the file uri
+	 * @param valueUris the value uris
+	 * @return the value infos
+	 */
 	public static List<ValueInfo> getValueInfos(ApplicationLogic app, String fileUri, @Nullable List<String> valueUris) {
 		if(valueUris != null && valueUris.isEmpty()) return Collections.emptyList();
 		SelectBuilder query = new SelectBuilder()
@@ -53,17 +63,41 @@ public class ValueInfo {
 		return list;
 	}
 	
+	/**
+	 * Gets the value info.
+	 *
+	 * @param app the app
+	 * @param fileUri the file uri
+	 * @param valueUri the value uri
+	 * @return the value info
+	 */
 	public static ValueInfo getValueInfo(ApplicationLogic app, String fileUri, String valueUri) {
 		return getValueInfos(app, fileUri, Collections.singletonList(valueUri)).get(0);
 	}
 	
+	/** The value uri. */
 	public final String valueUri;
+	
+	/** The designator. */
 	public final String designator;
+	
+	/** The offset. */
 	public final long offset;
+	
+	/** The scale. */
 	public final double scale;
+	
+	/** The number of decimals. */
 	public final int numberOfDecimals;
+	
+	/** The unit. */
 	public final String unit;
 	
+	/**
+	 * Instantiates a new value info.
+	 *
+	 * @param qs the qs
+	 */
 	private ValueInfo(UtilQuerySolution qs) {
 		this.valueUri = qs.getUri(VURI);
 		this.designator = qs.contains(DESIG) ? qs.getString(DESIG) : "";
@@ -73,6 +107,11 @@ public class ValueInfo {
 		this.unit = qs.contains(UNIT) ? qs.getString(UNIT) : "";
 	}
 	
+	/**
+	 * Instantiates a new value info.
+	 *
+	 * @param valueUri the value uri
+	 */
 	private ValueInfo(String valueUri) {
 		this.valueUri = valueUri;
 		this.designator = "";
@@ -82,30 +121,66 @@ public class ValueInfo {
 		this.unit = "";
 	}
 	
+	/**
+	 * Value uri.
+	 *
+	 * @return the string
+	 */
 	public String valueUri() {
 		return valueUri;
 	}
 
+	/**
+	 * Gets the designator.
+	 *
+	 * @return the designator
+	 */
 	public String getDesignator() {
 		return designator;
 	}
 	
+	/**
+	 * Gets the offset.
+	 *
+	 * @return the offset
+	 */
 	public long getOffset() {
 		return offset;
 	}
 	
+	/**
+	 * Gets the scale.
+	 *
+	 * @return the scale
+	 */
 	public double getScale() {
 		return scale;
 	}
 
+	/**
+	 * Gets the number of decimals.
+	 *
+	 * @return the number of decimals
+	 */
 	public int getNumberOfDecimals() {
 		return numberOfDecimals;
 	}
 
+	/**
+	 * Gets the unit.
+	 *
+	 * @return the unit
+	 */
 	public String getUnit() {
 		return unit;
 	}
 	
+	/**
+	 * Translate value.
+	 *
+	 * @param value the value
+	 * @return the double
+	 */
 	public double translateValue(long value) {
 		return new BigDecimal(value)
 				.add(new BigDecimal(offset))
@@ -113,17 +188,34 @@ public class ValueInfo {
 				.doubleValue();
 	}
 	
+	/**
+	 * Format value.
+	 *
+	 * @param translatedValue the translated value
+	 * @return the string
+	 */
 	public String formatValue(double translatedValue) {
 		NumberFormat format = DecimalFormat.getInstance();
 		format.setMaximumFractionDigits(numberOfDecimals);
 		return format.format(translatedValue);
 	}
 
+	/**
+	 * Hash code.
+	 *
+	 * @return the int
+	 */
 	@Override
 	public int hashCode() {
 		return Objects.hash(valueUri);
 	}
 
+	/**
+	 * Equals.
+	 *
+	 * @param obj the obj
+	 * @return true, if successful
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

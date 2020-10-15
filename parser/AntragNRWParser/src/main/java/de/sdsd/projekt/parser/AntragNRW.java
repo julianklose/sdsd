@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -41,6 +40,7 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import de.sdsd.projekt.api.ParserAPI;
+import de.sdsd.projekt.api.ParserAPI.Validation;
 import de.sdsd.projekt.api.ServiceAPI.JsonRpcException;
 import de.sdsd.projekt.api.ServiceResult.WikiInstance;
 import de.sdsd.projekt.api.Util;
@@ -54,14 +54,34 @@ import de.sdsd.projekt.api.Util.WikiType;
  */
 public class AntragNRW {
 
+	/** The crs. */
 	public final CoordinateReferenceSystem crs;
+	
+	/** The gf. */
 	private final GeometryFactory gf;
+	
+	/** The parser. */
 	private final SAXParser parser;
 	
+	/** The content. */
 	private final Map<String, byte[]> content = new HashMap<>();
-	private final List<String> errors;
 	
-	public AntragNRW(InputStream antragzip, List<String> errors) 
+	/** The errors. */
+	private final Validation errors;
+	
+	/**
+	 * Instantiates a new antrag NRW.
+	 *
+	 * @param antragzip the antragzip
+	 * @param errors the errors
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws ParserConfigurationException the parser configuration exception
+	 * @throws ZipException the zip exception
+	 * @throws SAXException the SAX exception
+	 * @throws NoSuchAuthorityCodeException the no such authority code exception
+	 * @throws FactoryException the factory exception
+	 */
+	public AntragNRW(InputStream antragzip, Validation errors) 
 			throws IOException, ParserConfigurationException, ZipException, SAXException, NoSuchAuthorityCodeException, FactoryException {
 		this.crs = CRS.decode("EPSG:25832", false);
 		this.gf = new GeometryFactory(new PrecisionModel(), 25832);
@@ -80,6 +100,15 @@ public class AntragNRW {
 		}
 	}
 	
+	/**
+	 * Parses the xml.
+	 *
+	 * @param name the name
+	 * @param handler the handler
+	 * @throws SAXException the SAX exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws FileNotFoundException the file not found exception
+	 */
 	private void parseXml(String name, DefaultHandler handler) throws SAXException, IOException, FileNotFoundException {
 		byte[] bin = content.get(name.toLowerCase());
 		if(bin == null) throw new FileNotFoundException("Couldn't find " + name);
@@ -88,33 +117,81 @@ public class AntragNRW {
 		parser.parse(is, handler);
 	}
 	
+	/**
+	 * Read teilschlaggeometrien.
+	 *
+	 * @return the map
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws SAXException the SAX exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public Map<String, Geometry> readTeilschlaggeometrien() throws FileNotFoundException, SAXException, IOException {
 		AntragGMLHandler antragGMLHandler = new AntragGMLHandler();
 		parseXml("teilschlaggeometrien.gml", antragGMLHandler);
 		return antragGMLHandler.getGeometries();
 	}
 	
+	/**
+	 * Read flaechenverzeichnis.
+	 *
+	 * @return the map
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws SAXException the SAX exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public Map<String, SchlagInfo> readFlaechenverzeichnis() throws FileNotFoundException, SAXException, IOException {
 		AntragXMLHandler antragXMLHandler = new AntragXMLHandler();
 		parseXml("flächenverzeichnis.xml", antragXMLHandler);
 		return antragXMLHandler.getSchlaege();
 	}
 	
-	public List<String> getErrors() {
+	/**
+	 * Gets the errors.
+	 *
+	 * @return the errors
+	 */
+	public Validation getErrors() {
 		return errors;
 	}
 	
+	/**
+	 * The Class AntragGMLHandler.
+	 */
 	private class AntragGMLHandler extends DefaultHandler {
+		
+		/** The geometries. */
 		private final Map<String, Geometry> geometries = new HashMap<>();
+		
+		/** The teilb. */
 		private StringBuilder schlagb = null, teilb = null;
+		
+		/** The teil. */
 		private String schlag = null, teil = null;
+		
+		/** The gml. */
 		private GMLHandler gml = null;
+		
+		/** The geo. */
 		private Geometry geo = null;
 		
+		/**
+		 * Gets the geometries.
+		 *
+		 * @return the geometries
+		 */
 		public Map<String, Geometry> getGeometries() {
 			return geometries;
 		}
 
+		/**
+		 * Start element.
+		 *
+		 * @param uri the uri
+		 * @param localName the local name
+		 * @param qName the q name
+		 * @param attributes the attributes
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			if(gml != null)
@@ -127,6 +204,14 @@ public class AntragNRW {
 				gml = new GMLHandler(gf, null);
 		}
 
+		/**
+		 * End element.
+		 *
+		 * @param uri the uri
+		 * @param localName the local name
+		 * @param qName the q name
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 			if(localName.equals("GEO_COORD_")) {
@@ -147,6 +232,14 @@ public class AntragNRW {
 			}
 		}
 
+		/**
+		 * Characters.
+		 *
+		 * @param ch the ch
+		 * @param start the start
+		 * @param length the length
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
 			if(gml != null)
@@ -157,30 +250,59 @@ public class AntragNRW {
 				teilb.append(ch, start, length);
 		}
 
+		/**
+		 * Ignorable whitespace.
+		 *
+		 * @param ch the ch
+		 * @param start the start
+		 * @param length the length
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
 			if(gml != null)
 				gml.ignorableWhitespace(ch, start, length);
 		}
 
+		/**
+		 * Warning.
+		 *
+		 * @param e the e
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void warning(SAXParseException e) throws SAXException {
-			errors.add(e.toString());
+			errors.warn(e.toString());
 		}
 
+		/**
+		 * Error.
+		 *
+		 * @param e the e
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void error(SAXParseException e) throws SAXException {
-			errors.add(e.toString());
+			errors.error(e.toString());
 		}
 
+		/**
+		 * Fatal error.
+		 *
+		 * @param e the e
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void fatalError(SAXParseException e) throws SAXException {
 			throw e;
 		}
 	}
 	
+	/** The Constant KULTUR. */
 	private static final WikiType ANTRAG = Util.UNKNOWN.res("applicationField"),
 			KULTUR = Util.UNKNOWN.res("kultur");
+	
+	/** The Constant AREA. */
 	private static final WikiAttr YEAR = ANTRAG.prop("year"),
 			NUMMER = ANTRAG.prop("number"),
 			NAME = ANTRAG.prop("name"),
@@ -189,9 +311,13 @@ public class AntragNRW {
 			USAGEPREV = ANTRAG.prop("prevUsage"),
 			AREA = ANTRAG.prop("area");
 	
+	/** The Constant TYPE. */
 	private static final WikiType TYPE = Util.format("antragNRW").res("teilschlag");
+	
+	/** The Constant TEIL. */
 	private static final WikiAttr TEIL = TYPE.prop("teil");
 	
+	/** The Constant KULTUREN. */
 	private static final Map<String, WikiInstance> KULTUREN;
 	static {
 		Map<String, WikiInstance> kulturen = null;
@@ -205,38 +331,108 @@ public class AntragNRW {
 		KULTUREN = kulturen;
 	}
 	
+	/**
+	 * The Class SchlagInfo.
+	 */
 	public static class SchlagInfo {
+		
+		/** The uri. */
 		public final String uri = Util.createRandomUri();
+		
+		/** The year. */
 		private StringBuilder year = null;
+		
+		/** The teil. */
 		private String nummer = null, name = null, teil = null;
+		
+		/** The area. */
 		private String area = null;
+		
+		/** The flik. */
 		private String flik = null;
+		
+		/** The usage cur. */
 		private String usagePrev = null, usageCur = null;
+		
+		/**
+		 * Instantiates a new schlag info.
+		 *
+		 * @param year the year
+		 */
 		SchlagInfo(StringBuilder year) {
 			this.year = year;
 		}
+		
+		/**
+		 * Gets the nummer.
+		 *
+		 * @return the nummer
+		 */
 		public String getNummer() {
 			return nummer;
 		}
+		
+		/**
+		 * Gets the name.
+		 *
+		 * @return the name
+		 */
 		public String getName() {
 			return name;
 		}
+		
+		/**
+		 * Gets the teil.
+		 *
+		 * @return the teil
+		 */
 		public String getTeil() {
 			return teil;
 		}
+		
+		/**
+		 * Gets the area.
+		 *
+		 * @return the area
+		 */
 		public String getArea() {
 			return area;
 		}
+		
+		/**
+		 * Gets the flik.
+		 *
+		 * @return the flik
+		 */
 		public String getFlik() {
 			return flik;
 		}
+		
+		/**
+		 * Gets the usage prev.
+		 *
+		 * @return the usage prev
+		 */
 		public String getUsagePrev() {
 			return usagePrev;
 		}
+		
+		/**
+		 * Gets the usage cur.
+		 *
+		 * @return the usage cur
+		 */
 		public String getUsageCur() {
 			return usageCur;
 		}
 		
+		/**
+		 * Write.
+		 *
+		 * @param model the model
+		 * @return the resource
+		 * @throws NumberFormatException the number format exception
+		 */
 		public Resource write(Model model) throws NumberFormatException {
 			Resource res = model.createResource(uri)
 					.addProperty(RDF.type, TYPE)
@@ -265,6 +461,12 @@ public class AntragNRW {
 			return res;
 		}
 		
+		/**
+		 * Properties.
+		 *
+		 * @return the JSON object
+		 * @throws NumberFormatException the number format exception
+		 */
 		public JSONObject properties() throws NumberFormatException {
 			JSONObject prop = new JSONObject()
 					.put("Antragsjahr", Integer.parseInt(year.toString()))
@@ -291,17 +493,44 @@ public class AntragNRW {
 		}
 	}
 	
+	/**
+	 * The Class AntragXMLHandler.
+	 */
 	private class AntragXMLHandler extends DefaultHandler {
+		
+		/** The schlaege. */
 		private final Map<String, SchlagInfo> schlaege = new HashMap<>();
+		
+		/** The sb. */
 		private final StringBuilder sb = new StringBuilder();
+		
+		/** The year. */
 		private final StringBuilder year = new StringBuilder();
+		
+		/** The info. */
 		private SchlagInfo info = null;
+		
+		/** The nutzungvj. */
 		private boolean schlag = false, nutzungaj = false, nutzungvj = false;
 		
+		/**
+		 * Gets the schlaege.
+		 *
+		 * @return the schlaege
+		 */
 		public Map<String, SchlagInfo> getSchlaege() {
 			return schlaege;
 		}
 
+		/**
+		 * Start element.
+		 *
+		 * @param uri the uri
+		 * @param localName the local name
+		 * @param qName the q name
+		 * @param attributes the attributes
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			if(localName.equals("parzelle"))
@@ -315,6 +544,14 @@ public class AntragNRW {
 			sb.setLength(0);
 		}
 
+		/**
+		 * End element.
+		 *
+		 * @param uri the uri
+		 * @param localName the local name
+		 * @param qName the q name
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 			if(localName.equals("antragsjahr"))
@@ -348,21 +585,47 @@ public class AntragNRW {
 			}
 		}
 
+		/**
+		 * Characters.
+		 *
+		 * @param ch the ch
+		 * @param start the start
+		 * @param length the length
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
 			sb.append(ch, start, length);
 		}
 
+		/**
+		 * Warning.
+		 *
+		 * @param e the e
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void warning(SAXParseException e) throws SAXException {
-			errors.add(e.toString());
+			errors.warn(e.toString());
 		}
 
+		/**
+		 * Error.
+		 *
+		 * @param e the e
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void error(SAXParseException e) throws SAXException {
-			errors.add(e.toString());
+			errors.error(e.toString());
 		}
 
+		/**
+		 * Fatal error.
+		 *
+		 * @param e the e
+		 * @throws SAXException the SAX exception
+		 */
 		@Override
 		public void fatalError(SAXParseException e) throws SAXException {
 			throw e;

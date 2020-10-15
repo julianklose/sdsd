@@ -38,6 +38,7 @@ import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import de.sdsd.projekt.api.ParserAPI.Validation;
 import de.sdsd.projekt.api.Util;
 import de.sdsd.projekt.api.Util.WikiAttr;
 import de.sdsd.projekt.api.Util.WikiFormat;
@@ -55,8 +56,11 @@ import de.sdsd.projekt.parser.isoxml.Link.LinkEntry;
  * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
  */
 public class ISOXMLParser {
+	
+	/** The Constant FORMAT. */
 	public static final WikiFormat FORMAT = Util.format("isoxml");
 	
+	/** The Constant TIMELOG. */
 	@SuppressWarnings("unused")
 	private static final JSONObject FORMATS, TASKDATA, LINKLIST, TIMELOG;
 	static {
@@ -71,9 +75,13 @@ public class ISOXMLParser {
 		}
 	}
 
+	/** The content. */
 	private final HashMap<String, byte[]> content = new HashMap<>();
+	
+	/** The builder. */
 	private final DocumentBuilder builder;
 
+	/** The idref. */
 	private final HashMap<String, IsoXmlElement> idref = new HashMap<>();
 
 	/**
@@ -96,6 +104,15 @@ public class ISOXMLParser {
 		}
 	}
 
+	/**
+	 * Gets the xml.
+	 *
+	 * @param name the name
+	 * @return the xml
+	 * @throws SAXException the SAX exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws FileNotFoundException the file not found exception
+	 */
 	@Nonnull
 	private Document getXml(String name) throws SAXException, IOException, FileNotFoundException {
 		byte[] bin = content.get(name.toLowerCase());
@@ -105,6 +122,13 @@ public class ISOXMLParser {
 		return builder.parse(is);
 	}
 
+	/**
+	 * Gets the bin.
+	 *
+	 * @param name the name
+	 * @return the bin
+	 * @throws FileNotFoundException the file not found exception
+	 */
 	@Nonnull
 	private byte[] getBin(String name) throws FileNotFoundException {
 		byte[] bin = content.get(name.toLowerCase());
@@ -112,6 +136,7 @@ public class ISOXMLParser {
 		return bin;
 	}
 
+	/** The taskdata. */
 	private IsoXmlElement taskdata = null;
 	
 	/**
@@ -130,6 +155,15 @@ public class ISOXMLParser {
 		return taskdata;
 	}
 
+	/**
+	 * Resolve XFR.
+	 *
+	 * @param xfr the xfr
+	 * @return the iso xml element
+	 * @throws IllegalArgumentException the illegal argument exception
+	 * @throws SAXException the SAX exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	@Nonnull
 	public IsoXmlElement resolveXFR(IsoXmlElement xfr) throws IllegalArgumentException, SAXException, IOException {
 		if(!xfr.getTag().equals("XFR"))
@@ -143,7 +177,13 @@ public class ISOXMLParser {
 		return new IsoXmlElement(this, TASKDATA, null, xml);
 	}
 
-	public void resolveAllXFR(IsoXmlElement taskdata, @Nullable List<String> errors) {
+	/**
+	 * Resolve all XFR.
+	 *
+	 * @param taskdata the taskdata
+	 * @param errors the errors
+	 */
+	public void resolveAllXFR(IsoXmlElement taskdata, @Nullable Validation errors) {
 		List<IsoXmlElement> xfrs = taskdata.findChildren("XFR");
 		List<IsoXmlElement> add = new ArrayList<>(xfrs.size());
 		for (IsoXmlElement xfr : xfrs) {
@@ -154,12 +194,22 @@ public class ISOXMLParser {
 			} catch (IllegalArgumentException | SAXException | IOException e) {
 				String file = xfr.getAttribute("filename").getStringValue();
 				System.err.println(file + ".xml: " + e.getMessage());
-				if(errors != null) errors.add(file + ".xml: " + e.getMessage());
+				if(errors != null) errors.fatal(file + ".xml: " + e.getMessage());
 			}
 		}
 		taskdata.addChildren(add);
 	}
 
+	/**
+	 * Gets the time log.
+	 *
+	 * @param tlg the tlg
+	 * @return the time log
+	 * @throws IllegalArgumentException the illegal argument exception
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws SAXException the SAX exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public TimeLog getTimeLog(IsoXmlElement tlg) 
 			throws IllegalArgumentException, FileNotFoundException, SAXException, IOException {
 		if(!tlg.getTag().equals("TLG"))
@@ -174,12 +224,29 @@ public class ISOXMLParser {
 		return new TimeLog(tlg, attr.getValue(), tim, content);
 	}
 	
+	/**
+	 * Gets the all time logs.
+	 *
+	 * @return the all time logs
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws SAXException the SAX exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public List<IsoXmlElement> getAllTimeLogs() throws FileNotFoundException, SAXException, IOException {
 		return readTaskData().findChildren("TSK").stream()
 				.flatMap(tsk -> tsk.findChildren("TLG").stream())
 				.collect(Collectors.toList());
 	}
 	
+	/**
+	 * Gets the grid.
+	 *
+	 * @param grd the grd
+	 * @return the grid
+	 * @throws IllegalArgumentException the illegal argument exception
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public Grid getGrid(IsoXmlElement grd) 
 			throws IllegalArgumentException, FileNotFoundException, IOException {
 		if(!grd.getTag().equals("GRD"))
@@ -193,12 +260,29 @@ public class ISOXMLParser {
 		return new Grid(grd, content);
 	}
 	
+	/**
+	 * Gets the all grids.
+	 *
+	 * @return the all grids
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws SAXException the SAX exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public List<IsoXmlElement> getAllGrids() throws FileNotFoundException, SAXException, IOException {
 		return readTaskData().findChildren("TSK").stream()
 				.flatMap(tsk -> tsk.findChildren("GRD").stream())
 				.collect(Collectors.toList());
 	}
 	
+	/**
+	 * Gets the points.
+	 *
+	 * @param pnt the pnt
+	 * @return the points
+	 * @throws IllegalArgumentException the illegal argument exception
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public List<Geo.Point> getPoints(IsoXmlElement pnt) 
 			throws IllegalArgumentException, FileNotFoundException, IOException {
 		if(!pnt.getTag().equals("PNT"))
@@ -212,12 +296,26 @@ public class ISOXMLParser {
 		return Geo.readBinaryPoints(pnt, content);
 	}
 	
+	/**
+	 * Gets the all geometries.
+	 *
+	 * @return the all geometries
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws SAXException the SAX exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public List<Geo> getAllGeometries() throws FileNotFoundException, SAXException, IOException {
 		List<Geo> list = new ArrayList<>();
 		findGeometries(readTaskData(), list);
 		return list;
 	}
 	
+	/**
+	 * Find geometries.
+	 *
+	 * @param e the e
+	 * @param list the list
+	 */
 	private void findGeometries(IsoXmlElement e, List<Geo> list) {
 		for(IsoXmlElement c : e.getChildren()) {
 			try {
@@ -247,7 +345,19 @@ public class ISOXMLParser {
 	
 	//link list
 	
+	/** The Constant LinkListFilename. */
 	public static final String LinkListFilename = "LINKLIST.XML";
+	
+	/**
+	 * Gets the link list.
+	 *
+	 * @param afe the afe
+	 * @return the link list
+	 * @throws IllegalArgumentException the illegal argument exception
+	 * @throws FileNotFoundException the file not found exception
+	 * @throws SAXException the SAX exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public IsoXmlElement getLinkList(IsoXmlElement afe) 
 			throws IllegalArgumentException, FileNotFoundException, SAXException, IOException {
 		if(!LinkListFilename.equalsIgnoreCase(afe.getAttribute("filenameWithExtension", StringAttr.class).getValue()))
@@ -255,10 +365,20 @@ public class ISOXMLParser {
 		return new IsoXmlElement(this, LINKLIST, null, getXml(LinkListFilename).getDocumentElement());
 	}
 	
+	/**
+	 * Builds the link list.
+	 *
+	 * @param linklist the linklist
+	 * @return the link list
+	 * @throws IllegalArgumentException the illegal argument exception
+	 */
 	public LinkList buildLinkList(IsoXmlElement linklist) throws IllegalArgumentException {
 		return new LinkList(linklist);
 	}
 	
+	/**
+	 * Integrate link list.
+	 */
 	public void integrateLinkList() {
 		for(IsoXmlElement afe : taskdata.findChildren("AFE")) {
 			try {
@@ -280,11 +400,23 @@ public class ISOXMLParser {
 		}
 	}
 
+	/**
+	 * Gets the node by id.
+	 *
+	 * @param id the id
+	 * @return the node by id
+	 */
 	@CheckForNull
 	public IsoXmlElement getNodeById(String id) {
 		return idref.get(id);
 	}
 
+	/**
+	 * Sets the node id.
+	 *
+	 * @param node the node
+	 * @return true, if successful
+	 */
 	boolean setNodeId(IsoXmlElement node) {
 		IDAttr id = node.getId();
 		if(id != null && id.hasValue()) {
@@ -295,9 +427,20 @@ public class ISOXMLParser {
 	}
 	
 
+	/** The Constant GEOMETRY_TAGS. */
 	private static final List<String> GEOMETRY_TAGS = Arrays.asList("PLN", "LSG", "PNT");
+	
+	/** The Constant T_DDI. */
 	public static final WikiType T_DDI = Util.UNKNOWN.res("ddi");
 	
+	/**
+	 * To RDF.
+	 *
+	 * @param model the model
+	 * @param element the element
+	 * @param omitGeometries the omit geometries
+	 * @return the list
+	 */
 	public List<Resource> toRDF(Model model, IsoXmlElement element, boolean omitGeometries) {
 		
 		if(omitGeometries && element.getParent() != null && GEOMETRY_TAGS.contains(element.getParent().getTag()))

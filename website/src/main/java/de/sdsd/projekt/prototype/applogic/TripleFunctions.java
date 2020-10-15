@@ -99,13 +99,22 @@ import de.sdsd.projekt.prototype.data.WikiClass;
  */
 public class TripleFunctions implements Closeable {
 
+	/** The sparql query endpoint. */
 	private final String sparqlQueryEndpoint;
+	
+	/** The sparql update endpoint. */
 	private final String sparqlUpdateEndpoint;
+	
+	/** The credentials provider. */
 	private final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+	
+	/** The app. */
 	private final ApplicationLogic app;
 	
+	/** The client. */
 	private CloseableHttpClient client;
 	
+	/** The Constant ENCODING_FIXER. */
 	private final static HttpRequestInterceptor ENCODING_FIXER = new HttpRequestInterceptor() {
 		@Override
 		public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
@@ -120,6 +129,11 @@ public class TripleFunctions implements Closeable {
 		}
 	};
 	
+	/**
+	 * Instantiates a new triple functions.
+	 *
+	 * @param app the app
+	 */
 	TripleFunctions(ApplicationLogic app) {
 		this.app = app;
 		JSONObject stardog = app.settings.getJSONObject("stardog");
@@ -132,6 +146,9 @@ public class TripleFunctions implements Closeable {
 		insertDefaultsIntoWikinormia();
 	}
 	
+	/**
+	 * Recreate client.
+	 */
 	public void recreateClient() {
 		try {
 			if(client != null) 
@@ -145,9 +162,15 @@ public class TripleFunctions implements Closeable {
 				.build();
 	}
 	
+	/** The ddis. */
 	private Map<Integer, DDI> ddis = null;
+	
+	/** The ddi categories. */
 	private List<DDI.DDICategory> ddiCategories = null;
 	
+	/**
+	 * Read DD is.
+	 */
 	private void readDDIs() {
 		Resource base = ResourceFactory.createResource("https://app.sdsd-projekt.de/wikinormia.html?page=ddi");
 		Var category = Var.alloc("cat"), catIdent = Var.alloc("catIdent"), catTitle = Var.alloc("catTitle"), catDesc = Var.alloc("catDesc");
@@ -192,6 +215,12 @@ public class TripleFunctions implements Closeable {
 		this.ddiCategories = Collections.unmodifiableList(ddiCategories);
 	}
 	
+	/**
+	 * Gets the ddi.
+	 *
+	 * @param ddi the ddi
+	 * @return the ddi
+	 */
 	@Nonnull
 	public DDI getDDI(int ddi) {
 		if(ddis == null) readDDIs();
@@ -199,16 +228,32 @@ public class TripleFunctions implements Closeable {
 		return d != null ? d : new DDI(ddi, String.format("%04X", ddi), "", ddiCategories.get(ddiCategories.size()-1));
 	}
 	
+	/**
+	 * Gets the DD is.
+	 *
+	 * @return the DD is
+	 */
 	public Map<Integer, DDI> getDDIs() {
 		if(ddis == null) readDDIs();
 		return ddis;
 	}
 	
+	/**
+	 * Gets the DDI categories.
+	 *
+	 * @return the DDI categories
+	 */
 	public List<DDICategory> getDDICategories() {
 		if(ddiCategories == null) readDDIs();
 		return ddiCategories;
 	}
 	
+	/**
+	 * Insert data.
+	 *
+	 * @param model the model
+	 * @param graphURI the graph URI
+	 */
 	public void insertData(Model model, String graphURI) {
 		for(String prefix : model.getNsPrefixMap().keySet()) {
 			model.removeNsPrefix(prefix);
@@ -221,6 +266,12 @@ public class TripleFunctions implements Closeable {
 		UpdateExecutionFactory.createRemote(update, sparqlUpdateEndpoint, client).execute();
 	}
 	
+	/**
+	 * Update file.
+	 *
+	 * @param user the user
+	 * @param file the file
+	 */
 	public void updateFile(User user, File file) {
 		Node graph = NodeFactory.createURI(user.getGraphUri()),
 				fileNode = NodeFactory.createURI(file.getURI());
@@ -238,6 +289,12 @@ public class TripleFunctions implements Closeable {
 		update(update);
 	}
 	
+	/**
+	 * Delete file.
+	 *
+	 * @param user the user
+	 * @param fileUri the file uri
+	 */
 	public void deleteFile(User user, String fileUri) {
 		try {
 			deleteGraph(fileUri);
@@ -255,6 +312,11 @@ public class TripleFunctions implements Closeable {
 		update(update);
 	}
 	
+	/**
+	 * Clear all.
+	 *
+	 * @param user the user
+	 */
 	public void clearAll(User user) {
 		Var F = Var.alloc("f");
 		Query query = new SelectBuilder()
@@ -278,11 +340,21 @@ public class TripleFunctions implements Closeable {
 		}
 	}
 	
+	/**
+	 * Delete graph.
+	 *
+	 * @param graphURI the graph URI
+	 */
 	private void deleteGraph(String graphURI) {
 		UpdateRequest update = UpdateFactory.create("DROP SILENT GRAPH <" + graphURI + ">");
 		UpdateExecutionFactory.createRemote(update, sparqlUpdateEndpoint, client).execute();
 	}
 	
+	/**
+	 * Tidy up.
+	 *
+	 * @param fileIds the file ids
+	 */
 	void tidyUp(Set<ObjectId> fileIds) {
 		Collection<User> users = app.user.listUsers(false);
 		
@@ -318,6 +390,12 @@ public class TripleFunctions implements Closeable {
 		}
 	}
 	
+	/**
+	 * Construct graph.
+	 *
+	 * @param graphURI the graph URI
+	 * @return the dataset
+	 */
 	public Dataset constructGraph(String graphURI) {
 		Query query = QueryFactory.create("CONSTRUCT { ?s ?p ?o } WHERE { GRAPH ?g { ?s ?p ?o } } VALUES ?g { <"+ graphURI +"> }");
 		QueryEngineHTTP qehttp = QueryExecutionFactory.createServiceRequest(sparqlQueryEndpoint, query, client);
@@ -326,6 +404,15 @@ public class TripleFunctions implements Closeable {
 		return dataset;
 	}
 	
+	/**
+	 * Construct all out in.
+	 *
+	 * @param from the from
+	 * @param resourceURI the resource URI
+	 * @param offset the offset
+	 * @param limit the limit
+	 * @return the dataset
+	 */
 	public Dataset constructAllOutIn(String from, String resourceURI, int offset, int limit) {
 		Query query = QueryFactory.create("construct { ?s ?p1 ?o1 . ?s2 ?p2 ?s } " + from 
 				+ " where { { ?s ?p1 ?o1 } union { ?s2 ?p2 ?s } } offset " + offset + " limit " + limit + " values ?s { <"+ resourceURI +"> }");
@@ -335,52 +422,134 @@ public class TripleFunctions implements Closeable {
 		return dataset;
 	}
 	
+	/**
+	 * Query.
+	 *
+	 * @param query the query
+	 * @return the query result
+	 */
 	public QueryResult query(Query query) {
 		return query(query, false);
 	}
 	
+	/**
+	 * Query.
+	 *
+	 * @param query the query
+	 * @param reasoning the reasoning
+	 * @return the query result
+	 */
 	public QueryResult query(Query query, boolean reasoning) {
 		return new QueryResult(QueryExecutionFactory.createServiceRequest(sparqlQueryEndpoint + (reasoning ? "/reasoning" : ""), query, client));
 	}
 	
+	/**
+	 * Update.
+	 *
+	 * @param update the update
+	 */
 	public void update(Update update) {
 		update(new UpdateRequest(update));
 	}
 	
+	/**
+	 * Update.
+	 *
+	 * @param update the update
+	 */
 	public void update(UpdateRequest update) {
 		UpdateExecutionFactory.createRemote(update, sparqlUpdateEndpoint, client).execute();
 	}
 	
+	/** The Constant NS_INTERN. */
 	public static final String TBOX = "https://app.sdsd-projekt.de/wikinormia/",
 			NS_WIKI = "https://app.sdsd-projekt.de/wikinormia.html?page=",
 			NS_INTERN = "sdsd:";
+	
+	/** The Constant TBOX_N. */
 	public static final Node TBOX_N = NodeFactory.createURI(TBOX);
 	
+	/**
+	 * Checks if is wiki uri.
+	 *
+	 * @param uri the uri
+	 * @return true, if is wiki uri
+	 */
 	public static boolean isWikiUri(String uri) {
 		return uri.startsWith(NS_WIKI);
 	}
 	
+	/**
+	 * Creates the intern resource.
+	 *
+	 * @param name the name
+	 * @return the resource
+	 */
 	public static Resource createInternResource(String name) {
 		return ResourceFactory.createResource(NS_INTERN + name);
 	}
+	
+	/**
+	 * Creates the intern property.
+	 *
+	 * @param name the name
+	 * @return the property
+	 */
 	public static Property createInternProperty(String name) {
 		return ResourceFactory.createProperty(NS_INTERN + name);
 	}
 	
+	/**
+	 * Wkn.
+	 *
+	 * @param page the page
+	 * @return the string
+	 */
 	public static String wkn(String page) {
 		return NS_WIKI + page;
 	}
+	
+	/**
+	 * Creates the wiki resource uri.
+	 *
+	 * @param identifier the identifier
+	 * @return the string
+	 */
 	public static String createWikiResourceUri(String identifier) {
 		return NS_WIKI + Util.toCamelCase(identifier, false);
 	}
+	
+	/**
+	 * Creates the wiki resource uri.
+	 *
+	 * @param formatUri the format uri
+	 * @param identifier the identifier
+	 * @return the string
+	 */
 	public static String createWikiResourceUri(String formatUri, String identifier) {
 		return formatUri.equals(FORMAT_UNKNOWN.getURI()) 
 				? createWikiResourceUri(identifier) 
 				: formatUri + Util.toCamelCase(identifier, true);
 	}
+	
+	/**
+	 * Creates the wiki property uri.
+	 *
+	 * @param typeUri the type uri
+	 * @param identifier the identifier
+	 * @return the string
+	 */
 	public static String createWikiPropertyUri(String typeUri, String identifier) {
 		return typeUri + '#' + Util.toCamelCase(identifier, false);
 	}
+	
+	/**
+	 * Creates the wiki instance uri.
+	 *
+	 * @param typeUri the type uri
+	 * @param identifier the identifier
+	 * @return the string
+	 */
 	public static String createWikiInstanceUri(String typeUri, String identifier) {
 		return typeUri + '_' + Util.toCamelCase(identifier, false);
 	}
@@ -391,9 +560,22 @@ public class TripleFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class WikiRes extends ResourceImpl {
+		
+		/**
+		 * Instantiates a new wiki res.
+		 *
+		 * @param uri the uri
+		 */
 		protected WikiRes(String uri) {
 			super(uri);
 		}
+		
+		/**
+		 * Page.
+		 *
+		 * @param page the page
+		 * @return the wiki res
+		 */
 		public static WikiRes page(String page) {
 			int index = page.indexOf('#');
 			if(index >= 0) page = page.substring(0, index);
@@ -403,6 +585,12 @@ public class TripleFunctions implements Closeable {
 		}
 	}
 	
+	/**
+	 * Format.
+	 *
+	 * @param identifier the identifier
+	 * @return the wiki format
+	 */
 	public static WikiFormat format(String identifier) {
 		return new WikiFormat(identifier);
 	}
@@ -413,14 +601,35 @@ public class TripleFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class WikiFormat extends WikiRes {
+		
+		/**
+		 * Instantiates a new wiki format.
+		 *
+		 * @param identifier the identifier
+		 */
 		public WikiFormat(String identifier) {
 			super(createWikiResourceUri(identifier));
 		}
+		
+		/**
+		 * From uri.
+		 *
+		 * @param uri the uri
+		 * @return the wiki format
+		 * @throws IllegalArgumentException the illegal argument exception
+		 */
 		public static WikiFormat fromUri(String uri) throws IllegalArgumentException {
 			if(!uri.startsWith(NS_WIKI)) 
 				throw new IllegalArgumentException("URI is no wikinormia uri");
 			return new WikiFormat(uri.substring(NS_WIKI.length()));
 		}
+		
+		/**
+		 * Res.
+		 *
+		 * @param identifier the identifier
+		 * @return the wiki type
+		 */
 		public WikiType res(String identifier) {
 			return new WikiType(this, identifier);
 		}
@@ -432,15 +641,43 @@ public class TripleFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class WikiType extends WikiRes {
+		
+		/**
+		 * Instantiates a new wiki type.
+		 *
+		 * @param format the format
+		 * @param identifier the identifier
+		 */
 		public WikiType(WikiFormat format, String identifier) {
 			super(createWikiResourceUri(format.getURI(), identifier));
 		}
+		
+		/**
+		 * Prop.
+		 *
+		 * @param identifier the identifier
+		 * @return the wiki attr
+		 */
 		public WikiAttr prop(String identifier) {
 			return new WikiAttr(this, identifier);
 		}
+		
+		/**
+		 * Inst.
+		 *
+		 * @param identifier the identifier
+		 * @return the wiki inst
+		 */
 		public WikiInst inst(String identifier) {
 			return new WikiInst(this, identifier);
 		}
+		
+		/**
+		 * Inst.
+		 *
+		 * @param identifier the identifier
+		 * @return the wiki inst
+		 */
 		public WikiInst inst(int identifier) {
 			return new WikiInst(this, Integer.toString(identifier));
 		}
@@ -452,6 +689,13 @@ public class TripleFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class WikiAttr extends PropertyImpl {
+		
+		/**
+		 * Instantiates a new wiki attr.
+		 *
+		 * @param type the type
+		 * @param identifier the identifier
+		 */
 		public WikiAttr(WikiType type, String identifier) {
 			super(createWikiPropertyUri(type.getURI(), identifier));
 		}
@@ -463,42 +707,118 @@ public class TripleFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class WikiInst extends WikiRes {
+		
+		/**
+		 * Instantiates a new wiki inst.
+		 *
+		 * @param type the type
+		 * @param identifier the identifier
+		 */
 		public WikiInst(WikiType type, String identifier) {
 			super(createWikiInstanceUri(type.getURI(), identifier));
 		}
 	}
 	
+	/** The Constant RELTIMELOG. */
 	public static final Property RELTIMELOG = createInternProperty("relatedTimeLog");
+	
+	/** The Constant UNIT. */
 	public static final Property UNIT = createInternProperty("unit");
 	
+	/** The Constant SUBCLASS. */
 	public static final Path SUBCLASS = PathFactory.pathZeroOrMore1(Util.path(RDFS.subClassOf));
+	
+	/** The Constant TYPE_SUBCLASS. */
 	public static final Path TYPE_SUBCLASS = subclass(RDF.type);
+	
+	/**
+	 * Subclass.
+	 *
+	 * @param prop the prop
+	 * @return the path
+	 */
 	public static final Path subclass(Property prop) {
 		return subclass(Util.path(prop));
 	}
+	
+	/**
+	 * Subclass.
+	 *
+	 * @param prop the prop
+	 * @return the path
+	 */
 	public static final Path subclass(Path prop) {
 		return PathFactory.pathSeq(prop, SUBCLASS);
 	}
+	
+	/** The Constant BASECLASS. */
 	public static final Path BASECLASS = PathFactory.pathZeroOrMore1(PathFactory.pathInverse(Util.path(RDFS.subClassOf)));
+	
+	/**
+	 * Baseclass.
+	 *
+	 * @param prop the prop
+	 * @return the path
+	 */
 	public static final Path baseclass(Property prop) {
 		return baseclass(Util.path(prop));
 	}
+	
+	/**
+	 * Baseclass.
+	 *
+	 * @param prop the prop
+	 * @return the path
+	 */
 	public static final Path baseclass(Path prop) {
 		return PathFactory.pathSeq(prop, BASECLASS);
 	}
+	
+	/** The Constant PARTOF. */
 	public static final Path PARTOF = PathFactory.pathZeroOrMore1(Util.path(DCTerms.isPartOf));
+	
+	/**
+	 * Part of.
+	 *
+	 * @param prop the prop
+	 * @return the path
+	 */
 	public static final Path partOf(Property prop) {
 		return partOf(Util.path(prop));
 	}
+	
+	/**
+	 * Part of.
+	 *
+	 * @param prop the prop
+	 * @return the path
+	 */
 	public static final Path partOf(Path prop) {
 		return PathFactory.pathSeq(PARTOF, prop);
 	}
 	
+	/**
+	 * Group concat.
+	 *
+	 * @param distinct the distinct
+	 * @param var the var
+	 * @param separator the separator
+	 * @return the expr
+	 */
 	public static final Expr groupConcat(boolean distinct, Var var, String separator) {
 		return new ExprAggregator(null, AggregatorFactory.createGroupConcat(distinct, new ExprVar(var), separator, null));
 	}
 	
+	/** The Constant LABEL. */
 	private static final Var LABEL = Var.alloc("label");
+	
+	/**
+	 * Gets the label.
+	 *
+	 * @param res the res
+	 * @param graph the graph
+	 * @return the label
+	 */
 	public Optional<String> getLabel(Resource res, String graph) {
 		Query query = new SelectBuilder()
 				.addVar(LABEL)
@@ -512,6 +832,14 @@ public class TripleFunctions implements Closeable {
 			return Optional.empty();
 		}
 	}
+	
+	/**
+	 * Gets the label.
+	 *
+	 * @param res the res
+	 * @param user the user
+	 * @return the label
+	 */
 	public Optional<String> getLabel(Resource res, User user) {
 		Query query = new SelectBuilder()
 				.addVar(LABEL)
@@ -526,6 +854,12 @@ public class TripleFunctions implements Closeable {
 		}
 	}
 	
+	/**
+	 * Gets the format from wikinormia.
+	 *
+	 * @param base the base
+	 * @return the format from wikinormia
+	 */
 	public JSONObject getFormatFromWikinormia(Resource base) {
 		JSONObject format = new JSONObject();
 		Var URI=Var.alloc("uri"), TAG=Var.alloc("tag"), 
@@ -582,10 +916,22 @@ public class TripleFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class ResourceInfo {
+		
+		/** The label. */
 		public final String uri, graph, label;
+		
+		/** The pref label. */
 		@CheckForNull
 		public final String prefLabel;
 		
+		/**
+		 * Instantiates a new resource info.
+		 *
+		 * @param uri the uri
+		 * @param graph the graph
+		 * @param label the label
+		 * @param prefLabel the pref label
+		 */
 		public ResourceInfo(String uri, String graph, @Nullable String label, @Nullable String prefLabel) {
 			this.uri = uri;
 			this.graph = graph;
@@ -593,28 +939,68 @@ public class TripleFunctions implements Closeable {
 			this.prefLabel = prefLabel;
 		}
 		
+		/**
+		 * Gets the uri.
+		 *
+		 * @return the uri
+		 */
 		public String getUri() {
 			return uri;
 		}
+		
+		/**
+		 * Gets the graph.
+		 *
+		 * @return the graph
+		 */
 		public String getGraph() {
 			return graph;
 		}
+		
+		/**
+		 * Gets the label.
+		 *
+		 * @return the label
+		 */
 		public String getLabel() {
 			return label;
 		}
+		
+		/**
+		 * Gets the pref label.
+		 *
+		 * @return the pref label
+		 */
 		@CheckForNull
 		public String getPrefLabel() {
 			return prefLabel;
 		}
+		
+		/**
+		 * Checks if is preferred.
+		 *
+		 * @return true, if is preferred
+		 */
 		public boolean isPreferred() {
 			return prefLabel != null;
 		}
 
+		/**
+		 * Hash code.
+		 *
+		 * @return the int
+		 */
 		@Override
 		public int hashCode() {
 			return Objects.hash(uri);
 		}
 
+		/**
+		 * Equals.
+		 *
+		 * @param obj the obj
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -632,36 +1018,74 @@ public class TripleFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class DeduplicatedResource {
+		
+		/** The same as. */
 		private final List<ResourceInfo> sameAs;
 		
+		/**
+		 * Instantiates a new deduplicated resource.
+		 *
+		 * @param sameAsCount the same as count
+		 */
 		public DeduplicatedResource(int sameAsCount) {
 			this.sameAs = new ArrayList<>(sameAsCount);
 		}
 		
+		/**
+		 * Adds the same as.
+		 *
+		 * @param res the res
+		 * @return the deduplicated resource
+		 */
 		public DeduplicatedResource addSameAs(ResourceResult res) {
 			sameAs.add(res);
 			return this;
 		}
 		
+		/**
+		 * Gets the first uri.
+		 *
+		 * @return the first uri
+		 */
 		public String getFirstUri() {
 			return sameAs.get(0).getUri();
 		}
 		
+		/**
+		 * Gets the preferred label.
+		 *
+		 * @return the preferred label
+		 */
 		@CheckForNull
 		public String getPreferredLabel() {
 			return sameAs.get(0).getPrefLabel();
 		}
 		
+		/**
+		 * Gets the same as.
+		 *
+		 * @return the same as
+		 */
 		public List<ResourceInfo> getSameAs() {
 			return Collections.unmodifiableList(sameAs);
 		}
 		
+		/**
+		 * Gets the uris.
+		 *
+		 * @return the uris
+		 */
 		public List<String> getUris() {
 			return sameAs.stream()
 					.map(ResourceInfo::getUri)
 					.collect(Collectors.toList());
 		}
 		
+		/**
+		 * Gets the labels.
+		 *
+		 * @return the labels
+		 */
 		public LinkedHashSet<String> getLabels() {
 			LinkedHashSet<String> labels = new LinkedHashSet<>(sameAs.size());
 			for(ResourceInfo sa : sameAs) {
@@ -672,17 +1096,33 @@ public class TripleFunctions implements Closeable {
 			
 		}
 		
+		/**
+		 * Gets the graphs.
+		 *
+		 * @return the graphs
+		 */
 		public List<String> getGraphs() {
 			return sameAs.stream()
 					.map(ResourceInfo::getGraph)
 					.collect(Collectors.toList());
 		}
 		
+		/**
+		 * Hash code.
+		 *
+		 * @return the int
+		 */
 		@Override
 		public int hashCode() {
 			return Objects.hash(getFirstUri());
 		}
 
+		/**
+		 * Equals.
+		 *
+		 * @param obj the obj
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -693,6 +1133,11 @@ public class TripleFunctions implements Closeable {
 			return Objects.equals(getFirstUri(), other.getFirstUri());
 		}
 
+		/**
+		 * To string.
+		 *
+		 * @return the string
+		 */
 		@Override
 		public String toString() {
 			return sameAs.stream()
@@ -707,18 +1152,42 @@ public class TripleFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private static class ResourceResult extends ResourceInfo implements Comparable<ResourceResult> {
+		
+		/** The index. */
 		private final int index;
+		
+		/** The same as. */
 		public final List<String> sameAs = new ArrayList<>();
 		
+		/**
+		 * Instantiates a new resource result.
+		 *
+		 * @param uri the uri
+		 * @param graph the graph
+		 * @param label the label
+		 * @param index the index
+		 * @param prefLabel the pref label
+		 */
 		public ResourceResult(String uri, String graph, @Nullable String label, int index, @Nullable String prefLabel) {
 			super(uri, graph, label, prefLabel);
 			this.index = index;
 		}
 		
+		/**
+		 * Adds the same as.
+		 *
+		 * @param sameAs the same as
+		 */
 		public void addSameAs(String sameAs) {
 			this.sameAs.add(sameAs);
 		}
 		
+		/**
+		 * Compare to.
+		 *
+		 * @param o the o
+		 * @return the int
+		 */
 		@Override
 		public int compareTo(ResourceResult o) {
 			if(prefLabel != null && o.prefLabel == null) return -1;
@@ -727,6 +1196,15 @@ public class TripleFunctions implements Closeable {
 		}
 	}
 	
+	/**
+	 * Gets the all.
+	 *
+	 * @param user the user
+	 * @param type the type
+	 * @param filegraphs the filegraphs
+	 * @param resources the resources
+	 * @return the all
+	 */
 	public Map<String, DeduplicatedResource> getAll(User user, Resource type, List<String> filegraphs, @Nullable Set<Resource> resources) {
 		Map<String, Integer> graphmap = new HashMap<>(filegraphs.size());
 		for(int i = 0; i < filegraphs.size(); ++i) {
@@ -775,14 +1253,28 @@ public class TripleFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	private static class SameAsResolver implements Consumer<ResourceResult> {
+		
+		/** The distinct. */
 		public final Map<String, DeduplicatedResource> distinct;
+		
+		/** The same as. */
 		private final Map<String, DeduplicatedResource> sameAs;
 		
+		/**
+		 * Instantiates a new same as resolver.
+		 *
+		 * @param resourceCount the resource count
+		 */
 		public SameAsResolver(int resourceCount) {
 			this.distinct = new HashMap<>(resourceCount);
 			this.sameAs = new HashMap<>(resourceCount);
 		}
 
+		/**
+		 * Accept.
+		 *
+		 * @param res the res
+		 */
 		@Override
 		public void accept(ResourceResult res) {
 			DeduplicatedResource dRes = sameAs.get(res.uri);
@@ -798,7 +1290,10 @@ public class TripleFunctions implements Closeable {
 		
 	}
 	
+	/** The Constant SERVICERESULT. */
 	public static final WikiFormat FORMAT_UNKNOWN = new WikiFormat("unknown"), SERVICERESULT = new WikiFormat("serviceresult");
+	
+	/** The Constant VALUEINFO. */
 	public static final WikiType DEFAULT_TYPES = new WikiType(FORMAT_UNKNOWN, "default"),
 			FILE = new WikiType(FORMAT_UNKNOWN, "file"), 
 			FIELD = new WikiType(FORMAT_UNKNOWN, "field"), 
@@ -807,6 +1302,9 @@ public class TripleFunctions implements Closeable {
 			GRID = new WikiType(FORMAT_UNKNOWN, "grid"), 
 			VALUEINFO = new WikiType(FORMAT_UNKNOWN, "valueinfo");
 	
+	/**
+	 * Insert defaults into wikinormia.
+	 */
 	public void insertDefaultsIntoWikinormia() {
 		Model model = ModelFactory.createDefaultModel();
 		
@@ -898,12 +1396,24 @@ public class TripleFunctions implements Closeable {
 		System.out.println("Written WikiNormia defaults to tbox");
 	}
 	
+	/**
+	 * Gets the file graphs.
+	 *
+	 * @param user the user
+	 * @return the file graphs
+	 */
 	public Set<String> getFileGraphs(User user) {
 		return app.list.files.getList(user).stream()
 				.map(File::getURI)
 				.collect(Collectors.toSet());
 	}
 	
+	/**
+	 * Gets the graphs.
+	 *
+	 * @param user the user
+	 * @return the graphs
+	 */
 	public Set<String> getGraphs(User user) {
 		Set<String> graphs = getFileGraphs(user);
 		graphs.add(TBOX);
@@ -911,12 +1421,23 @@ public class TripleFunctions implements Closeable {
 		return graphs;
 	}
 	
+	/**
+	 * Creates the from block.
+	 *
+	 * @param graphs the graphs
+	 * @return the string
+	 */
 	public static String createFromBlock(Set<String> graphs) {
 		StringBuilder sb = new StringBuilder();
 		graphs.forEach(g -> sb.append("FROM <").append(g).append("> "));
 		return sb.toString();
 	}
 	
+	/**
+	 * Close.
+	 *
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	@Override
 	public void close() throws IOException {
 		client.close();
@@ -930,20 +1451,41 @@ public class TripleFunctions implements Closeable {
 	 */
 	public static class QueryResult implements AutoCloseable {
 		
+		/** The qe. */
 		private final QueryEngineHTTP qe;
 		
+		/**
+		 * Instantiates a new query result.
+		 *
+		 * @param qe the qe
+		 */
 		public QueryResult(QueryEngineHTTP qe) {
 			this.qe = qe;
 		}
 		
+		/**
+		 * Ask.
+		 *
+		 * @return true, if successful
+		 */
 		public boolean ask() {
 			return qe.execAsk();
 		}
 		
+		/**
+		 * Construct.
+		 *
+		 * @return the model
+		 */
 		public Model construct() {
 			return qe.execConstruct();
 		}
 		
+		/**
+		 * First.
+		 *
+		 * @return the optional
+		 */
 		public Optional<UtilQuerySolution> first() {
 			ResultSet rs = qe.execSelect();
 			if(rs.hasNext())
@@ -952,26 +1494,57 @@ public class TripleFunctions implements Closeable {
 				return Optional.empty();
 		}
 		
+		/**
+		 * Stream.
+		 *
+		 * @return the stream
+		 */
 		public Stream<UtilQuerySolution> stream() {
 			return Util.iteratorStream(qe.execSelect())
 					.map(UtilQuerySolution::new);
 		}
 		
+		/**
+		 * Iterate.
+		 *
+		 * @return the iterable
+		 */
 		public Iterable<UtilQuerySolution> iterate() {
 			return () -> new ResultIterator(qe.execSelect());
 		}
 		
+		/**
+		 * The Class ResultIterator.
+		 */
 		private class ResultIterator implements Iterator<UtilQuerySolution> {
+			
+			/** The rs. */
 			private final ResultSet rs;
+			
+			/**
+			 * Instantiates a new result iterator.
+			 *
+			 * @param rs the rs
+			 */
 			public ResultIterator(ResultSet rs) {
 				this.rs = rs;
 			}
 
+			/**
+			 * Checks for next.
+			 *
+			 * @return true, if successful
+			 */
 			@Override
 			public boolean hasNext() {
 				return rs.hasNext();
 			}
 
+			/**
+			 * Next.
+			 *
+			 * @return the util query solution
+			 */
 			@Override
 			public UtilQuerySolution next() {
 				return new UtilQuerySolution(rs.next());
@@ -979,12 +1552,23 @@ public class TripleFunctions implements Closeable {
 
 		}
 		
+		/**
+		 * List.
+		 *
+		 * @return the list
+		 */
 		public List<UtilQuerySolution> list() {
 			return stream()
 					.map(QueryResult::materialize)
 					.collect(Collectors.toList());
 		}
 		
+		/**
+		 * Materialize.
+		 *
+		 * @param qs the qs
+		 * @return the util query solution
+		 */
 		private static UtilQuerySolution materialize(UtilQuerySolution qs) {
 			Iterator<String> it = qs.varNames();
 			while(it.hasNext()) {
@@ -993,6 +1577,9 @@ public class TripleFunctions implements Closeable {
 			return qs;
 		}
 
+		/**
+		 * Close.
+		 */
 		@Override
 		public void close() {
 			qe.close();
@@ -1002,15 +1589,38 @@ public class TripleFunctions implements Closeable {
 	
 	/**
 	 * Base class for visitiors to read/convert triplestore objects.
-	 * 
-	 * @param <T> the result type.
+	 *
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+	 * @param <T> the result type.
 	 */
 	public static interface UtilRDFVisitor<T> extends RDFVisitor {
+		
+		/**
+		 * Visit blank.
+		 *
+		 * @param r the r
+		 * @param id the id
+		 * @return the t
+		 */
 		@Override
 		T visitBlank(Resource r, AnonId id);
+		
+		/**
+		 * Visit URI.
+		 *
+		 * @param r the r
+		 * @param uri the uri
+		 * @return the t
+		 */
 		@Override
 		T visitURI(Resource r, String uri);
+		
+		/**
+		 * Visit literal.
+		 *
+		 * @param l the l
+		 * @return the t
+		 */
 		@Override
 		T visitLiteral(Literal l);
 	}
@@ -1022,64 +1632,167 @@ public class TripleFunctions implements Closeable {
 	 */
 	public static class UtilQuerySolution implements QuerySolution {
 		
+		/** The qs. */
 		private final QuerySolution qs;
 		
+		/**
+		 * Instantiates a new util query solution.
+		 *
+		 * @param qs the qs
+		 */
 		public UtilQuerySolution(QuerySolution qs) {
 			this.qs = qs;
 		}
 
+		/**
+		 * Gets the.
+		 *
+		 * @param varName the var name
+		 * @return the RDF node
+		 */
 		@Override
 		public RDFNode get(String varName) {
 			return qs.get(varName);
 		}
+		
+		/**
+		 * Gets the.
+		 *
+		 * @param var the var
+		 * @return the RDF node
+		 */
 		public RDFNode get(Var var) {
 			return qs.get(var.getVarName());
 		}
+		
+		/**
+		 * Gets the.
+		 *
+		 * @param <T> the generic type
+		 * @param var the var
+		 * @param rv the rv
+		 * @return the t
+		 */
 		@SuppressWarnings("unchecked")
 		public <T> T get(Var var, UtilRDFVisitor<T> rv) {
 			return (T)get(var).visitWith(rv);
 		}
 
+		/**
+		 * Gets the resource.
+		 *
+		 * @param varName the var name
+		 * @return the resource
+		 */
 		@Override
 		public Resource getResource(String varName) {
 			return qs.getResource(varName);
 		}
+		
+		/**
+		 * Gets the resource.
+		 *
+		 * @param var the var
+		 * @return the resource
+		 */
 		public Resource getResource(Var var) {
 			return qs.getResource(var.getVarName());
 		}
+		
+		/**
+		 * Gets the uri.
+		 *
+		 * @param var the var
+		 * @return the uri
+		 */
 		public String getUri(Var var) {
 			Resource resource = qs.getResource(var.getVarName());
 			return resource == null ? null : resource.getURI();
 		}
 
+		/**
+		 * Gets the literal.
+		 *
+		 * @param varName the var name
+		 * @return the literal
+		 */
 		@Override
 		public Literal getLiteral(String varName) {
 			return qs.getLiteral(varName);
 		}
+		
+		/**
+		 * Gets the literal.
+		 *
+		 * @param var the var
+		 * @return the literal
+		 */
 		public Literal getLiteral(Var var) {
 			return qs.getLiteral(var.getVarName());
 		}
+		
+		/**
+		 * Gets the string.
+		 *
+		 * @param var the var
+		 * @return the string
+		 * @throws UncheckedIOException the unchecked IO exception
+		 */
 		public String getString(Var var) throws UncheckedIOException {
 			Literal literal = qs.getLiteral(var.getVarName());
 			return literal == null ? null : literal.getString();
 		}
+		
+		/**
+		 * Gets the date time.
+		 *
+		 * @param var the var
+		 * @return the date time
+		 * @throws UncheckedIOException the unchecked IO exception
+		 */
 		public Instant getDateTime(Var var) throws UncheckedIOException {
 			Literal literal = qs.getLiteral(var.getVarName());
 			return literal == null ? null : ((GregorianCalendar)literal.getValue()).toInstant();
 		}
+		
+		/**
+		 * Gets the literal value.
+		 *
+		 * @param var the var
+		 * @return the literal value
+		 * @throws UncheckedIOException the unchecked IO exception
+		 */
 		public Object getLiteralValue(Var var) throws UncheckedIOException {
 			Literal literal = qs.getLiteral(var.getVarName());
 			return literal == null ? null : literal.getValue();
 		}
 
+		/**
+		 * Contains.
+		 *
+		 * @param varName the var name
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean contains(String varName) {
 			return qs.contains(varName);
 		}
+		
+		/**
+		 * Contains.
+		 *
+		 * @param var the var
+		 * @return true, if successful
+		 */
 		public boolean contains(Var var) {
 			return qs.contains(var.getVarName());
 		}
 
+		/**
+		 * Var names.
+		 *
+		 * @return the iterator
+		 */
 		@Override
 		public Iterator<String> varNames() {
 			return qs.varNames();

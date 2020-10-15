@@ -38,7 +38,8 @@ import de.sdsd.projekt.api.ServiceResult.TimedValueList;
 /**
  * Utility class of the SDSD API.
  *
- * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+ * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian
+ *         Klose</a>
  */
 public abstract class Util {
 
@@ -50,7 +51,7 @@ public abstract class Util {
 	public static String createRandomUri() {
 		return "sdsd:" + UUID.randomUUID().toString();
 	}
-	
+
 	/**
 	 * Creates the uri for the given identifier.
 	 *
@@ -163,44 +164,43 @@ public abstract class Util {
 	public static Literal lit(byte[] value) {
 		return ResourceFactory.createTypedLiteral(Hex.encodeHexString(value, false), XSDDatatype.XSDhexBinary);
 	}
-	
+
 	/** The wikinormia UNIT property. */
 	public static final Property UNIT = ResourceFactory.createProperty("sdsd:unit");
-	
+
 	/** The wikinormia UNKNOWN format. */
 	public static final WikiFormat UNKNOWN = new WikiFormat("unknown");
-	
+
 	/** The wikinormia SERVICERESULT format. */
 	public static final WikiFormat SERVICERESULT = new WikiFormat("serviceresult");
-	
+
 	/** The wikinormia DEFAULT type base class. */
 	public static final WikiType DEFAULT = new WikiType(UNKNOWN, "default");
-	
+
 	/** The wikinormia FILE. */
 	public static final WikiType FILE = new WikiType(UNKNOWN, "file");
-	
+
 	/** The wikinormia FIELD. */
 	public static final WikiType FIELD = new WikiType(UNKNOWN, "field");
-	
+
 	/** The wikinormia MACHINE. */
 	public static final WikiType MACHINE = new WikiType(UNKNOWN, "machine");
-	
+
 	/** The wikinormia TIMELOG. */
 	public static final WikiType TIMELOG = new WikiType(UNKNOWN, "timelog");
-	
+
 	/** The wikinormia GRID. */
 	public static final WikiType GRID = new WikiType(UNKNOWN, "grid");
-	
+
 	/** The wikinormia VALUEINFO. */
 	public static final WikiType VALUEINFO = new WikiType(UNKNOWN, "valueinfo");
-	
+
 	/** The wikinormia DDI. */
 	public static final WikiType DDI = new WikiType(UNKNOWN, "ddi");
-	
-	
+
 	/** The RegEx pattern for wikinormia DDI uris. */
 	public static final Pattern DDI_REGEX = Pattern.compile(Pattern.quote(DDI.inst("").getURI()) + "(\\d+)");
-	
+
 	/**
 	 * Creates the wikinormia DDI uri.
 	 *
@@ -210,7 +210,7 @@ public abstract class Util {
 	public static WikiInst ddi(int num) {
 		return DDI.inst(num);
 	}
-	
+
 	/**
 	 * Extracts the DDI from a wikinormia DDI uri.
 	 *
@@ -219,10 +219,12 @@ public abstract class Util {
 	 */
 	public static int ddi(String uri) {
 		Matcher matcher = DDI_REGEX.matcher(uri);
-		if(matcher.matches()) return Integer.parseInt(matcher.group(1));
-		else throw new NumberFormatException(uri + " is no DDI URI " + DDI_REGEX.pattern());
+		if (matcher.matches())
+			return Integer.parseInt(matcher.group(1));
+		else
+			throw new NumberFormatException(uri + " is no DDI URI " + DDI_REGEX.pattern());
 	}
-	
+
 	/**
 	 * Extracts the DDI from a wikinormia DDI resource.
 	 *
@@ -232,7 +234,7 @@ public abstract class Util {
 	public static int ddi(Resource res) {
 		return ddi(res.getURI());
 	}
-	
+
 	/**
 	 * Extracts the DDI from a wikinormia DDI uri node.
 	 *
@@ -242,8 +244,7 @@ public abstract class Util {
 	public static int ddi(Node node) {
 		return ddi(node.getURI());
 	}
-	
-	
+
 	/**
 	 * Creates a wikinormia format resource.
 	 *
@@ -253,14 +254,15 @@ public abstract class Util {
 	public static WikiFormat format(String identifier) {
 		return new WikiFormat(identifier);
 	}
-	
+
 	/**
 	 * The Class WikiFormat.
 	 *
-	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian
+	 *         Klose</a>
 	 */
 	public static class WikiFormat extends ResourceImpl {
-		
+
 		/**
 		 * Instantiates a new wiki format.
 		 *
@@ -269,12 +271,18 @@ public abstract class Util {
 		public WikiFormat(String identifier) {
 			super(ServiceAPI.WIKI_URI + toCamelCase(identifier, false));
 		}
+
+		/**
+		 * Instantiates a new wiki format.
+		 *
+		 * @param format     the format
+		 * @param identifier the identifier
+		 */
 		protected WikiFormat(WikiFormat format, String identifier) {
-			super(format.getURI().equals(UNKNOWN.getURI()) 
-					? ServiceAPI.WIKI_URI + toCamelCase(identifier, false) 
+			super(format.getURI().equals(UNKNOWN.getURI()) ? ServiceAPI.WIKI_URI + toCamelCase(identifier, false)
 					: format.getURI() + toCamelCase(identifier, true));
 		}
-		
+
 		/**
 		 * Creates a wikinormia type resource.
 		 *
@@ -289,20 +297,21 @@ public abstract class Util {
 	/**
 	 * The Class WikiType.
 	 *
-	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian
+	 *         Klose</a>
 	 */
 	public static class WikiType extends WikiFormat {
-		
+
 		/**
 		 * Instantiates a new wiki type.
 		 *
-		 * @param format the format
+		 * @param format     the format
 		 * @param identifier the identifier
 		 */
 		public WikiType(WikiFormat format, String identifier) {
 			super(format, identifier);
 		}
-		
+
 		/**
 		 * Creates a wikinormia attribute property.
 		 *
@@ -312,7 +321,7 @@ public abstract class Util {
 		public WikiAttr prop(String identifier) {
 			return new WikiAttr(this, identifier);
 		}
-		
+
 		/**
 		 * Creates a wikinormia instance resource.
 		 *
@@ -322,7 +331,7 @@ public abstract class Util {
 		public WikiInst inst(String identifier) {
 			return new WikiInst(this, identifier);
 		}
-		
+
 		/**
 		 * Creates a wikinormia instance resource.
 		 *
@@ -337,14 +346,15 @@ public abstract class Util {
 	/**
 	 * The Class WikiAttr.
 	 *
-	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian
+	 *         Klose</a>
 	 */
 	public static class WikiAttr extends PropertyImpl {
-		
+
 		/**
 		 * Instantiates a new wiki attr.
 		 *
-		 * @param type the type
+		 * @param type       the type
 		 * @param identifier the identifier
 		 */
 		public WikiAttr(WikiType type, String identifier) {
@@ -355,14 +365,15 @@ public abstract class Util {
 	/**
 	 * The Class WikiInst.
 	 *
-	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian
+	 *         Klose</a>
 	 */
 	public static class WikiInst extends ResourceImpl {
-		
+
 		/**
 		 * Instantiates a new wiki instance.
 		 *
-		 * @param type the type
+		 * @param type       the type
 		 * @param identifier the identifier
 		 */
 		public WikiInst(WikiType type, String identifier) {
@@ -373,9 +384,9 @@ public abstract class Util {
 	/**
 	 * Creates the random uri resource.
 	 *
-	 * @param model the model
+	 * @param model    the model
 	 * @param wikiType the wiki type
-	 * @param parent the parent
+	 * @param parent   the parent
 	 * @return the resource
 	 */
 	public static Resource createRandomUriResource(Model model, WikiType wikiType, @Nullable Resource parent) {
@@ -384,17 +395,18 @@ public abstract class Util {
 			res.addProperty(DCTerms.isPartOf, parent);
 		return res;
 	}
-	
+
 	/**
 	 * Creates the resource.
 	 *
-	 * @param model the model
+	 * @param model      the model
 	 * @param identifier the identifier
-	 * @param wikiType the wiki type
-	 * @param parent the parent
+	 * @param wikiType   the wiki type
+	 * @param parent     the parent
 	 * @return the resource
 	 */
-	public static Resource createResource(Model model, String identifier, WikiType wikiType, @Nullable Resource parent) {
+	public static Resource createResource(Model model, String identifier, WikiType wikiType,
+			@Nullable Resource parent) {
 		Resource res = model.createResource(createUri(identifier), wikiType);
 		if (parent != null)
 			res.addProperty(DCTerms.isPartOf, parent);
@@ -414,6 +426,7 @@ public abstract class Util {
 		return orientation(posIterator.list, curIndex);
 	}
 
+	/** The Constant DEGREES_TO_RADIANS. */
 	private static final double EARTH_RADIUS = 6372795.477598, DEGREES_TO_RADIANS = Math.PI / 180.;
 
 	/**
@@ -512,20 +525,21 @@ public abstract class Util {
 	/**
 	 * The Class CombinedTimeLogEntry.
 	 *
-	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian
+	 *         Klose</a>
 	 */
 	public static class CombinedTimeLogEntry implements TimedValue {
 
 		/** The time. */
 		public final Instant time;
-		
+
 		/** The values. */
 		public final double values[];
 
 		/**
 		 * Instantiates a new combined time log entry.
 		 *
-		 * @param time the time
+		 * @param time   the time
 		 * @param values the values
 		 */
 		CombinedTimeLogEntry(Instant time, double[] values) {
@@ -533,6 +547,11 @@ public abstract class Util {
 			this.values = values;
 		}
 
+		/**
+		 * Gets the time.
+		 *
+		 * @return the time
+		 */
 		@Override
 		public Instant getTime() {
 			return time;

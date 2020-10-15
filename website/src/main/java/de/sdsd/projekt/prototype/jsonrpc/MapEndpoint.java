@@ -45,11 +45,23 @@ import de.sdsd.projekt.prototype.data.ValueInfo;
  * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
  */
 public class MapEndpoint extends JsonRpcEndpoint {
-
+	
+	/**
+	 * Instantiates a new map endpoint.
+	 *
+	 * @param application the application
+	 */
 	public MapEndpoint(ApplicationLogic application) {
 		super(application);
 	}
 	
+	/**
+	 * Lists the users files.
+	 *
+	 * @param req http servlet request including userdata
+	 * @return the JSON object including the files "filename" and "id"
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listMapFiles(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -73,6 +85,7 @@ public class MapEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/** The Constant KEY_NAME_COMP. */
 	private static final Comparator<ElementKey> KEY_NAME_COMP = new Comparator<ElementKey>() {
 		@Override
 		public int compare(ElementKey o1, ElementKey o2) {
@@ -80,6 +93,14 @@ public class MapEndpoint extends JsonRpcEndpoint {
 		}
 	};
 	
+	/**
+	 * Lists the chosen files content.
+	 *
+	 * @param req http servlet request including userdata
+	 * @param fileid the chosen files id
+	 * @return the JSON object includes the files containing grids (name), timelogs (name, count, max, from and until) and geometries (id, label and type) 
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listMapContent(HttpServletRequest req, String fileid) throws JsonRpcException {
 		User user = null;
 		try {
@@ -131,6 +152,15 @@ public class MapEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the grids DDis.
+	 *
+	 * @param req http servlet request including userdata
+	 * @param fileid the parent files id
+	 * @param gridName the grids name
+	 * @return a List of the the grids DDis
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getGridDDIs(HttpServletRequest req, String fileid, String gridName) throws JsonRpcException {
 		User user = null;
 		try {
@@ -156,6 +186,15 @@ public class MapEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the timelog DDis.
+	 *
+	 * @param req http servlet request including userdata
+	 * @param fileid the parent files id
+	 * @param timelogName the timelogs name
+	 * @return a List of the the timelogs DDis
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getTimelogDDIs(HttpServletRequest req, String fileid, String timelogName) throws JsonRpcException {
 		User user = null;
 		try {
@@ -181,6 +220,15 @@ public class MapEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the geometries.
+	 *
+	 * @param req http servlet request including userdata
+	 * @param fileid the parent files id
+	 * @param geouri geometries uri
+	 * @return the geometry
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getGeometry(HttpServletRequest req, String fileid, String geouri) throws JsonRpcException {
 		User user = null;
 		try {
@@ -228,6 +276,16 @@ public class MapEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the grid.
+	 *
+	 * @param req http servlet request including userdata
+	 * @param fileid the parent files id
+	 * @param gridName the grids name
+	 * @param valueUri the values uri
+	 * @return the grid
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getGrid(HttpServletRequest req, String fileid, String gridName, String valueUri) throws JsonRpcException {
 		User user = null;
 		try {
@@ -269,6 +327,18 @@ public class MapEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the timelog.
+	 *
+	 * @param req http servlet request including userdata
+	 * @param fileid the parent files id
+	 * @param timelogName the timelogs name
+	 * @param valueUri the values uri
+	 * @param timeFilter filter that limits the timelogs by the given interval
+	 * @param limit the limit
+	 * @return the timelog
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getTimelog(HttpServletRequest req, String fileid, String timelogName, String valueUri, 
 			JSONObject timeFilter, int limit) throws JsonRpcException {
 		User user = null;
@@ -363,6 +433,12 @@ public class MapEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the label or ddi.
+	 *
+	 * @param info the info
+	 * @return the label or ddi
+	 */
 	private String getLabelOrDdi(ValueInfo info) {
 		String label = info.designator;
 		if(label.length() <= 4) {
@@ -374,6 +450,13 @@ public class MapEndpoint extends JsonRpcEndpoint {
 		return label;
 	}
 	
+	/**
+	 * Find groups.
+	 *
+	 * @param infos the infos
+	 * @param fileUri the file uri
+	 * @return the map
+	 */
 	private Map<String, JSONArray> findGroups(Collection<ValueInfo> infos, String fileUri) {
 		Map<String, JSONArray> groupMap = new HashMap<>(infos.size());
 		Var VURI = Var.alloc("valueUri"), DVC = Var.alloc("dvc"), DET = Var.alloc("det"), DVCL = Var.alloc("dvcLabel"), DETL = Var.alloc("detLabel");
@@ -395,6 +478,13 @@ public class MapEndpoint extends JsonRpcEndpoint {
 		return groupMap;
 	}
 	
+	/**
+	 * Creates the ddi map.
+	 *
+	 * @param infos the infos
+	 * @param groups the groups
+	 * @return the JSON object
+	 */
 	private JSONObject createDdiMap(Collection<ValueInfo> infos, Map<String, JSONArray> groups) {
 		JSONObject ddimap = new JSONObject();
 		for(ValueInfo ddi : infos) {
@@ -406,6 +496,12 @@ public class MapEndpoint extends JsonRpcEndpoint {
 		return ddimap;
 	}
 	
+	/**
+	 * Calc min max.
+	 *
+	 * @param valueList the value list
+	 * @return the JSON object
+	 */
 	private static JSONObject calcMinMax(List<Double> valueList) {
 		JSONObject obj = new JSONObject();
 		if(valueList.isEmpty()) return obj;

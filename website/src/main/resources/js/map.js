@@ -169,8 +169,22 @@ angular.module('app').controller('map', function ($scope, $location, $compile, s
 			
 			return el[0];
 		};
+		
+		// adds a download button
+		let download = L.control({position: 'bottomleft'});
+		download.onAdd = function(map) {
+			var div = L.DomUtil.create('div', 'download');
+			div.innerHTML += '<button type="button" class="btn btn-outline-secondary mb-4" data-ng-click="download()"><i class="fas fa-file-download"></i></button>';
+			
+			var linkFunction = $compile(angular.element(div));
+			var el = linkFunction($scope);
+			
+			return el[0];
+		};
+		
 		$scope.checkbox.addTo($scope.map);
 		$scope.legend.addTo($scope.map);
+		download.addTo($scope.map);
 	}
 	 
 	/**
@@ -472,6 +486,32 @@ angular.module('app').controller('map', function ($scope, $location, $compile, s
 			$scope.legend.addTo($scope.map);
 			$scope.showLegend = true;
 		}
+	};
+	
+	/**
+	 * download - downloads all visible layers of the map as GeoJSON.
+	 *
+	 */
+	$scope.download = function() {
+		let out = {
+			type: "FeatureCollection",
+			features: []
+		};
+		for(let layer of $scope.layers) {
+			if(layer.visible) {
+				let geo = layer.toGeoJSON();
+				if(geo.type == 'FeatureCollection')
+					out.features = out.features.concat(geo.features);
+				else if(geo.type == 'Feature')
+					out.features.push(geo);
+			}
+		}
+		
+		let a = document.createElement("a");
+		let file = new Blob([JSON.stringify(out)], {type: "application/json"});
+		a.href = URL.createObjectURL(file);
+		a.download = "map.json";
+		a.click();
 	};
 	
 });

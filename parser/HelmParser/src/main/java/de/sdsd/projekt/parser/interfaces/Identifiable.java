@@ -9,5 +9,11 @@ package de.sdsd.projekt.parser.interfaces;
  *
  */
 public interface Identifiable {
+	
+	/**
+	 * Gets the id.
+	 *
+	 * @return the id
+	 */
 	public Long getId();
 }

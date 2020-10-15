@@ -81,10 +81,21 @@ import de.sdsd.projekt.prototype.websocket.WebsocketConnection;
  */
 public class ApiEndpoint extends JsonRpcEndpoint {
 	
+	/**
+	 * Instantiates a new api endpoint.
+	 *
+	 * @param application the application
+	 */
 	public ApiEndpoint(ApplicationLogic application) {
 		super(application);
 	}
 	
+	/**
+	 * Write instance.
+	 *
+	 * @param inst the inst
+	 * @return the JSON object
+	 */
 	public static JSONObject writeInstance(ServiceInstance inst) {
 		return new JSONObject()
 				.put("token", inst.getToken())
@@ -92,6 +103,13 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 				.put("parameter", inst.getParameter());
 	}
 	
+	/**
+	 * List active instances.
+	 *
+	 * @param serviceToken the service token
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listActiveInstances(String serviceToken) throws JsonRpcException {
 		try {
 			Optional<Service> service = application.service.getService(Service.filterToken(serviceToken));
@@ -106,6 +124,14 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets the instance changed listener.
+	 *
+	 * @param conn the conn
+	 * @param serviceToken the service token
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setInstanceChangedListener(WebsocketConnection conn, String serviceToken) throws JsonRpcException {
 		try {
 			Optional<Service> service = application.service.getService(Service.filterToken(serviceToken));
@@ -122,6 +148,15 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 			throw createError(null, e);
 		}
 	}
+	
+	/**
+	 * Unset instance changed listener.
+	 *
+	 * @param conn the conn
+	 * @param serviceToken the service token
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject unsetInstanceChangedListener(WebsocketConnection conn, String serviceToken) throws JsonRpcException {
 		try {
 			Optional<Service> service = application.service.getService(Service.filterToken(serviceToken));
@@ -137,6 +172,14 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets the instance canceled listener.
+	 *
+	 * @param conn the conn
+	 * @param serviceToken the service token
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setInstanceCanceledListener(WebsocketConnection conn, String serviceToken) throws JsonRpcException {
 		try {
 			Optional<Service> service = application.service.getService(Service.filterToken(serviceToken));
@@ -152,6 +195,15 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 			throw createError(null, e);
 		}
 	}
+	
+	/**
+	 * Unset instance cancelled listener.
+	 *
+	 * @param conn the conn
+	 * @param serviceToken the service token
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject unsetInstanceCancelledListener(WebsocketConnection conn, String serviceToken) throws JsonRpcException {
 		try {
 			Optional<Service> service = application.service.getService(Service.filterToken(serviceToken));
@@ -168,6 +220,13 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 	}
 	
 
+	/**
+	 * Gets the context.
+	 *
+	 * @param req the req
+	 * @return the context
+	 * @throws SDSDException the SDSD exception
+	 */
 	private ServiceInstance getContext(HttpServletRequest req) throws SDSDException {
 		String token = req.getHeader("token");
 		if (token == null) {
@@ -180,6 +239,14 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		else throw new SDSDException("No active context for the given token");
 	}
 	
+	/**
+	 * Complete.
+	 *
+	 * @param req the req
+	 * @param result the result
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject complete(HttpServletRequest req, String result) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -191,6 +258,14 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets the error.
+	 *
+	 * @param req the req
+	 * @param error the error
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setError(HttpServletRequest req, String error) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -202,6 +277,15 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the label.
+	 *
+	 * @param req the req
+	 * @param fileUri the file uri
+	 * @param uri the uri
+	 * @return the label
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getLabel(HttpServletRequest req, @Nullable String fileUri, String uri) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -236,6 +320,15 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		} 
 	}
 
+	/**
+	 * Gets the object.
+	 *
+	 * @param req the req
+	 * @param fileUri the file uri
+	 * @param uri the uri
+	 * @return the object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getObject(HttpServletRequest req, @Nullable String fileUri, String uri) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -272,6 +365,16 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		} 
 	}
 	
+	/**
+	 * Gets the parts.
+	 *
+	 * @param req the req
+	 * @param fileUri the file uri
+	 * @param uri the uri
+	 * @param type the type
+	 * @return the parts
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getParts(HttpServletRequest req, @Nullable String fileUri, String uri, @Nullable String type) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -317,6 +420,16 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Traverse.
+	 *
+	 * @param req the req
+	 * @param fileUri the file uri
+	 * @param uri the uri
+	 * @param properties the properties
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject traverse(HttpServletRequest req, @Nullable String fileUri, String uri, JSONArray properties) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -367,6 +480,16 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the value.
+	 *
+	 * @param req the req
+	 * @param fileUri the file uri
+	 * @param uri the uri
+	 * @param attributeUri the attribute uri
+	 * @return the value
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getValue(HttpServletRequest req, @Nullable String fileUri, String uri, String attributeUri) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -407,6 +530,14 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 
+	/**
+	 * Gets the source file uri.
+	 *
+	 * @param req the req
+	 * @param uri the uri
+	 * @return the source file uri
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getSourceFileUri(HttpServletRequest req, String uri) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -441,6 +572,17 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Find.
+	 *
+	 * @param req the req
+	 * @param fileUri the file uri
+	 * @param type the type
+	 * @param attr the attr
+	 * @param uris the uris
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject find(HttpServletRequest req, @Nullable String fileUri, @Nullable String type, 
 			@Nullable JSONObject attr, @Nullable JSONArray uris) throws JsonRpcException {
 		try {
@@ -558,6 +700,13 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * List devices.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listDevices(HttpServletRequest req) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -619,6 +768,14 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Find time logs.
+	 *
+	 * @param req the req
+	 * @param clientName the client name
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject findTimeLogs(HttpServletRequest req, String clientName) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -674,6 +831,16 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Find totals by device.
+	 *
+	 * @param req the req
+	 * @param clientName the client name
+	 * @param timeFilter the time filter
+	 * @param ddis the ddis
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject findTotalsByDevice(HttpServletRequest req, String clientName, JSONObject timeFilter, JSONArray ddis) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -747,6 +914,16 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Find value uris by device.
+	 *
+	 * @param req the req
+	 * @param clientName the client name
+	 * @param timeFilter the time filter
+	 * @param ddis the ddis
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject findValueUrisByDevice(HttpServletRequest req, String clientName, JSONObject timeFilter, JSONArray ddis) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -815,6 +992,14 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * List time logs.
+	 *
+	 * @param req the req
+	 * @param fileUri the file uri
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listTimeLogs(HttpServletRequest req, String fileUri) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -837,6 +1022,18 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the time log.
+	 *
+	 * @param req the req
+	 * @param fileUri the file uri
+	 * @param name the name
+	 * @param valueUri the value uri
+	 * @param timeFilter the time filter
+	 * @param limit the limit
+	 * @return the time log
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getTimeLog(HttpServletRequest req, String fileUri, String name, String valueUri, 
 			JSONObject timeFilter, int limit) throws JsonRpcException {
 		try {
@@ -871,6 +1068,17 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the positions.
+	 *
+	 * @param req the req
+	 * @param fileUri the file uri
+	 * @param timelog the timelog
+	 * @param timeFilter the time filter
+	 * @param limit the limit
+	 * @return the positions
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getPositions(HttpServletRequest req, String fileUri, String timelog, JSONObject timeFilter, int limit) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -902,6 +1110,15 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the value info.
+	 *
+	 * @param req the req
+	 * @param fileUri the file uri
+	 * @param valueUri the value uri
+	 * @return the value info
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getValueInfo(HttpServletRequest req, String fileUri, String valueUri) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -931,6 +1148,12 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Prints the file.
+	 *
+	 * @param file the file
+	 * @return the JSON object
+	 */
 	private static JSONObject printFile(File file) {
 		return new JSONObject()
 				.put("uri", file.getURI())
@@ -944,6 +1167,14 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 				.put("type", file.getType());
 	}
 	
+	/**
+	 * List files.
+	 *
+	 * @param req the req
+	 * @param sdsdtype the sdsdtype
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listFiles(HttpServletRequest req, String sdsdtype) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -966,6 +1197,14 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the file.
+	 *
+	 * @param req the req
+	 * @param fileUri the file uri
+	 * @return the file
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getFile(HttpServletRequest req, String fileUri) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -993,6 +1232,15 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets the new data listener.
+	 *
+	 * @param req the req
+	 * @param conn the conn
+	 * @param identifier the identifier
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setNewDataListener(HttpServletRequest req, WebsocketConnection conn, String identifier) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -1014,6 +1262,16 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 			throw createError(null, e);
 		}
 	}
+	
+	/**
+	 * Unset new data listener.
+	 *
+	 * @param req the req
+	 * @param conn the conn
+	 * @param identifier the identifier
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject unsetNewDataListener(HttpServletRequest req, WebsocketConnection conn, String identifier) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -1031,6 +1289,15 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets the new file listener.
+	 *
+	 * @param req the req
+	 * @param conn the conn
+	 * @param identifier the identifier
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setNewFileListener(HttpServletRequest req, WebsocketConnection conn, String identifier) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -1052,6 +1319,16 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 			throw createError(null, e);
 		}
 	}
+	
+	/**
+	 * Unset new file listener.
+	 *
+	 * @param req the req
+	 * @param conn the conn
+	 * @param identifier the identifier
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject unsetNewFileListener(HttpServletRequest req, WebsocketConnection conn, String identifier) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -1069,6 +1346,15 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets the file appended listener.
+	 *
+	 * @param req the req
+	 * @param conn the conn
+	 * @param fileUri the file uri
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setFileAppendedListener(HttpServletRequest req, WebsocketConnection conn, String fileUri) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -1095,6 +1381,16 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 			throw createError(null, e);
 		}
 	}
+	
+	/**
+	 * Unset file appended listener.
+	 *
+	 * @param req the req
+	 * @param conn the conn
+	 * @param fileUri the file uri
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject unsetFileAppendedListener(HttpServletRequest req, WebsocketConnection conn, String fileUri) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -1116,6 +1412,15 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets the file deleted listener.
+	 *
+	 * @param req the req
+	 * @param conn the conn
+	 * @param fileUri the file uri
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setFileDeletedListener(HttpServletRequest req, WebsocketConnection conn, String fileUri) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -1142,6 +1447,16 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 			throw createError(null, e);
 		}
 	}
+	
+	/**
+	 * Unset file deleted listener.
+	 *
+	 * @param req the req
+	 * @param conn the conn
+	 * @param fileUri the file uri
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject unsetFileDeletedListener(HttpServletRequest req, WebsocketConnection conn, String fileUri) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -1163,6 +1478,15 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Send file.
+	 *
+	 * @param req the req
+	 * @param filename the filename
+	 * @param content the content
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject sendFile(HttpServletRequest req, String filename, String content) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -1185,6 +1509,15 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Append file.
+	 *
+	 * @param req the req
+	 * @param filename the filename
+	 * @param newContent the new content
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject appendFile(HttpServletRequest req, String filename, String newContent) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -1217,6 +1550,17 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Find geometry.
+	 *
+	 * @param req the req
+	 * @param fileUri the file uri
+	 * @param uri the uri
+	 * @param elementtype the elementtype
+	 * @param geotype the geotype
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject findGeometry(HttpServletRequest req, 
 			@Nullable String fileUri, @Nullable String uri, @Nullable String elementtype, @Nullable String geotype) throws JsonRpcException {
 		try {
@@ -1264,6 +1608,16 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Geo intersects.
+	 *
+	 * @param req the req
+	 * @param geometry the geometry
+	 * @param elementtype the elementtype
+	 * @param geotype the geotype
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject geoIntersects(HttpServletRequest req, JSONObject geometry, @Nullable String elementtype, @Nullable String geotype) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -1307,6 +1661,15 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the device element properties.
+	 *
+	 * @param req the req
+	 * @param fileUri the file uri
+	 * @param detUri the det uri
+	 * @return the device element properties
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getDeviceElementProperties(HttpServletRequest req, @Nullable String fileUri, String detUri) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -1369,6 +1732,13 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		} 
 	}
 	
+	/**
+	 * Gets the all fields.
+	 *
+	 * @param req the req
+	 * @return the all fields
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getAllFields(HttpServletRequest req) throws JsonRpcException {
 		try {
 			ServiceInstance context = getContext(req);
@@ -1418,6 +1788,13 @@ public class ApiEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Gets the wikinormia instances.
+	 *
+	 * @param type the type
+	 * @return the wikinormia instances
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject getWikinormiaInstances(String type) throws JsonRpcException {
 		try {
 			System.out.format("getWikinormiaInstances: type(%s)\n", type);

@@ -22,28 +22,58 @@ import org.apache.tomcat.util.descriptor.web.SecurityCollection;
 import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The Class TomcatServer.
+ */
 public class TomcatServer implements Runnable {
 
     //private static final Logger logger = LoggerFactory.getLogger(TomcatServer.class);
 
+    /** The Constant TEMP_FOLDER. */
     public static final String TEMP_FOLDER = System.getProperty("java.io.tmpdir");
     
+    /** The tomcat. */
     private Tomcat tomcat;
 
+    /** The tmp dir. */
     private File tmpDir;
 
+    /** The disable client caching. */
     private boolean disableClientCaching;
+    
+    /** The cache control filter. */
     private ServletCacheControlFilter cacheControlFilter;
+    
+    /** The filter def no client caching. */
     private FilterDef filterDefNoClientCaching;
+    
+    /** The filter map no client caching. */
     private FilterMap filterMapNoClientCaching;
 
+    /** The restrict to local host. */
     private boolean restrictToLocalHost;
+    
+    /** The filter. */
     private RemoteAddrFilter filter;
+    
+    /** The filter def localhost only. */
     private FilterDef filterDefLocalhostOnly;
+    
+    /** The filter map localhost only. */
     private FilterMap filterMapLocalhostOnly;
 
+    /** The add admin basic login. */
     private boolean addAdminBasicLogin;
     
+    /**
+     * Instantiates a new tomcat server.
+     *
+     * @param port the port
+     * @param tempFolder the temp folder
+     * @param restrictToLocalHost the restrict to local host
+     * @param disableClientCaching the disable client caching
+     * @throws Exception the exception
+     */
     public TomcatServer(int port, String tempFolder, boolean restrictToLocalHost, boolean disableClientCaching) throws Exception {
         this.tomcat = new Tomcat() {
             // disable session persistence
@@ -107,10 +137,22 @@ public class TomcatServer implements Runnable {
         tomcat.getConnector();
     }
 
+    /**
+     * Instantiates a new tomcat server.
+     *
+     * @param port the port
+     * @param restrictToLocalHost the restrict to local host
+     * @throws Exception the exception
+     */
     public TomcatServer(int port, boolean restrictToLocalHost) throws Exception {
         this(port, TEMP_FOLDER, restrictToLocalHost, true);
     }
     
+    /**
+     * Adds the basic admin login to.
+     *
+     * @param ctx the ctx
+     */
     private void addBasicAdminLoginTo(Context ctx) {
         //https://gist.github.com/n-shinya/5401893
         
@@ -163,24 +205,52 @@ public class TomcatServer implements Runnable {
         ((StandardContext)ctx).addValve(new BasicAuthenticator());
     }
     
+    /**
+     * Adds the resource servlet.
+     *
+     * @return the resource servlet
+     */
     public ResourceServlet addResourceServlet() {
         ResourceServlet rs = new ResourceServlet();
         addServlet("", "/", "ResourceServlet", rs);
         return rs;
     }
     
+    /**
+     * Adds the resource servlet.
+     *
+     * @param servletPath the servlet path
+     * @param welcomeFile the welcome file
+     * @return the resource servlet
+     */
     public ResourceServlet addResourceServlet(String servletPath, String welcomeFile) {
         ResourceServlet rs = new ResourceServlet(welcomeFile);
         addServlet("", servletPath, "ResourceServlet", rs);
         return rs;
     }
     
+    /**
+     * Adds the resource servlet.
+     *
+     * @param servletPath the servlet path
+     * @param welcomeFile the welcome file
+     * @param debug the debug
+     * @return the resource servlet
+     */
     public ResourceServlet addResourceServlet(String servletPath, String welcomeFile, boolean debug) {
         ResourceServlet rs = new ResourceServlet(welcomeFile, debug);
         addServlet("", servletPath, "ResourceServlet", rs);
         return rs;
     }
     
+    /**
+     * Adds the default servlet.
+     *
+     * @param name the name
+     * @param contextPath the context path
+     * @param fileDir the file dir
+     * @param welcomeFile the welcome file
+     */
     public void addDefaultServlet(String name, String contextPath, String fileDir, String welcomeFile) {
         StandardContext ctx = (StandardContext) tomcat.addContext(contextPath, fileDir);
         
@@ -211,6 +281,15 @@ public class TomcatServer implements Runnable {
         //deleteTomcatTempFolders();
     }
 
+    /**
+     * Adds the servlet.
+     *
+     * @param contextPath the context path
+     * @param servletPath the servlet path
+     * @param servletName the servlet name
+     * @param servlet the servlet
+     * @return the context
+     */
     public Context addServlet(String contextPath, String servletPath, String servletName, Servlet servlet) {
         StandardContext ctx = (StandardContext) tomcat.addContext(contextPath, tmpDir.getAbsolutePath());
         //disable creating a temp folder
@@ -235,10 +314,23 @@ public class TomcatServer implements Runnable {
         return ctx;
     }
     
+    /**
+     * Adds the servlet.
+     *
+     * @param servlet the servlet
+     * @return the context
+     */
     public Context addServlet(Servlet servlet) {
         return addServlet("", "/", servlet.getClass().getSimpleName(), servlet);
     }
     
+    /**
+     * Adds the context.
+     *
+     * @param contextPath the context path
+     * @param contextName the context name
+     * @return the context
+     */
     public Context addContext(String contextPath, String contextName) {
         StandardContext ctx = (StandardContext) tomcat.addContext(contextPath, tmpDir.getAbsolutePath());
         //ctx.setCachingAllowed(false);//TODO not avail in tomcat 8
@@ -258,6 +350,15 @@ public class TomcatServer implements Runnable {
         return ctx;
     }
     
+    /**
+     * Adds the servlet to context.
+     *
+     * @param ctx the ctx
+     * @param servletPath the servlet path
+     * @param servletName the servlet name
+     * @param servlet the servlet
+     * @return the servlet
+     */
     public Servlet addServletToContext(Context ctx, String servletPath, String servletName, Servlet servlet) {
         Tomcat.addServlet(ctx, servletName, servlet);
         ctx.addServletMappingDecoded(servletPath, servletName);
@@ -266,6 +367,15 @@ public class TomcatServer implements Runnable {
         return servlet;
     }
 
+    /**
+     * Adds the servlet.
+     *
+     * @param contextPath the context path
+     * @param servletPath the servlet path
+     * @param servletName the servlet name
+     * @param docBase the doc base
+     * @param servlet the servlet
+     */
     public void addServlet(String contextPath, String servletPath, String servletName, String docBase, Servlet servlet) {
         Context ctx = tomcat.addContext(contextPath, docBase);
         
@@ -287,6 +397,11 @@ public class TomcatServer implements Runnable {
         //deleteTomcatTempFolders();
     }
     
+    /**
+     * Removes the context.
+     *
+     * @param name the name
+     */
     public void removeContext(String name) {
         Container found = null;
         for(Container c : tomcat.getHost().findChildren()) {
@@ -301,23 +416,42 @@ public class TomcatServer implements Runnable {
         //Container c = tomcat.getHost().findChild(servletName);
     }
     
+    /**
+     * Start.
+     *
+     * @throws LifecycleException the lifecycle exception
+     */
     public void start() throws LifecycleException {
         tomcat.start();
     }
 
+    /**
+     * Stop.
+     *
+     * @throws LifecycleException the lifecycle exception
+     */
     public void stop() throws LifecycleException {
         tomcat.stop();
     }
 
+    /**
+     * Await.
+     */
     public void await() {
         new Thread(this).start();
     }
 
+    /**
+     * Run.
+     */
     @Override
     public void run() {
         tomcat.getServer().await();
     }
     
+    /**
+     * Delete tomcat temp folders.
+     */
     public static void deleteTomcatTempFolders() {
         for (File f : new File(".").listFiles()) {
             if (f.getName().matches("tomcat\\.\\d+") && f.isDirectory()) {
@@ -326,6 +460,9 @@ public class TomcatServer implements Runnable {
         }
     }
     
+    /**
+     * Sets the logger level to error.
+     */
     public static void setLoggerLevelToError() {
         //turn off anoying logger
         ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
@@ -333,14 +470,29 @@ public class TomcatServer implements Runnable {
         //org.apache.catalina.startup.TldConfig.setNoTldJars("*.jar");
     }
 
+    /**
+     * Gets the tomcat.
+     *
+     * @return the tomcat
+     */
     public Tomcat getTomcat() {
         return tomcat;
     }
 
+    /**
+     * Checks if is adds the admin basic login.
+     *
+     * @return true, if is adds the admin basic login
+     */
     public boolean isAddAdminBasicLogin() {
         return addAdminBasicLogin;
     }
 
+    /**
+     * Sets the adds the admin basic login.
+     *
+     * @param addAdminBasicLogin the new adds the admin basic login
+     */
     public void setAddAdminBasicLogin(boolean addAdminBasicLogin) {
         this.addAdminBasicLogin = addAdminBasicLogin;
     }

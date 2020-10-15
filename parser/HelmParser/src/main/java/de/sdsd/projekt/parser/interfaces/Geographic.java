@@ -9,9 +9,25 @@ package de.sdsd.projekt.parser.interfaces;
  *
  */
 public interface Geographic {
+	
+	/**
+	 * Gets the geo label.
+	 *
+	 * @return the geo label
+	 */
 	public String getGeoLabel();
 
+	/**
+	 * Gets the longitude.
+	 *
+	 * @return the longitude
+	 */
 	public Double getLongitude();
 
+	/**
+	 * Gets the latitude.
+	 *
+	 * @return the latitude
+	 */
 	public Double getLatitude();
 }

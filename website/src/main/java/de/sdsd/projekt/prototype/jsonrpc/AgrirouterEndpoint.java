@@ -46,10 +46,22 @@ import de.sdsd.projekt.prototype.data.Util;
  */
 public class AgrirouterEndpoint extends JsonRpcEndpoint {
 
+	/**
+	 * Instantiates a new agrirouter endpoint.
+	 *
+	 * @param application the application
+	 */
 	public AgrirouterEndpoint(ApplicationLogic application) {
 		super(application);
 	}
 	
+	/**
+	 * Status.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject status(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -80,6 +92,13 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Reconnect.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject reconnect(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -99,6 +118,13 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Reonboard.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject reonboard(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -117,6 +143,15 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 		}
 	}
 
+	/**
+	 * Start secure onboarding.
+	 *
+	 * @param req the req
+	 * @param qa the qa
+	 * @param mqtt the mqtt
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject startSecureOnboarding(HttpServletRequest req, boolean qa, boolean mqtt) throws JsonRpcException {
 		User user = null;
 		try {
@@ -133,6 +168,13 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Agrirouter secure onboard.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject agrirouterSecureOnboard(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -153,6 +195,13 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Agrirouter offboard.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject agrirouterOffboard(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -175,6 +224,12 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 		}
 	}
 
+	/**
+	 * Endpoint to json.
+	 *
+	 * @param ep the ep
+	 * @return the JSON object
+	 */
 	private JSONObject endpointToJson(AREndpoint ep) {
 		if(ep == null) return new JSONObject();
 		JSONArray accepts = new JSONArray(), sends = new JSONArray();
@@ -195,6 +250,14 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 				.put("sends", sends);
 	}
 	
+	/**
+	 * List endpoints.
+	 *
+	 * @param req the req
+	 * @param update the update
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listEndpoints(HttpServletRequest req, boolean update) throws JsonRpcException {
 		User user = null;
 		try {
@@ -233,6 +296,18 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Send file.
+	 *
+	 * @param user the user
+	 * @param fileid the fileid
+	 * @param publish the publish
+	 * @param targets the targets
+	 * @return the completable future
+	 * @throws SDSDException the SDSD exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws ARException the AR exception
+	 */
 	private CompletableFuture<Boolean> sendFile(final User user, String fileid, boolean publish, String[] targets) 
 			throws SDSDException, IOException, ARException {
 		ObjectId fid = new ObjectId(fileid);
@@ -270,6 +345,16 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 				});
 	}
 	
+	/**
+	 * Send files.
+	 *
+	 * @param req the req
+	 * @param files the files
+	 * @param targets the targets
+	 * @param wait the wait
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject sendFiles(HttpServletRequest req, String[] files, String[] targets, boolean wait) throws JsonRpcException {
 		User user = null;
 		try {
@@ -301,6 +386,16 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Publish files.
+	 *
+	 * @param req the req
+	 * @param files the files
+	 * @param targets the targets
+	 * @param wait the wait
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject publishFiles(HttpServletRequest req, String[] files, String[] targets, boolean wait) throws JsonRpcException {
 		User user = null;
 		try {
@@ -332,6 +427,14 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Receive files.
+	 *
+	 * @param req the req
+	 * @param recent the recent
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject receiveFiles(HttpServletRequest req, boolean recent) throws JsonRpcException {
 		User user = null;
 		try {
@@ -371,6 +474,13 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Receive files.
+	 *
+	 * @param user the user
+	 * @param headers the headers
+	 * @return the int
+	 */
 	private int receiveFiles(User user, List<ARMsgHeader> headers) {
 		if(headers.isEmpty()) return 0;
 		int received = 0;
@@ -398,6 +508,13 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 		return received;
 	}
 	
+	/**
+	 * Agrirouter clear feeds.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject agrirouterClearFeeds(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -430,6 +547,13 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Agrirouter sub list.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject agrirouterSubList(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -458,6 +582,14 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Agrirouter set subs.
+	 *
+	 * @param req the req
+	 * @param subs the subs
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject agrirouterSetSubs(HttpServletRequest req, String[] subs) throws JsonRpcException {
 		User user = null;
 		try {
@@ -480,6 +612,13 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * List capabilities.
+	 *
+	 * @param req the req
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject listCapabilities(HttpServletRequest req) throws JsonRpcException {
 		User user = null;
 		try {
@@ -511,6 +650,15 @@ public class AgrirouterEndpoint extends JsonRpcEndpoint {
 		}
 	}
 	
+	/**
+	 * Sets the capabilities.
+	 *
+	 * @param req the req
+	 * @param capabilities the capabilities
+	 * @param pushNotifications the push notifications
+	 * @return the JSON object
+	 * @throws JsonRpcException the json rpc exception
+	 */
 	public JSONObject setCapabilities(HttpServletRequest req, JSONArray capabilities, int pushNotifications) throws JsonRpcException {
 		User user = null;
 		try {

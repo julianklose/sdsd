@@ -41,20 +41,41 @@ import de.sdsd.projekt.prototype.data.ValueInfo;
  */
 public class TableFunctions implements Closeable {
 	
+	/** The app. */
 	private final ApplicationLogic app;
 	
+	/** The cassandra. */
 	final CqlSession cassandra;
 	
+	/** The cassandra select grid keys. */
 	private final PreparedStatement cassandraSelectPositionKeys, cassandraSelectTimelogKeys, cassandraSelectGridKeys;
+	
+	/** The cassandra select positions info. */
 	private final PreparedStatement cassandraSelectPositions, cassandraSelectPositionsFiltered, cassandraSelectPositionsInfo;
+	
+	/** The cassandra select timelogs filtered. */
 	private final PreparedStatement cassandraSelectTimelogs, cassandraSelectTimelogsFiltered;
+	
+	/** The cassandra select grid. */
 	private final PreparedStatement cassandraSelectGridStatics, cassandraSelectGrid;
 	
+	/** The cassandra insert grid key. */
 	private final PreparedStatement cassandraInsertTimelogKey, cassandraInsertPositionKey, cassandraInsertGridKey;
+	
+	/** The cassandra insert grid. */
 	private final PreparedStatement cassandraInsertTimelog, cassandraInsertPosition, cassandraInsertGrid;
+	
+	/** The cassandra delete grid key. */
 	private final PreparedStatement cassandraDeleteTimelogKey, cassandraDeletePositionKey, cassandraDeleteGridKey;
+	
+	/** The cassandra delete grid. */
 	private final PreparedStatement cassandraDeleteTimelog, cassandraDeletePosition, cassandraDeleteGrid;
 
+	/**
+	 * Instantiates a new table functions.
+	 *
+	 * @param app the app
+	 */
 	TableFunctions(ApplicationLogic app) {
 		this.app = app;
 		JSONObject cassandra = app.settings.getJSONObject("cassandra");
@@ -122,27 +143,58 @@ public class TableFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class FileKey {
+		
+		/** The user. */
 		public final String user;
+		
+		/** The file. */
 		public final String file;
 		
+		/**
+		 * Instantiates a new file key.
+		 *
+		 * @param user the user
+		 * @param fileUri the file uri
+		 */
 		public FileKey(String user, String fileUri) {
 			this.user = user;
 			this.file = fileUri;
 		}
 		
+		/**
+		 * Gets the user.
+		 *
+		 * @return the user
+		 */
 		public String getUser() {
 			return user;
 		}
 
+		/**
+		 * Gets the file.
+		 *
+		 * @return the file
+		 */
 		public String getFile() {
 			return file;
 		}
 
+		/**
+		 * Hash code.
+		 *
+		 * @return the int
+		 */
 		@Override
 		public int hashCode() {
 			return Objects.hash(file, user);
 		}
 
+		/**
+		 * Equals.
+		 *
+		 * @param obj the obj
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -153,6 +205,11 @@ public class TableFunctions implements Closeable {
 			return Objects.equals(file, other.file) && Objects.equals(user, other.user);
 		}
 		
+		/**
+		 * To string.
+		 *
+		 * @return the string
+		 */
 		@Override
 		public String toString() {
 			return "FileKey [user=" + user + ", file=" + file + "]";
@@ -165,25 +222,55 @@ public class TableFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class ElementKey extends FileKey {
+		
+		/** The name. */
 		public final String name;
 		
+		/**
+		 * Instantiates a new element key.
+		 *
+		 * @param user the user
+		 * @param fileUri the file uri
+		 * @param name the name
+		 */
 		public ElementKey(String user, String fileUri, String name) {
 			super(user, fileUri);
 			this.name = name;
 		}
 
+		/**
+		 * Gets the name.
+		 *
+		 * @return the name
+		 */
 		public String getName() {
 			return name;
 		}
 		
+		/**
+		 * To file key.
+		 *
+		 * @return the file key
+		 */
 		public FileKey toFileKey() {
 			return new FileKey(user, file);
 		}
 		
+		/**
+		 * Check.
+		 *
+		 * @param row the row
+		 * @return true, if successful
+		 */
 		protected boolean check(Row row) {
 			return row.getString(2).equals(name);
 		}
 
+		/**
+		 * Hash code.
+		 *
+		 * @return the int
+		 */
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -192,6 +279,12 @@ public class TableFunctions implements Closeable {
 			return result;
 		}
 
+		/**
+		 * Equals.
+		 *
+		 * @param obj the obj
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -204,6 +297,11 @@ public class TableFunctions implements Closeable {
 			return Objects.equals(name, other.name);
 		}
 		
+		/**
+		 * To string.
+		 *
+		 * @return the string
+		 */
 		@Override
 		public String toString() {
 			return "ElementKey [user=" + user + ", file=" + file + ", name=" + name + "]";
@@ -216,26 +314,57 @@ public class TableFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class Key extends ElementKey {
+		
+		/** The value uri. */
 		public final String valueUri;
 		
+		/**
+		 * Instantiates a new key.
+		 *
+		 * @param user the user
+		 * @param fileUri the file uri
+		 * @param name the name
+		 * @param valueUri the value uri
+		 */
 		public Key(String user, String fileUri, String name, String valueUri) {
 			super(user, fileUri, name);
 			this.valueUri = valueUri;
 		}
 		
+		/**
+		 * Gets the value URI.
+		 *
+		 * @return the value URI
+		 */
 		public String getValueURI() {
 			return valueUri;
 		}
 		
+		/**
+		 * To element key.
+		 *
+		 * @return the element key
+		 */
 		public ElementKey toElementKey() {
 			return new ElementKey(user, file, name);
 		}
 		
+		/**
+		 * Check.
+		 *
+		 * @param row the row
+		 * @return true, if successful
+		 */
 		@Override
 		protected boolean check(Row row) {
 			return super.check(row) && row.getString(3).equals(valueUri);
 		}
 
+		/**
+		 * Hash code.
+		 *
+		 * @return the int
+		 */
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -244,6 +373,12 @@ public class TableFunctions implements Closeable {
 			return result;
 		}
 
+		/**
+		 * Equals.
+		 *
+		 * @param obj the obj
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -256,12 +391,22 @@ public class TableFunctions implements Closeable {
 			return Objects.equals(valueUri, other.valueUri);
 		}
 
+		/**
+		 * To string.
+		 *
+		 * @return the string
+		 */
 		@Override
 		public String toString() {
 			return "Key [user=" + user + ", file=" + file + ", name=" + name + ", valueUri=" + valueUri + "]";
 		}
 	}
 	
+	/**
+	 * List position keys.
+	 *
+	 * @return the list
+	 */
 	List<ElementKey> listPositionKeys() {
 		List<ElementKey> list = new ArrayList<>();
 		for(Row row : cassandra.execute("SELECT user, file, name FROM position_keys")) {
@@ -270,6 +415,11 @@ public class TableFunctions implements Closeable {
 		return list;
 	}
 	
+	/**
+	 * List timelog keys.
+	 *
+	 * @return the list
+	 */
 	List<Key> listTimelogKeys() {
 		List<Key> list = new ArrayList<>();
 		for(Row row : cassandra.execute("SELECT user, file, name, value_uri FROM timelog_keys")) {
@@ -278,6 +428,11 @@ public class TableFunctions implements Closeable {
 		return list;
 	}
 	
+	/**
+	 * List grid keys.
+	 *
+	 * @return the list
+	 */
 	List<Key> listGridKeys() {
 		List<Key> list = new ArrayList<>();
 		for(Row row : cassandra.execute("SELECT user, file, name, value_uri FROM grid_keys")) {
@@ -286,6 +441,12 @@ public class TableFunctions implements Closeable {
 		return list;
 	}
  	
+	/**
+	 * List position keys.
+	 *
+	 * @param key the key
+	 * @return the list
+	 */
 	public List<ElementKey> listPositionKeys(FileKey key) {
 		List<ElementKey> list = new ArrayList<>();
 		for(Row row : cassandra.execute(cassandraSelectPositionKeys.bind(key.user, key.file))) {
@@ -294,6 +455,12 @@ public class TableFunctions implements Closeable {
 		return list;
 	}
 	
+	/**
+	 * List timelog keys.
+	 *
+	 * @param key the key
+	 * @return the list
+	 */
 	public List<Key> listTimelogKeys(FileKey key) {
 		List<Key> list = new ArrayList<>();
 		for(Row row : cassandra.execute(cassandraSelectTimelogKeys.bind(key.user, key.file))) {
@@ -302,6 +469,12 @@ public class TableFunctions implements Closeable {
 		return list;
 	}
 	
+	/**
+	 * List timelogs.
+	 *
+	 * @param key the key
+	 * @return the list
+	 */
 	public List<String> listTimelogs(FileKey key) {
 		List<String> list = new ArrayList<>();
 		for(Row row : cassandra.execute(cassandraSelectPositionKeys.bind(key.user, key.file))) {
@@ -310,6 +483,12 @@ public class TableFunctions implements Closeable {
 		return list;
 	}
 	
+	/**
+	 * List timelog value uris.
+	 *
+	 * @param key the key
+	 * @return the list
+	 */
 	public List<String> listTimelogValueUris(ElementKey key) {
 		List<String> list = new ArrayList<>();
 		for(Row row : cassandra.execute(cassandraSelectTimelogKeys.bind(key.user, key.file))) {
@@ -319,6 +498,12 @@ public class TableFunctions implements Closeable {
 		return list;
 	}
 	
+	/**
+	 * List grid keys.
+	 *
+	 * @param key the key
+	 * @return the list
+	 */
 	public List<Key> listGridKeys(FileKey key) {
 		List<Key> list = new ArrayList<>();
 		for(Row row : cassandra.execute(cassandraSelectGridKeys.bind(key.user, key.file))) {
@@ -327,6 +512,12 @@ public class TableFunctions implements Closeable {
 		return list;
 	}
 	
+	/**
+	 * List grid value uris.
+	 *
+	 * @param key the key
+	 * @return the list
+	 */
 	public List<String> listGridValueUris(ElementKey key) {
 		List<String> list = new ArrayList<>();
 		for(Row row : cassandra.execute(cassandraSelectGridKeys.bind(key.user, key.file))) {
@@ -342,33 +533,70 @@ public class TableFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class TimelogInfo {
+		
+		/** The count. */
 		public final long count;
+		
+		/** The until. */
 		public final Instant from, until;
 		
+		/**
+		 * Instantiates a new timelog info.
+		 *
+		 * @param count the count
+		 * @param from the from
+		 * @param until the until
+		 */
 		protected TimelogInfo(long count, Instant from, Instant until) {
 			this.count = count;
 			this.from = from;
 			this.until = until;
 		}
 
+		/**
+		 * Gets the count.
+		 *
+		 * @return the count
+		 */
 		public long getCount() {
 			return count;
 		}
 
+		/**
+		 * Gets the from.
+		 *
+		 * @return the from
+		 */
 		public Instant getFrom() {
 			return from;
 		}
 
+		/**
+		 * Gets the until.
+		 *
+		 * @return the until
+		 */
 		public Instant getUntil() {
 			return until;
 		}
 
+		/**
+		 * To string.
+		 *
+		 * @return the string
+		 */
 		@Override
 		public String toString() {
 			return "TimelogInfo [count=" + count + ", from=" + from + ", until=" + until + "]";
 		}
 	}
 	
+	/**
+	 * Gets the timelog info.
+	 *
+	 * @param key the key
+	 * @return the timelog info
+	 */
 	public TimelogInfo getTimelogInfo(ElementKey key) {
 		Row result = cassandra.execute(cassandraSelectPositionsInfo.bind(key.user, key.file, key.name)).one();
 		return result.getLong(0) == 0 ? new TimelogInfo(0, Instant.EPOCH, Instant.EPOCH) 
@@ -383,14 +611,28 @@ public class TableFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public static class TimeInterval {
+		
+		/** The until. */
 		@CheckForNull
 		private final Instant from, until;
 		
+		/**
+		 * Instantiates a new time interval.
+		 *
+		 * @param from the from
+		 * @param until the until
+		 */
 		public TimeInterval(@Nullable Instant from, @Nullable Instant until) {
 			this.from = from;
 			this.until = until;
 		}
 		
+		/**
+		 * From.
+		 *
+		 * @param timeFilter the time filter
+		 * @return the time interval
+		 */
 		@CheckForNull
 		public static TimeInterval from(JSONObject timeFilter) {
 			return timeFilter == null || (!timeFilter.has("from") && !timeFilter.has("until")) ? null : new TimeInterval(
@@ -398,30 +640,64 @@ public class TableFunctions implements Closeable {
 					timeFilter.has("until") ? Instant.parse(timeFilter.getString("until")) : null);
 		}
 
+		/**
+		 * Checks if is from.
+		 *
+		 * @return true, if is from
+		 */
 		public boolean isFrom() {
 			return from != null;
 		}
 
+		/**
+		 * Checks if is until.
+		 *
+		 * @return true, if is until
+		 */
 		public boolean isUntil() {
 			return until != null;
 		}
 		
+		/**
+		 * From.
+		 *
+		 * @return the instant
+		 */
 		public Instant from() {
 			return from != null ? from : Instant.EPOCH;
 		}
 
+		/**
+		 * Until.
+		 *
+		 * @return the instant
+		 */
 		public Instant until() {
 			return until != null ? until : Instant.now();
 		}
 
+		/**
+		 * To string.
+		 *
+		 * @return the string
+		 */
 		@Override
 		public String toString() {
 			return "TimeInterval [from=" + from + ", until=" + until + "]";
 		}
 	}
 	
+	/** The Constant OUTPUT_MAX. */
 	public static final int OUTPUT_MAX = 50000;
 	
+	/**
+	 * Gets the positions.
+	 *
+	 * @param key the key
+	 * @param timefilter the timefilter
+	 * @param limit the limit
+	 * @return the positions
+	 */
 	public List<TimelogPosition> getPositions(ElementKey key, @Nullable TimeInterval timefilter, int limit) {
 		if(limit == 0) return Collections.emptyList();
 		if(limit < 0) limit = OUTPUT_MAX;
@@ -442,14 +718,36 @@ public class TableFunctions implements Closeable {
 		return list;
 	}
 	
+	/**
+	 * Gets the value infos.
+	 *
+	 * @param fileUri the file uri
+	 * @param valueUris the value uris
+	 * @return the value infos
+	 */
 	public List<ValueInfo> getValueInfos(String fileUri, List<String> valueUris) {
 		return ValueInfo.getValueInfos(app, fileUri, valueUris);
 	}
 	
+	/**
+	 * Gets the value info.
+	 *
+	 * @param fileUri the file uri
+	 * @param valueUri the value uri
+	 * @return the value info
+	 */
 	public ValueInfo getValueInfo(String fileUri, String valueUri) {
 		return ValueInfo.getValueInfo(app, fileUri, valueUri);
 	}
 	
+	/**
+	 * Gets the timelogs.
+	 *
+	 * @param key the key
+	 * @param timefilter the timefilter
+	 * @param limit the limit
+	 * @return the timelogs
+	 */
 	public List<Timelog> getTimelogs(Key key, @Nullable TimeInterval timefilter, int limit) {
 		if(limit == 0) return Collections.emptyList();
 		if(limit < 0) limit = OUTPUT_MAX;
@@ -469,6 +767,12 @@ public class TableFunctions implements Closeable {
 		return list;
 	}
 	
+	/**
+	 * Gets the grid.
+	 *
+	 * @param key the key
+	 * @return the grid
+	 */
 	public List<GridCell> getGrid(Key key) {
 		Row inforow = cassandra.execute(cassandraSelectGridStatics.bind(key.user, key.file, key.name)
 				.setList(3, Collections.singletonList(key.valueUri), String.class)).one();
@@ -483,6 +787,12 @@ public class TableFunctions implements Closeable {
 		return grid;
 	}
 	
+	/**
+	 * Creates the position batch.
+	 *
+	 * @param total the total
+	 * @return the position batch
+	 */
 	public PositionBatch createPositionBatch(int total) {
 		return new PositionBatch(total);
 	}
@@ -493,13 +803,29 @@ public class TableFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public class PositionBatch extends CountKeyBatch<ElementKey> {
+		
+		/** The key inserter. */
 		private final Function<ElementKey, BatchableStatement<?>> keyInserter = 
 				key -> cassandraInsertPositionKey.bind(key.user, key.file, key.name);
 		
+		/**
+		 * Instantiates a new position batch.
+		 *
+		 * @param total the total
+		 */
 		private PositionBatch(int total) {
 			super(total);
 		}
 		
+		/**
+		 * Adds the.
+		 *
+		 * @param key the key
+		 * @param time the time
+		 * @param latitude the latitude
+		 * @param longitude the longitude
+		 * @param altitude the altitude
+		 */
 		//user,file,timelog,time,latitude,longitude,altitude
 		public void add(ElementKey key, Instant time, double latitude, double longitude, double altitude) {
 			super.add(key, keyInserter, cassandraInsertPosition.bind(key.user, key.file, key.name)
@@ -510,6 +836,12 @@ public class TableFunctions implements Closeable {
 		}
 	}
 	
+	/**
+	 * Creates the timelog batch.
+	 *
+	 * @param total the total
+	 * @return the timelog batch
+	 */
 	public TimelogBatch createTimelogBatch(int total) {
 		return new TimelogBatch(total);
 	}
@@ -520,13 +852,27 @@ public class TableFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public class TimelogBatch extends CountKeyBatch<Key> {
+		
+		/** The key inserter. */
 		private final Function<Key, BatchableStatement<?>> keyInserter = 
 				key -> cassandraInsertTimelogKey.bind(key.user, key.file, key.name, key.valueUri);
 
+		/**
+		 * Instantiates a new timelog batch.
+		 *
+		 * @param total the total
+		 */
 		private TimelogBatch(int total) {
 			super(total);
 		}
 		
+		/**
+		 * Adds the.
+		 *
+		 * @param key the key
+		 * @param time the time
+		 * @param value the value
+		 */
 		//user,file,name,uri,time,value
 		public void add(Key key, Instant time, long value) {
 			super.add(key, keyInserter, cassandraInsertTimelog.bind(key.user, key.file, key.name, key.valueUri)
@@ -535,6 +881,12 @@ public class TableFunctions implements Closeable {
 		}
 	}
 	
+	/**
+	 * Creates the grid batch.
+	 *
+	 * @param total the total
+	 * @return the grid batch
+	 */
 	public GridBatch createGridBatch(int total) {
 		return new GridBatch(total);
 	}
@@ -545,13 +897,28 @@ public class TableFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public class GridBatch extends CountKeyBatch<Key> {
+		
+		/** The key inserter. */
 		private final Function<Key, BatchableStatement<?>> keyInserter = 
 				key -> cassandraInsertGridKey.bind(key.user, key.file, key.name, key.valueUri);
 		
+		/**
+		 * Instantiates a new grid batch.
+		 *
+		 * @param total the total
+		 */
 		private GridBatch(int total) {
 			super(total);
 		}
 		
+		/**
+		 * Adds the.
+		 *
+		 * @param key the key
+		 * @param size the size
+		 * @param pos the pos
+		 * @param value the value
+		 */
 		//user,file,name,value_uri,north_min,east_min,north_size,east_size,value
 		public void add(Key key, Coordinate size, Coordinate pos, long value) {
 			super.add(key, keyInserter, cassandraInsertGrid.bind(key.user, key.file, key.name, key.valueUri)
@@ -563,21 +930,41 @@ public class TableFunctions implements Closeable {
 		}
 	}
 	
+	/**
+	 * Delete position.
+	 *
+	 * @param key the key
+	 */
 	public void deletePosition(ElementKey key) {
 		cassandra.execute(cassandraDeletePosition.bind(key.user, key.file, key.name));
 		cassandra.execute(cassandraDeletePositionKey.bind(key.user, key.file, key.name));
 	}
 	
+	/**
+	 * Delete timelog.
+	 *
+	 * @param key the key
+	 */
 	public void deleteTimelog(Key key) {
 		cassandra.execute(cassandraDeleteTimelog.bind(key.user, key.file, key.name, key.valueUri));
 		cassandra.execute(cassandraDeleteTimelogKey.bind(key.user, key.file, key.name, key.valueUri));
 	}
 	
+	/**
+	 * Delete grid.
+	 *
+	 * @param key the key
+	 */
 	public void deleteGrid(Key key) {
 		cassandra.execute(cassandraDeleteGrid.bind(key.user, key.file, key.name, key.valueUri));
 		cassandra.execute(cassandraDeleteGridKey.bind(key.user, key.file, key.name, key.valueUri));
 	}
 	
+	/**
+	 * Tidy up.
+	 *
+	 * @param fileIds the file ids
+	 */
 	void tidyUp(Set<ObjectId> fileIds) {
 		Set<String> files = new HashSet<>(fileIds.size());
 		for(ObjectId fileid : fileIds) {
@@ -642,6 +1029,7 @@ public class TableFunctions implements Closeable {
 		}
 	}
 	
+	/** The Constant MAX_BATCH_SIZE. */
 	private static final int MAX_BATCH_SIZE = 0xFFF;
 	/**
 	 * Base class for counted batches.
@@ -649,25 +1037,47 @@ public class TableFunctions implements Closeable {
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
 	 */
 	public class CountBatch {
+		
+		/** The batch. */
 		private final BatchStatementBuilder batch;
+		
+		/** The total. */
 		private int count, total;
 		
+		/**
+		 * Instantiates a new count batch.
+		 *
+		 * @param total the total
+		 */
 		protected CountBatch(int total) {
 			this.batch = new BatchStatementBuilder(BatchType.UNLOGGED);
 			this.count = 0;
 			this.total = total;
 		}
 		
+		/**
+		 * Adds the.
+		 *
+		 * @param statement the statement
+		 */
 		protected void add(BatchableStatement<?> statement) {
 			batch.addStatement(statement);
 		}
 		
+		/**
+		 * Do execute.
+		 */
 		private void doExecute() {
 			cassandra.execute(batch.build());
 			count += batch.getStatementsCount();
 			batch.clearStatements();
 		}
 		
+		/**
+		 * Execute.
+		 *
+		 * @return true, if successful
+		 */
 		public boolean execute() {
 			if(batch.getStatementsCount() > 0) {
 				doExecute();
@@ -676,6 +1086,11 @@ public class TableFunctions implements Closeable {
 			return false;
 		}
 		
+		/**
+		 * Execute if full.
+		 *
+		 * @return true, if successful
+		 */
 		public boolean executeIfFull() {
 			if(batch.getStatementsCount() >= MAX_BATCH_SIZE) {
 				doExecute();
@@ -684,18 +1099,36 @@ public class TableFunctions implements Closeable {
 			return false;
 		}
 		
+		/**
+		 * Dec total.
+		 */
 		public void decTotal() {
 			--total;
 		}
 		
+		/**
+		 * Gets the percent.
+		 *
+		 * @return the percent
+		 */
 		public int getPercent() {
 			return (count * 100) / total;
 		}
 		
+		/**
+		 * Gets the count.
+		 *
+		 * @return the count
+		 */
 		public int getCount() {
 			return count + batch.getStatementsCount();
 		}
 		
+		/**
+		 * Gets the total.
+		 *
+		 * @return the total
+		 */
 		public int getTotal() {
 			return total;
 		}
@@ -703,30 +1136,56 @@ public class TableFunctions implements Closeable {
 	
 	/**
 	 * Base class for counted batches with key insertion.
-	 * 
-	 * @param <T> the key type
+	 *
 	 * @author <a href="mailto:48514372+julianklose@users.noreply.github.com">Julian Klose</a>
+	 * @param <T> the key type
 	 */
 	public class CountKeyBatch<T extends FileKey> extends CountBatch {
+		
+		/** The keys. */
 		private final HashSet<T> keys = new HashSet<>();
+		
+		/** The key batch. */
 		private final CountBatch keyBatch = new CountBatch(0);
 
+		/**
+		 * Instantiates a new count key batch.
+		 *
+		 * @param total the total
+		 */
 		protected CountKeyBatch(int total) {
 			super(total);
 		}
 		
+		/**
+		 * Adds the.
+		 *
+		 * @param key the key
+		 * @param keyInserter the key inserter
+		 * @param statement the statement
+		 */
 		protected void add(T key, Function<T, BatchableStatement<?>> keyInserter, BatchableStatement<?> statement) {
 			if(keys.add(key))
 				keyBatch.add(keyInserter.apply(key));
 			super.add(statement);
 		}
 		
+		/**
+		 * Execute.
+		 *
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean execute() {
 			keyBatch.execute();
 			return super.execute();
 		}
 		
+		/**
+		 * Execute if full.
+		 *
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean executeIfFull() {
 			keyBatch.executeIfFull();
@@ -735,22 +1194,51 @@ public class TableFunctions implements Closeable {
 		
 	}
 	
+	/**
+	 * Pos.
+	 *
+	 * @param pos the pos
+	 * @return the double
+	 */
 	public static final double pos(int pos) {
 		return pos * 1e-7;
 	}
 	
+	/**
+	 * Pos.
+	 *
+	 * @param pos the pos
+	 * @return the int
+	 */
 	public static final int pos(double pos) {
 		return (int) (pos * 1e7);
 	}
 	
+	/**
+	 * Alt.
+	 *
+	 * @param altitude the altitude
+	 * @return the double
+	 */
 	public static final double alt(int altitude) {
 		return altitude * 1e-3;
 	}
 	
+	/**
+	 * Alt.
+	 *
+	 * @param altitude the altitude
+	 * @return the int
+	 */
 	public static final int alt(double altitude) {
 		return (int) (altitude * 1e3);
 	}
 
+	/**
+	 * Close.
+	 *
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	@Override
 	public void close() throws IOException {
 		cassandra.close();
