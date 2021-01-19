@@ -487,7 +487,7 @@ public class Permissions {
 				.from(TripleFunctions.TBOX)
 				.addWhere(instanceRes, Pperm, Vperm)
 				.addWhere(Vperm, Pallow, Vallow)
-				.addWhere(Vperm, TripleFunctions.subclass(Pabout), NodeFactory.createURI(accessTypeUri))
+				.addWhere(Vperm, TripleFunctions.baseclass(Pabout), NodeFactory.createURI(accessTypeUri))
 				.build();
 		try(QueryResult qr = app.triple.query(query)) {
 			return qr.ask();
