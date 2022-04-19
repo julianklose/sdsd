@@ -446,7 +446,7 @@ public class MainParser {
 				errors.fatal(e.getMessage());
 			}
 
-			errors.forEach(System.out::println);
+			errors.forEach(out::println);
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
